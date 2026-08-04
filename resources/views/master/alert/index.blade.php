@@ -1,0 +1,198 @@
+@extends('layouts.master')
+
+@section('title')
+    Alert |
+@endsection
+
+@section('content')
+<div class="content">
+
+    <!-- Start Content-->
+    <div class="container-fluid">
+
+        <!-- start page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-box">
+                    <div class="page-title-right">
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                            <li class="breadcrumb-item active">Alert</li>
+                        </ol>
+                    </div>
+                    <h4 class="page-title">Master Alert</h4>
+                </div>
+            </div>
+        </div>
+        <!-- end page title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="float-end">
+                            <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#add_modal"><i class="fas fa-plus"></i> Add Alert</a>
+                        </div>
+                        <h4 class="header-title">Master Alert</h4>
+                        <br><br>
+                        <table id="" class="table activate-select nowrap w-100 scroll-horizontal-datatable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Note</th>
+                                    <th>Start Alert</th>
+                                    <th>Duration</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @php
+                                    $no = 1;
+                                @endphp
+                                @foreach ($data['alert'] as $item)
+                                    <tr>
+                                        <td>{{ $no++ }}</td>
+                                        <td>{{ $item->note }}</td>
+                                        <td>{{ $item->start_alert }}</td>
+                                        <td>{{ $item->duration }}</td>
+                                        <td>
+                                            <a href="#" class="btn btn-light btn-xs d-inline waves-effect waves-light btn_edit" title="Edit" tabindex="0" data-plugin="tippy" data-tippy-placement="top" data-bs-toggle="modal" data-bs-target="#edit_modal"
+                                                data-note="{{ $item->note }}" data-startalert={{ $item->start_alert }} data-duration="{{ $item->duration }}" data-id="{{ $item->id }}"><i class="fas fa-pen"></i></a>
+                                            <form action="{{ route('master-alert.destroy', $item->id)}}" method="POST" onclick="deleteFunction()" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="_method" value="DELETE">
+                                                <button type="submit" class="btn btn-light btn-xs d-inline waves-effect waves-light" title="Delete" tabindex="0" data-plugin="tippy" data-tippy-placement="top"><i class="fas fa-trash-alt" onsubmit="deleteFunction()"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+
+                    </div> <!-- end card body-->
+                </div> <!-- end card -->
+            </div><!-- end col-->
+        </div>
+        <!-- end row-->
+
+    </div> <!-- container -->
+
+</div> <!-- content -->
+
+<div id="add_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="standard-modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="standard-modalLabel">Add Alert</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('master-alert.store') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="simpleinput" class="form-label">Note <span class="text-danger">*</span></label>
+                            <input type="text" id="simpleinput" class="form-control" name="note" required placeholder="Note">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mt-3">
+                            <label for="simpleinput" class="form-label">Start Alert <span class="text-danger">*</span></label>
+                            <input type="number" id="simpleinput" class="form-control" name="start_alert" required placeholder="15">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mt-3">
+                            <label for="simpleinput" class="form-label">Duration <span class="text-danger">*</span></label>
+                            <input type="number" id="simpleinput" class="form-control" name="duration" required placeholder="365">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+<div id="edit_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="standard-modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="standard-modalLabel">Edit Alert</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('master-update-alert') }}" method="POST">
+                @csrf
+                <input type="hidden" name="_method" value="PUT">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="id_alert">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="simpleinput" class="form-label">Note <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="note" name="note" required placeholder="Note">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mt-3">
+                            <label for="simpleinput" class="form-label">Start Alert <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="start_alert" name="start_alert" required placeholder="15">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mt-3">
+                            <label for="simpleinput" class="form-label">Duration <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="duration" name="duration" required placeholder="365">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>  
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+@endsection
+@section('js')
+    <script>
+         $(document).ready(function(){
+            $('.btn_edit').click(function(){
+                document.getElementById("id_alert").value = $(this).attr('data-id');
+                document.getElementById("note").value = $(this).attr('data-note');
+                document.getElementById("start_alert").value = $(this).attr('data-startalert');
+                document.getElementById("duration").value = $(this).attr('data-duration');
+            });
+
+            function deleteFunction() {
+                event.preventDefault();
+                var form = event.target.form;
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: !0,
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel!",
+                    confirmButtonClass: "btn btn-success mt-2",
+                    cancelButtonClass: "btn btn-danger ms-2 mt-2",
+                    buttonsStyling: !1,
+                }).then(function(e) {
+                    e.value ?
+                        form.submit() :
+                        e.dismiss === Swal.DismissReason.cancel &&
+                        Swal.fire({
+                            title: "Cancelled",
+                            text: "Your data is safe :)",
+                            icon: "error",
+                            confirmButtonColor: "#4a4fea",
+                        });
+                });
+            }
+        });
+    </script>
+@endsection
