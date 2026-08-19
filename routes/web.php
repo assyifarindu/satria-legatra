@@ -19,21 +19,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-    return Redirect::to($actual_link . '/satria');
-    // return env('SATRIA_URL');
-})->name('index');
+// Route::get('/', function () {
+//     $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+//     return Redirect::to($actual_link . '/satria');
+//     // return env('SATRIA_URL');
+// })->name('index');
 Route::get('/welcome', [App\Http\Controllers\HomeController::class, 'index'])->name('welcome');
 Route::get('/satria-profile', [App\Http\Controllers\HomeController::class, 'profile'])->name('profile');
 
 
 Auth::routes();
 
-// Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function () {
 
-Route::middleware('token.login')->group(function() {
-    // Route::get('/', [App\Http\Controllers\HomeController::class, 'home'])->name('index');
+// Route::middleware('token.login')->group(function() {
+    Route::get('/', [App\Http\Controllers\HomeController::class, 'home'])->name('index');
     Route::get('home', [App\Http\Controllers\HomeController::class, 'home'])->name('home');
     Route::get('logout', [App\Http\Controllers\Legatra\User\HomeController::class, 'logout'])->name('logout');
     Route::get('download-template/{id}', [App\Http\Controllers\Legatra\User\HomeController::class, 'download'])->name('download.template');

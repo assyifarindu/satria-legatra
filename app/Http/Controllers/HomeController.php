@@ -28,7 +28,8 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('token.login');
+        // $this->middleware('token.login');
+        $this->middleware('auth');
     }
 
     /**
@@ -98,8 +99,8 @@ class HomeController extends Controller
                 return view('dashboard')->with('data', $data);
             }
         } catch (Exception $e) {    
-            $this->ErrorLog($e);
             dd($e);
+            $this->ErrorLog($e);
             return redirect()->back()->with('error', 'Error Request, Exception Error ');
         } 
     }
