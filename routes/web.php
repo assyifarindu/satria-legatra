@@ -294,4 +294,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/generate-number/departments/{companyCode}', [GenerateNumberController::class, 'getDepartments']);
     Route::delete('generate-number/force/{generate_number}', [GenerateNumberController::class, 'deleteForce'])->name('generate-number-force');
     Route::put('generate-number/restore/{generate_number}', [GenerateNumberController::class, 'restore'])->name('generate-number.restore');
+
+    // TSP
+    Route::get('/tsp/dashboard', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'index'])->name('tsp.dashboard');
+    Route::get('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'index'])->name('tsp.request-document');
 });
