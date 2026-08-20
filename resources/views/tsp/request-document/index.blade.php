@@ -28,7 +28,7 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="float-end">
-                                <a href="{{ route('tsp.request-document') }}" class="btn btn-sm btn-primary"><i
+                                <a href="{{ route('tsp.request-document.create') }}" class="btn btn-sm btn-primary"><i
                                         class="fas fa-plus"></i> Create Request</a>
                             </div>
                             <h4 class="header-title">Request Document Contract</h4>

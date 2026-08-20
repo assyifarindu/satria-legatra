@@ -25,39 +25,22 @@ class RequestDocumentController extends Controller
         });
     }
 
-    // Show the index page for request documents
+    /**
+     * Display a listing of the resource.
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
         return view('tsp.request-document.index');
     }
 
-    private function generateDummyData($count)
-    {
-        $statuses     = ['Draft', 'Pending', 'Approved', 'Rejected'];
-        $contracts    = ['NDA', 'Vendor Agreement', 'Employment', 'Service Level Agreement'];
-        $requesters   = ['Ahmad Yani', 'Siti Nurhaliza', 'Budi Santoso', 'Rina Nose', 'Dewi Lestari'];
-        $signStatuses = ['Pending', 'Signed', 'In Review'];
-        $categories   = ['Internal IT', 'Procurement', 'Human Resource', 'Marketing Campaign'];
-
-        $data = [];
-        for ($i = 1; $i <= $count; $i++) {
-            $data[] = [
-                'id'               => $i,
-                'status'           => $statuses[array_rand($statuses)],
-                'document_number'  => 'DOC/TSP/2026/' . sprintf('%03d', $i),
-                'title'            => 'Dokumen Pengajuan Kerjasama #' . $i,
-                'contract_type'    => $contracts[array_rand($contracts)],
-                'requester'        => $requesters[array_rand($requesters)],
-                'sign_status'      => $signStatuses[array_rand($signStatuses)],
-                'is_project' => $categories[array_rand($categories)],
-            ];
-        }
-
-        return $data;
-    }
-
-    // Get data request documents
-    public function data(Request $request) 
+    /**
+     * Get request documents with pagination, search, and sorting.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getRequestDocuments(Request $request)
     {
         try {
             $start = $request->input('start', 0);
@@ -109,6 +92,155 @@ class RequestDocumentController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            return response()->json([
+                "success"       => false,
+                "error_message" => $e->getMessage(),
+                "message"       => "An error has occurred!"
+            ], 500);
+        }
+    }
+
+    /**
+     * Show the form for creating a new request document.
+     * @return \Illuminate\View\View
+     */
+    public function showCreate()
+    {
+        return view('tsp.request-document.create');
+    }
+
+    /**
+     * Get customers based on search query.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCustomers(Request $request)
+    {
+        try {
+            $q = $request->input('q', '');
+            $customers = [
+               [
+                    "id" => 1,
+                    "name" => "Customer A",
+                    "nib" => "1234567890",
+                    "npwp" => "12.345.678.9-012.345",
+                    "address" => "Address A",
+                    "postal_code" => "12345",
+                    "email" => "customerA@example.com"
+               ],
+               [
+                    "id" => 2,
+                    "name" => "Customer B",
+                    "nib" => "0987654321",
+                    "npwp" => "98.765.432.1-098.765",
+                    "address" => "Address B",
+                    "postal_code" => "54321",
+                    "email" => "customerB@example.com"
+               ],
+               [
+                    "id" => 3,
+                    "name" => "Customer C",
+                    "nib" => "1122334455",
+                    "npwp" => "11.223.344.5-112.233",
+                    "address" => "Address C",
+                    "postal_code" => "67890",
+                    "email" => "customerC@example.com"
+               ]
+            ];
+
+            $customers = collect($customers)->filter(function ($customer) use ($q) {
+                if (empty($q)) {
+                    return true; // Jika query kosong, tampilkan semua customer
+                }
+                return stripos($customer['name'], $q) !== false;
+            })->values();
+
+            return response()->json([
+                "success" => true,
+                "message" => "Customers retrieved successfully.",
+                "data" => $customers
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                "success"       => false,
+                "error_message" => $e->getMessage(),
+                "message"       => "An error has occurred!"
+            ], 500);
+        }
+    }
+
+    /**
+     * Get customer by ID
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCustomerById($id)
+    {
+        try {
+            $customers = [
+               [
+                    "id" => 1,
+                    "name" => "Customer A",
+                    "nib" => "1234567890",
+                    "npwp" => "12.345.678.9-012.345",
+                    "address" => "Address A",
+                    "postal_code" => "12345",
+                    "email" => "customerA@example.com"
+               ],
+               [
+                    "id" => 2,
+                    "name" => "Customer B",
+                    "nib" => "0987654321",
+                    "npwp" => "98.765.432.1-098.765",
+                    "address" => "Address B",
+                    "postal_code" => "54321",
+                    "email" => "customerB@example.com"
+               ],
+               [
+                    "id" => 3,
+                    "name" => "Customer C",
+                    "nib" => "1122334455",
+                    "npwp" => "11.223.344.5-112.233",
+                    "address" => "Address C",
+                    "postal_code" => "67890",
+                    "email" => "customerC@example.com"
+               ]
+            ];
+
+            $customer = collect($customers)->firstWhere('id', (int)$id);
+
+            if ($customer) {
+                return response()->json([
+                    "success" => true,
+                    "message" => "Customer retrieved successfully.",
+                    "data" => $customer
+                ]);
+            } else {
+                return response()->json([
+                    "success" => false,
+                    "message" => "Customer not found."
+                ], 404);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                "success"       => false,
+                "error_message" => $e->getMessage(),
+                "message"       => "An error has occurred!"
+            ], 500);
+        }
+    }
+
+    /**
+     * Store a newly created request document in storage.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(Request $request)
+    {
+        try {
+            dd($request->all());
+        } catch(Exception $e) {
+            dd($e);
             return response()->json([
                 "success"       => false,
                 "error_message" => $e->getMessage(),

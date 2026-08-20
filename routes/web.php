@@ -298,5 +298,9 @@ Route::middleware('auth')->group(function () {
     // TSP
     Route::get('/tsp/dashboard', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'index'])->name('tsp.dashboard');
     Route::get('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'index'])->name('tsp.request-document');
-    Route::get('/tsp/request-document/data', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'data'])->name('tsp.request-document.data');
+    Route::get('/tsp/request-document/data', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getRequestDocuments'])->name('tsp.request-document.data');
+    Route::get('/tsp/request-document/create', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showCreate'])->name('tsp.request-document.create');
+    Route::get('/tsp/customers', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomers'])->name('tsp.customers');
+    Route::get('/tsp/customers/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomerById'])->name('tsp.customers.by-id');
+    Route::post('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'store'])->name('tsp.request-document.store');
 });
