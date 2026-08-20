@@ -6,6 +6,7 @@ use App\Http\Controllers\Legatra\GenerateNumberController;
 use App\Http\Controllers\Legatra\QRDocumentController;
 use App\Http\Controllers\Legatra\RequestDocumentQRController;
 use App\Http\Controllers\Legatra\User\RequestDocumentQRController as UserRequestDocumentQRController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
