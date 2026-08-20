@@ -6,6 +6,7 @@ use App\Http\Controllers\Legatra\GenerateNumberController;
 use App\Http\Controllers\Legatra\QRDocumentController;
 use App\Http\Controllers\Legatra\RequestDocumentQRController;
 use App\Http\Controllers\Legatra\User\RequestDocumentQRController as UserRequestDocumentQRController;
+use App\Http\Controllers\Legatra\TSP\RequestDocumentController as TSPRequestDocumentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -293,4 +294,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/generate-number/departments/{companyCode}', [GenerateNumberController::class, 'getDepartments']);
     Route::delete('generate-number/force/{generate_number}', [GenerateNumberController::class, 'deleteForce'])->name('generate-number-force');
     Route::put('generate-number/restore/{generate_number}', [GenerateNumberController::class, 'restore'])->name('generate-number.restore');
+
+
+    //TSP Route
+    Route::prefix('tsp/request-document')
+    ->name('tsp.request-document.')
+    ->group(function () {
+
+        Route::get('/', [TSPRequestDocumentController::class, 'index'])
+            ->name('index');
+
+        Route::get('/data', [TSPRequestDocumentController::class, 'getData'])
+            ->name('data');
+
+    });
 });

@@ -60,6 +60,7 @@ class HomeController extends Controller
     {
         try{
             $user = User::findOrFail(Auth::user()->id);
+            $company_id = $user->companyid;
             $company_name = $user->company_name;
             $user->accessed_app = 31;
             $user->update();
@@ -95,6 +96,10 @@ class HomeController extends Controller
                
 
                 sendEmailAutomatically();
+
+                if ($company_id == 16731){
+                    return view('TSP.dashboard_tsp')->with('data', $data);
+                }
         
                 return view('dashboard')->with('data', $data);
             }
