@@ -25,7 +25,7 @@
         <!-- ============================================================== -->
 
         <div class="content-page content_background">
-            @include('layouts._flash_message')
+            {{-- @include('layouts._flash_message') --}}
             {{-- content --}}
             @yield('content')
             <!-- content -->

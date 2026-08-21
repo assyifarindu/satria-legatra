@@ -10,6 +10,8 @@ class TspRequestDocument extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $connection = 'legatra';
+
     protected $table = 'tsp_request_documents';
 
     protected $fillable = [
