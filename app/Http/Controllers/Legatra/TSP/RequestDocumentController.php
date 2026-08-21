@@ -9,11 +9,13 @@ use App\Models\Table\TspRequestDocumentPic;
 use App\Models\Table\TspRequestDocumentCustomer;
 use App\Models\Table\TspRequestDocumentCustomerPic;
 use App\Models\Table\TspRequestStatus;
+use App\Models\Table\TspRequestDocumentHistory;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use RealRashid\SweetAlert\Facades\Alert;
 
 class RequestDocumentController extends Controller
 {
@@ -578,7 +580,7 @@ class RequestDocumentController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $db::beginTransaction();
+        $db->beginTransaction();
 
         try {
 
@@ -722,7 +724,7 @@ class RequestDocumentController extends Controller
             }
 
 
-            $db::commit();
+            $db->commit();
 
 
             /* RESPONSE */
@@ -734,7 +736,7 @@ class RequestDocumentController extends Controller
         } catch (\Throwable $e) {
             dd($e);
 
-            $db::rollBack();
+            $db->rollBack();
 
             report($e);
 

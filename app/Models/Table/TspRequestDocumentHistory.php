@@ -14,6 +14,8 @@ class TspRequestDocumentHistory extends Model
 
     protected $table = 'tsp_request_document_histories';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'request_document_id',
         'stage_id',
