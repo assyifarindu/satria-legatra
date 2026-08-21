@@ -35,6 +35,12 @@ class HomeController extends Controller
     {
         try{
 
+            $user = Auth::user();
+
+            if ($user->companyid == '16731') {
+                return view('tsp.dashboard.index');
+            }
+
             $companies = DB::connection('legatra')->table('companies')
                 ->select('name', 'short_name')
                 ->get();
