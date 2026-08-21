@@ -65,20 +65,34 @@ class RequestDocumentController extends Controller
             $recordsTotal = TspRequestDocument::count();
 
             // 3. Inisialisasi Query Base
-            $query = TspRequestDocument::select(
-                'id', 'stage_id', 'substage_id', 'status_id', 
-                'document_number', 'title', 'contract_type', 
-                'requester_id', 'potential_amount', 'sign_status', 
-                'is_project', 'created_at', 'updated_at'
-            );
+            $query = TspRequestDocument::leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
+                    ->leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
+                    ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
+                    ->leftJoin('satria.users', 'satria_legatra.tsp_request_documents.requester_id', '=', 'satria.users.id')
+                    ->select(
+                        'satria_legatra.tsp_request_documents.id',
+                        'satria_legatra.tsp_request_documents.stage_id',
+                        'satria_legatra.tsp_request_documents.substage_id',
+                        'satria_legatra.tsp_request_documents.status_id',
+                        'satria_legatra.tsp_request_status.status as status',
+                        'satria_legatra.tsp_request_documents.document_number',
+                        'satria_legatra.tsp_request_documents.title',
+                        'satria_legatra.tsp_request_documents.contract_type',
+                        'satria.users.name as requester',
+                        'satria_legatra.tsp_request_documents.potential_amount',
+                        'satria_legatra.tsp_request_documents.sign_status',
+                        'satria_legatra.tsp_request_documents.is_project',
+                        'satria_legatra.tsp_request_documents.created_at',
+                        'satria_legatra.tsp_request_documents.updated_at'
+                    );
 
             // 4. Filtering Search
             if (!empty($searchValue)) {
                 $query->where(function($q) use ($searchValue) {
-                    $q->where('document_number', 'like', '%' . $searchValue . '%')
-                    ->orWhere('title', 'like', '%' . $searchValue . '%')
-                    ->orWhere('contract_type', 'like', '%' . $searchValue . '%')
-                    ->orWhere('requester_id', 'like', '%' . $searchValue . '%');
+                    $q->where('satria_legatra.tsp_request_documents.document_number', 'like', '%' . $searchValue . '%')
+                    ->orWhere('satria_legatra.tsp_request_documents.title', 'like', '%' . $searchValue . '%')
+                    ->orWhere('satria_legatra.tsp_request_documents.contract_type', 'like', '%' . $searchValue . '%')
+                    ->orWhere('satria.users.name', 'like', '%' . $searchValue . '%');
                 });
             }
 
@@ -90,6 +104,24 @@ class RequestDocumentController extends Controller
                         ->skip($start)
                         ->take($length)
                         ->get();
+
+            // 7. Mapping data untuk response
+            $data = $data->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'stage_id' => $item->stage_id,
+                    'substage_id' => $item->substage_id,
+                    'status_id' => $item->status_id,
+                    'status' => $item->status ?? '-',
+                    'document_number' => $item->document_number ?? '-',
+                    'title' => $item->title ?? '-',
+                    'contract_type' => $item->contract_type ?? '-',
+                    'requester' => $item->requester ?? '-',
+                    'potential_amount' => $item->potential_amount ?? '-',
+                    'sign_status' => $item->sign_status ?? '-',
+                    'project_category' => $item->is_project == null ? '-' : ($item->is_project ? 'Project' : 'Non-Project')
+                ];
+            });
                         
             return response()->json([
                 'draw'            => (int) $draw,
