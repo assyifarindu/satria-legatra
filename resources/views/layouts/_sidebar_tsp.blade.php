@@ -23,16 +23,14 @@
                     </li>
                 @endif
 
-                @if (PermissionActionMenu('license') == true ||
-                        PermissionActionMenu('contract') == true ||
-                        PermissionActionMenu('haki') == true)
-                    <li>
-                        <a href="{{ route('tsp.request-document.index') }}">
-                            <i class="fe-file-plus"></i>
-                            <span>Request Document </span>
-                        </a>
-                    </li>
-                @endif
+                {{-- @if (PermissionActionMenu('license') == true || PermissionActionMenu('contract') == true || PermissionActionMenu('haki') == true) --}}
+                <li>
+                    <a href="{{ route('tsp.request-document.index') }}">
+                        <i class="fe-file-plus"></i>
+                        <span>Request Document </span>
+                    </a>
+                </li>
+                {{-- @endif --}}
 
 
 
