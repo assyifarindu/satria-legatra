@@ -244,6 +244,7 @@ class RequestDocumentController extends Controller
      */
      public function store(Request $request)
     {
+        $db = DB::connection('legatra');
         $action = $request->input('action');
 
         /* VALIDASI ACTION*/
@@ -545,15 +546,11 @@ class RequestDocumentController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        DB::beginTransaction();
+        $db::beginTransaction();
 
         try {
 
-            /*
-            |--------------------------------------------------------------------------
-            | CREATE REQUEST DOCUMENT
-            |--------------------------------------------------------------------------
-            */
+            /* CREATE REQUEST DOCUMENT */
 
             $requestDocument = TspRequestDocument::create([
                 'stage_id' => 1,
@@ -566,9 +563,7 @@ class RequestDocumentController extends Controller
                 'is_project' =>  $validated['project_category'] ?? null,
                 'sow' => $validated['sow'] ?? null,
                 'transaction_procedure' => $validated['transaction_procedure'] ?? null,
-                'kpi' =>$validated['kpi'] ?? null,
-
-               
+                'kpi' =>$validated['kpi'] ?? null,   
             ]);
 
             // CREATE PIC
@@ -577,20 +572,15 @@ class RequestDocumentController extends Controller
             ) {
                 TspRequestDocumentPic::create([
 
-                    'request_document_id' =>
-                        $requestDocument->id,
+                    'request_document_id' => $requestDocument->id,
 
-                    'name' =>
-                        $validated['pic_name'] ?? null,
+                    'name' => $validated['pic_name'] ?? null,
 
-                    'position' =>
-                        $validated['pic_position'] ?? null,
+                    'position' => $validated['pic_position'] ?? null,
 
-                    'email' =>
-                        $validated['pic_email'] ?? null,
+                    'email' => $validated['pic_email'] ?? null,
 
-                    'phone' =>
-                        $validated['pic_phone'] ?? null,
+                    'phone' => $validated['pic_phone'] ?? null,
                 ]);
             
             }
@@ -604,15 +594,14 @@ class RequestDocumentController extends Controller
                     'request_document_id' => $requestDocument->id,
                     'name' => $validated['customer_name'] ?? null,
 
-                    'customer_nib' => $validated['customer_nib'] ?? null,
+                    'nib' => $validated['customer_nib'] ?? null,
 
-                    'customer_npwp' => $validated['customer_npwp'] ?? null,
+                    'npwp' => $validated['customer_npwp'] ?? null,
 
-                    'customer_address' => $validated['customer_address'] ?? null,
+                    'address' => $validated['customer_address'] ?? null,
+                    'postal_code' => $validated['customer_postal_code'] ?? null,
 
-                    'customer_postal_code' => $validated['customer_postal_code'] ?? null,
-
-                    'customer_email' =>$validated['customer_email'] ?? null,
+                    'email' =>$validated['customer_email'] ?? null,
                 ]);
             
             }
@@ -626,20 +615,14 @@ class RequestDocumentController extends Controller
 
                 TspRequestDocumentCustomerPic::create([
 
-                    'request_document_customer_id' =>
-                        $requestDocumentCustomer->id,
+                    'request_document_customer_id' => $requestDocumentCustomer->id,
     
-                    'customer_pic_name' =>
-                        $validated['customer_pic_name'] ?? null,
+                    'name' => $validated['customer_pic_name'] ?? null,
 
-                    'customer_pic_position' =>
-                        $validated['customer_pic_position'] ?? null,
+                    'position' => $validated['customer_pic_position'] ?? null,
 
-                    'customer_pic_email' =>
-                        $validated['customer_pic_email'] ?? null,
-
-                    'customer_pic_phone' =>
-                        $validated['customer_pic_phone'] ?? null,
+                    'email' => $validated['customer_pic_email'] ?? null,
+                    'phone' => $validated['customer_pic_phone'] ?? null,
                 ]);
             }
 
@@ -647,7 +630,6 @@ class RequestDocumentController extends Controller
 
             $draftContractPath = null;
             $quotationPath = null;
-
 
             if ($request->hasFile('draft_contract')) {
 
@@ -659,7 +641,6 @@ class RequestDocumentController extends Controller
                     );
             }
 
-
             if ($request->hasFile('quotation')) {
 
                 $quotationPath = $request
@@ -669,10 +650,6 @@ class RequestDocumentController extends Controller
                         'public'
                     );
             }
-
-             /*
-                | Draft Contract
-                */
 
             if ($request->hasFile('draft_contract')) {
                 TspRequestDocumentFile::create([
@@ -692,38 +669,44 @@ class RequestDocumentController extends Controller
                 ]);
             }
 
+            if ($action === 'draft') {
+                TspRequestDocumentHistory::create([
+                    'request_document_id' => $requestDocument->id,
+                    'stage_id' => 1,
+                    'status_id' => 1, 
+                    'action' => 'Create Draft',
+                    'created_by' => Auth::id(),
+                    'created_at' => now(),
+                ]);
+            }else if ($action === 'submit') {
+                TspRequestDocumentHistory::create([
+                    'request_document_id' => $requestDocument->id,
+                    'stage_id' => 1,
+                    'status_id' => 2, 
+                    'action' => 'Submit',
+                    'created_by' => Auth::id(),
+                    'created_at' => now(),
+                ]);
+            }
 
-            DB::commit();
+
+            $db::commit();
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | RESPONSE
-            |--------------------------------------------------------------------------
-            */
-
+            /* RESPONSE */
+            Alert::success('Data Saved Successfully', 'Success Message');
             return redirect()
                 ->route('tsp.request-document')
-                ->with(
-                    'success',
-                    $action === 'draft'
-                        ? 'Request document berhasil disimpan sebagai draft.'
-                        : 'Request document berhasil disubmit.'
-                );
+                ->with('success', $action === 'draft' ? 'Request document berhasil disimpan sebagai draft.' : 'Request document berhasil disubmit.');
 
         } catch (\Throwable $e) {
             dd($e);
 
-            DB::rollBack();
+            $db::rollBack();
 
             report($e);
 
-            return back()
-                ->withInput()
-                ->with(
-                    'error',
-                    'Terjadi kesalahan saat menyimpan request document.'
-                );
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan request document.');
         }
     }
 }
