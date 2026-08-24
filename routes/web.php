@@ -301,6 +301,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'index'])->name('tsp.request-document');
     Route::get('/tsp/request-document/data', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getRequestDocuments'])->name('tsp.request-document.data');
     Route::get('/tsp/request-document/create', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showCreate'])->name('tsp.request-document.create');
+    Route::get('/tsp/request-document/edit/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showEdit'])->name('tsp.request-document.showEdit');
+    Route::put('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'edit'])->name('tsp.request-document.edit');
+    Route::get('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDetail'])->name('tsp.request-document.showDetail');
+    Route::get('/tsp/request-document/data/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getDetail'])->name('tsp.request-document.detail');
+
+
+
     Route::get('/tsp/customers', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomers'])->name('tsp.customers');
     Route::get('/tsp/customers/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomerById'])->name('tsp.customers.by-id');
     Route::post('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'store'])->name('tsp.request-document.store');

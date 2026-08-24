@@ -68,8 +68,7 @@
                 destroy: true,
                 scrollX: true,
                 ajax: `{{ url('tsp/request-document/data') }}`,
-                columns: [
-                    {
+                columns: [{
                         data: null,
                         orderable: false,
                         sortable: false,
@@ -77,7 +76,44 @@
                     },
                     {
                         data: 'status',
-                        name: 'status'
+                        name: 'status',
+                        render: function(data, type, row) {
+                            $status = row.status_id;
+                            if (row.is_cancel) {
+                                return '<span class="badge bg-danger">Cancel</span>';
+                            }
+
+                            switch (parseInt($status)) {
+                                case 1:
+                                    return '<span class="badge bg-warning">Draft</span>';
+                                case 2:
+                                    return '<span class="badge bg-primary">Submitted</span>';
+                                case 3:
+                                    return '<span class="badge bg-primary">Cancel</span>';
+                                case 4:
+                                    return '<span class="badge bg-primary">Decline</span>';
+                                case 5:
+                                    return '<span class="badge bg-primary">Drafting</span>';
+                                case 6:
+                                    return '<span class="badge bg-primary">User Review</span>';
+                                case 7:
+                                    return '<span class="badge bg-primary">Verified By User</span>';
+                                case 8:
+                                    return '<span class="badge bg-primary">Committee Review</span>';
+                                case 9:
+                                    return '<span class="badge bg-primary">Verified By Committee</span>';
+                                case 10:
+                                    return '<span class="badge bg-primary">Need Revision</span>';
+                                case 11:
+                                    return '<span class="badge bg-primary">Final Check</span>';
+                                case 12:
+                                    return '<span class="badge bg-primary">Fully Approved</span>';
+                                case 13:
+                                    return '<span class="badge bg-success">Cleared for Delivery</span>';
+                                default:
+                                    return '-';
+                            }
+                        }
                     },
                     {
                         data: 'document_number',
@@ -109,13 +145,35 @@
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row) {
+                            let editUrl = "{{ url('tsp/request-document') }}/edit/" + row.id;
+                            let viewUrl = "{{ url('tsp/request-document') }}/" + row.id;
+
                             return `
-                                <a href="/tsp/request-document/${row.id}/edit" class="btn btn-sm btn-primary">Edit</a>
-                                <form action="/tsp/request-document/${row.id}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
-                                </form>
+                                ${ (row.status_id == 1 || row.status_id == 2) ? `
+                                        <a href="${editUrl}"
+                                            class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                            title="Edit" tabindex="0" data-plugin="tippy"
+                                            data-tippy-placement="top"><i class="fas fa-pen"></i></a>
+                                    ` : '' }
+                                <a href="${viewUrl}"
+                                    class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                    title="View Detail" tabindex="0" data-plugin="tippy"
+                                    data-tippy-placement="top"><i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#"
+                                    class="btn btn-light btn-xs d-inline waves-effect waves-light history_process"
+                                    title="History Process" tabindex="0" data-plugin="tippy"
+                                    data-tippy-placement="top" data-id="${row.id}"><i
+                                    class="mdi mdi-book-clock-outline"></i>
+                                </a>
+                                ${ row.status_id == 1 || row.status_id == 2 ? `
+                                        <a href="#"
+                                            class="btn btn-danger btn-xs d-inline waves-effect waves-light btn_cancel"
+                                            title="Cancel Request" tabindex="0" data-plugin="tippy"
+                                            data-tippy-placement="top" data-id="${row.id}"
+                                            data-bs-toggle="modal" data-bs-target="#cancel-modal"><i
+                                                class="fas fa-times"></i></a>
+                                    ` : '' }
                             `;
                         }
                     },

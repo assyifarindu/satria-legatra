@@ -32,5 +32,14 @@ class TspRequestDocumentCustomer extends Model
         return $this->belongsTo(TspRequestDocument::class, 'request_document_id');
     }
 
+    public function customerPics()
+    {
+        return $this->hasMany(
+            TspRequestDocumentCustomerPic::class,
+            'request_document_customer_id',
+            'id'
+        );
+    }
+
 
 }

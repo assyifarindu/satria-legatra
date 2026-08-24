@@ -27,44 +27,21 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="header-title">Form Create Request Document</h4>
+                            <h4 class="header-title">Form Update Request Document</h4>
                             <br><br>
-                            {{-- <form id="form-request-document" class="d-flex flex-column gap-2">
-                                @csrf
-                                <div>
-                                    <label for="title" class="fw-bold d-block">Title </label>
-                                    <input type="text" name="title" id="title" value="{{ old('title') }}"
-                                        class="form-control @error('title') is-invalid @enderror">
-
-                                    @error('title')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
-                                <div class="col-12">
-                                    <label for="customer_name" class="fw-bold d-block">Customer Name </label>
-                                    <select name="customer_id" class="form-select"></select>
-                                </div>
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                                        Save as Draft
-                                    </button>
-                                    <button type="submit" name="action" value="submit" class="btn btn-primary">
-                                        Submit
-                                    </button>
-                                </div>
-                            </form> --}}
                             <form id="form-request-document" class="d-flex flex-column gap-2"
-                                action="{{ url('tsp/request-document') }}" method="POST" enctype="multipart/form-data">
+                                action="{{ route('tsp.request-document.edit', $requestDocument->id) }}" method="POST"
+                                enctype="multipart/form-data">
                                 @csrf
+                                @method('PUT')
 
                                 <div>
                                     <label for="title" class="fw-bold d-block">
                                         Title
                                     </label>
 
-                                    <input type="text" name="title" id="title" value="{{ old('title') }}"
+                                    <input type="text" name="title" id="title"
+                                        value="{{ old('title', $requestDocument->title) }}"
                                         class="form-control @error('title') is-invalid @enderror" placeholder="Title">
 
                                     @error('title')
@@ -82,9 +59,14 @@
                                     <select name="customer_id"
                                         class="form-select @error('customer_id') is-invalid @enderror">
                                         <option value="">Select Customer</option>
+                                        @if ($requestDocument->customer)
+                                            <option value="{{ $requestDocument->customer->id }}" selected>
+                                                {{ $requestDocument->customer->name }}
+                                            </option>
+                                        @endif
                                     </select>
                                     <input type="text" name="customer_name" id="customer_name"
-                                        value="{{ old('customer_name') }}"
+                                        value="{{ old('customer_name', $requestDocument->customer->name ?? '') }}"
                                         class="form-control d-none @error('customer_name') is-invalid @enderror"
                                         placeholder="Customer Name" readonly>
 
@@ -102,7 +84,7 @@
                                         </label>
 
                                         <input type="text" name="customer_nib" id="customer_nib"
-                                            value="{{ old('customer_nib') }}"
+                                            value="{{ old('customer_nib', $requestDocument->customer->nib ?? '') }}"
                                             class="form-control @error('customer_nib') is-invalid @enderror"
                                             placeholder="Customer NIB" readonly>
 
@@ -119,7 +101,7 @@
                                         </label>
 
                                         <input type="text" name="customer_npwp" id="customer_npwp"
-                                            value="{{ old('customer_npwp') }}"
+                                            value="{{ old('customer_npwp', $requestDocument->customer->npwp ?? '') }}"
                                             class="form-control @error('customer_npwp') is-invalid @enderror"
                                             placeholder="Customer NPWP" readonly>
 
@@ -137,7 +119,7 @@
                                     </label>
 
                                     <input type="text" name="customer_address" id="customer_address"
-                                        value="{{ old('customer_address') }}"
+                                        value="{{ old('customer_address', $requestDocument->customer->address ?? '') }}"
                                         class="form-control @error('customer_address') is-invalid @enderror"
                                         placeholder="Customer Address" readonly>
 
@@ -155,7 +137,7 @@
                                         </label>
 
                                         <input type="text" name="customer_postal_code" id="customer_postal_code"
-                                            value="{{ old('customer_postal_code') }}"
+                                            value="{{ old('customer_postal_code', $requestDocument->customer->postal_code ?? '') }}"
                                             class="form-control @error('customer_postal_code') is-invalid @enderror"
                                             placeholder="Customer Postal Code" readonly>
 
@@ -172,7 +154,7 @@
                                         </label>
 
                                         <input type="text" name="customer_email" id="customer_email"
-                                            value="{{ old('customer_email') }}"
+                                            value="{{ old('customer_email', $requestDocument->customer->email ?? '') }}"
                                             class="form-control @error('customer_email') is-invalid @enderror"
                                             placeholder="Customer Email" readonly>
 
@@ -185,12 +167,21 @@
                                 </div>
 
                                 <div>
+                                    @php
+                                        $customer = $requestDocument->customer ?? null;
+
+                                        $customerPic = null;
+
+                                        if ($customer && $customer->customerPics->isNotEmpty()) {
+                                            $customerPic = $customer->customerPics->first();
+                                        }
+                                    @endphp
                                     <label for="customer_pic_name" class="fw-bold d-block">
                                         Customer PIC Name
                                     </label>
 
                                     <input type="text" name="customer_pic_name" id="customer_pic_name"
-                                        value="{{ old('customer_pic_name') }}"
+                                        value="{{ old('customer_pic_name', $customerPic->name ?? '') }}"
                                         class="form-control @error('customer_pic_name') is-invalid @enderror"
                                         placeholder="Customer PIC Name">
 
@@ -207,7 +198,7 @@
                                     </label>
 
                                     <input type="text" name="customer_pic_position" id="customer_pic_position"
-                                        value="{{ old('customer_pic_position') }}"
+                                        value="{{ old('customer_pic_position', $customerPic->position ?? '') }}"
                                         class="form-control @error('customer_pic_position') is-invalid @enderror"
                                         placeholder="Customer PIC Position">
                                     @error('customer_pic_position')
@@ -224,7 +215,7 @@
                                         </label>
 
                                         <input type="text" name="customer_pic_email" id="customer_pic_email"
-                                            value="{{ old('customer_pic_email') }}"
+                                            value="{{ old('customer_pic_email', $customerPic->email ?? '') }}"
                                             class="form-control @error('customer_pic_email') is-invalid @enderror"
                                             placeholder="Customer PIC Email">
                                         @error('customer_pic_email')
@@ -240,7 +231,7 @@
                                         </label>
 
                                         <input type="text" name="customer_pic_phone" id="customer_pic_phone"
-                                            value="{{ old('customer_pic_phone') }}"
+                                            value="{{ old('customer_pic_phone', $customerPic->phone ?? '') }}"
                                             class="form-control @error('customer_pic_phone') is-invalid @enderror"
                                             placeholder="Customer PIC Phone">
 
@@ -260,13 +251,19 @@
                                     <select name="contract_type"
                                         class="form-select @error('contract_type') is-invalid @enderror">
                                         <option value="">Select Contract Type</option>
-                                        <option value="Part" {{ old('contract_type') == 'Part' ? 'selected' : '' }}>Part
+                                        <option value="Part"
+                                            {{ old('contract_type', $requestDocument->contract_type) == 'Part' ? 'selected' : '' }}>
+                                            Part
                                         </option>
-                                        <option value="Service" {{ old('contract_type') == 'Service' ? 'selected' : '' }}>
+                                        <option value="Service"
+                                            {{ old('contract_type', $requestDocument->contract_type) == 'Service' ? 'selected' : '' }}>
                                             Service</option>
-                                        <option value="Reman" {{ old('contract_type') == 'Reman' ? 'selected' : '' }}>
+                                        <option value="Reman"
+                                            {{ old('contract_type', $requestDocument->contract_type) == 'Reman' ? 'selected' : '' }}>
                                             Reman</option>
-                                        <option value="Unit" {{ old('contract_type') == 'Unit' ? 'selected' : '' }}>Unit
+                                        <option value="Unit"
+                                            {{ old('contract_type', $requestDocument->contract_type) == 'Unit' ? 'selected' : '' }}>
+                                            Unit
                                         </option>
                                     </select>
 
@@ -286,7 +283,7 @@
                                         <span class="input-group-text">Rp</span>
 
                                         <input type="text" id="potential_amount_display"
-                                            value="{{ old('potential_amount') ? number_format((int) old('potential_amount'), 0, ',', '.') : '' }}"
+                                            value="{{ old('potential_amount', $requestDocument->potential_amount) ? number_format((int) old('potential_amount', $requestDocument->potential_amount), 0, ',', '.') : '' }}"
                                             class="form-control @error('potential_amount') is-invalid @enderror"
                                             placeholder="Potential Amount" inputmode="numeric"
                                             oninput="
@@ -295,7 +292,7 @@
                                             ">
 
                                         <input type="hidden" name="potential_amount" id="potential_amount"
-                                            value="{{ old('potential_amount') }}">
+                                            value="{{ old('potential_amount', $requestDocument->potential_amount) }}">
                                     </div>
 
                                     @error('potential_amount')
@@ -314,13 +311,16 @@
                                         class="form-select @error('sign_status') is-invalid @enderror">
                                         <option value="">Select Sign Status</option>
                                         <option value="Not Signed"
-                                            {{ old('sign_status') == 'Not Signed' ? 'selected' : '' }}>Not Signed
+                                            {{ old('sign_status', $requestDocument->sign_status) == 'Not Signed' ? 'selected' : '' }}>
+                                            Not Signed
                                         </option>
                                         <option value="Partial Signed"
-                                            {{ old('sign_status') == 'Partial Signed' ? 'selected' : '' }}>Partial Signed
+                                            {{ old('sign_status', $requestDocument->sign_status) == 'Partial Signed' ? 'selected' : '' }}>
+                                            Partial Signed
                                         </option>
                                         <option value="Fully Signed"
-                                            {{ old('sign_status') == 'Fully Signed' ? 'selected' : '' }}>Fully Signed
+                                            {{ old('sign_status', $requestDocument->sign_status) == 'Fully Signed' ? 'selected' : '' }}>
+                                            Fully Signed
                                         </option>
                                     </select>
 
@@ -339,9 +339,11 @@
                                     <select name="is_project"
                                         class="form-select @error('is_project') is-invalid @enderror">
                                         <option value="">Select Project Category</option>
-                                        <option value="1" {{ old('is_project') == '1' ? 'selected' : '' }}>
+                                        <option value="1"
+                                            {{ old('is_project', $requestDocument->is_project) == '1' ? 'selected' : '' }}>
                                             Project</option>
-                                        <option value="0" {{ old('is_project') == '0' ? 'selected' : '' }}>
+                                        <option value="0"
+                                            {{ old('is_project', $requestDocument->is_project) == '0' ? 'selected' : '' }}>
                                             Non-Project
                                         </option>
                                     </select>
@@ -358,8 +360,8 @@
                                         SOW
                                     </label>
 
-                                    <textarea name="sow" id="sow" value="{{ old('sow') }}"
-                                        class="form-control @error('sow') is-invalid @enderror" placeholder="SOW">{{ old('sow') }}</textarea>
+                                    <textarea name="sow" id="sow" value="{{ old('sow', $requestDocument->sow) }}"
+                                        class="form-control @error('sow') is-invalid @enderror" placeholder="SOW">{{ old('sow', $requestDocument->sow) }}</textarea>
 
                                     @error('sow')
                                         <div class="invalid-feedback">
@@ -373,8 +375,9 @@
                                         Transaction Procedure
                                     </label>
 
-                                    <textarea name="transaction_procedure" id="transaction_procedure" value="{{ old('transaction_procedure') }}"
-                                        class="form-control @error('transaction_procedure') is-invalid @enderror" placeholder="Transaction Procedure">{{ old('transaction_procedure') }}</textarea>
+                                    <textarea name="transaction_procedure" id="transaction_procedure"
+                                        value="{{ old('transaction_procedure', $requestDocument->transaction_procedure) }}"
+                                        class="form-control @error('transaction_procedure') is-invalid @enderror" placeholder="Transaction Procedure">{{ old('transaction_procedure', $requestDocument->transaction_procedure) }}</textarea>
 
                                     @error('transaction_procedure')
                                         <div class="invalid-feedback">
@@ -388,8 +391,8 @@
                                         KPI
                                     </label>
 
-                                    <textarea name="kpi" id="kpi" value="{{ old('kpi') }}"
-                                        class="form-control @error('kpi') is-invalid @enderror" placeholder="KPI">{{ old('kpi') }}</textarea>
+                                    <textarea name="kpi" id="kpi" value="{{ old('kpi', $requestDocument->kpi) }}"
+                                        class="form-control @error('kpi') is-invalid @enderror" placeholder="KPI">{{ old('kpi', $requestDocument->kpi) }}</textarea>
 
                                     @error('kpi')
                                         <div class="invalid-feedback">
@@ -398,12 +401,23 @@
                                     @enderror
                                 </div>
 
+                                {{-- @php
+                                    $pic = $requestDocument->pics ?? null;
+
+                                    $pics = null;
+
+                                    if ($pic && $pic->isNotEmpty()) {
+                                        $pics = $pic->first();
+                                    }
+                                @endphp --}}
+
                                 <div>
                                     <label for="pic_name" class="fw-bold d-block">
                                         PIC Name
                                     </label>
 
-                                    <input type="text" name="pic_name" id="pic_name" value="{{ old('pic_name') }}"
+                                    <input type="text" name="pic_name" id="pic_name"
+                                        value="{{ old('pic_name', $requestDocument->pics->name ?? '') }}"
                                         class="form-control @error('pic_name') is-invalid @enderror"
                                         placeholder="PIC Name">
 
@@ -420,7 +434,7 @@
                                     </label>
 
                                     <input type="text" name="pic_position" id="pic_position"
-                                        value="{{ old('pic_position') }}"
+                                        value="{{ old('pic_position', $requestDocument->pics->position ?? '') }}"
                                         class="form-control @error('pic_position') is-invalid @enderror"
                                         placeholder="PIC Position">
                                     @error('pic_position')
@@ -437,7 +451,7 @@
                                         </label>
 
                                         <input type="text" name="pic_email" id="pic_email"
-                                            value="{{ old('pic_email') }}"
+                                            value="{{ old('pic_email', $requestDocument->pics->email ?? '') }}"
                                             class="form-control @error('pic_email') is-invalid @enderror"
                                             placeholder="PIC Email">
                                         @error('pic_email')
@@ -453,7 +467,7 @@
                                         </label>
 
                                         <input type="text" name="pic_phone" id="pic_phone"
-                                            value="{{ old('pic_phone') }}"
+                                            value="{{ old('pic_phone', $requestDocument->pics->phone ?? '') }}"
                                             class="form-control @error('pic_phone') is-invalid @enderror"
                                             placeholder="PIC Phone">
 
@@ -466,15 +480,16 @@
                                 </div>
 
                                 <div class="alert alert-warning alert-dismissible fade show mb-0 py-2" role="alert">
-                                    Untuk attachment Draft Contract, file harus diawali dengan prefix (Draft_Contract_).
+                                    Untuk attachment Draft Contract, file harus diawali dengan prefix (Draf_Contract_).
                                 </div>
 
                                 <div>
-                                    <label for="draft_contract" class="form-label">Draft Contract</label>
+                                    <label for="draft_contract" class="form-label">Draf Contract</label>
                                     <input type="file"
                                         class="form-control @error('draft_contract') is-invalid @enderror "
                                         name="draft_contract" id="draft_contract" accept=".pdf"
-                                        value="{{ old('draft_contract') }}" placeholder="Draft Contract">
+                                        value="{{ old('draft_contract', $requestDocument->draft_contract) }}"
+                                        placeholder="Draft Contract">
                                     @error('draft_contract')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -489,7 +504,8 @@
                                 <div>
                                     <label for="quotation" class="form-label">Quotation</label>
                                     <input type="file" class="form-control @error('quotation') is-invalid @enderror "
-                                        name="quotation" id="quotation" accept=".pdf" value="{{ old('quotation') }}"
+                                        name="quotation" id="quotation" accept=".pdf"
+                                        value="{{ old('quotation', $requestDocument->quotation) }}"
                                         placeholder="Quotation">
                                     @error('quotation')
                                         <div class="invalid-feedback">
@@ -501,9 +517,12 @@
 
 
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="action_type" value="draft" class="btn btn-secondary">
-                                        Save as Draft
-                                    </button>
+                                    @if ($requestDocument->status_id == 1)
+                                        <button type="submit" name="action_type" value="draft"
+                                            class="btn btn-secondary">
+                                            Save as Draft
+                                        </button>
+                                    @endif
 
                                     <button type="submit" name="action_type" value="submit" class="btn btn-primary">
                                         Submit
@@ -572,7 +591,7 @@
                     dataType: 'json',
                     data: function(params) {
                         return {
-                            q: params.term // search term
+                            q: params.term
                         };
                     },
                     processResults: function(response) {

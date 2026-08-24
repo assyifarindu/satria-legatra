@@ -65,7 +65,7 @@ class TspRequestDocument extends Model
 
     public function pics()
     {
-        return $this->hasMany(TspRequestDocumentPic::class, 'request_document_id');
+        return $this->hasOne(TspRequestDocumentPic::class, 'request_document_id');
     }
 
     public function customer()
