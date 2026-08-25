@@ -1211,4 +1211,102 @@ class RequestDocumentController extends Controller
                 ->with('error','Data Request Document tidak ditemukan.');
         }
     }
+
+    // public function cancelConfirmation($id)
+    // {
+    //     $requestDocument = TspRequestDocument::findOrFail($id);
+
+    //     return view('tsp.request-document.modal.cancel-confirmation',
+    //         compact('requestDocument')
+    //     );
+    // }
+
+    public function cancelConfirmation($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view('tsp.request-document.modal.cancel-confirmation',
+            compact('requestDocument')
+        );
+    }
+
+    public function cancel($id)
+    {
+        try {
+
+            $db = DB::connection('legatra')->transaction(function () use ($id) {
+
+                $requestDocument =
+                    TspRequestDocument::findOrFail($id);
+
+                /*UPDATE REQUEST DOCUMENT*/
+
+                $requestDocument->update([
+
+                    'status_id' => 3,
+
+                    'stage_id' => 1,
+
+                    'substage_id' => null,
+
+                    'updated_by' => Auth::id(),
+
+                ]);
+
+
+                /*INSERT HISTORY*/
+
+                TspRequestDocumentHistory::create([
+
+                    'request_document_id' =>
+                        $requestDocument->id,
+
+                    'stage_id' =>
+                        1,
+
+                    'substage_id' =>
+                        null,
+
+                    'status_id' =>
+                        3,
+
+                    'action' =>
+                        'Cancel',
+
+                    'created_by' =>
+                        Auth::id(),
+
+                    'created_at' =>
+                        now(),
+
+                ]);
+
+            });
+
+            Alert::success('Request Document berhasil dibatalkan.', 'Success Message');
+            return response()->json([
+
+                'success' => true,
+
+                'message' =>
+                    'Request Document berhasil dibatalkan.',
+
+            ]);
+
+        } catch (\Throwable $e) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                    'Gagal membatalkan Request Document.',
+
+                'error' =>
+                    $e->getMessage(),
+
+            ], 500);
+
+        }
+    }
 }

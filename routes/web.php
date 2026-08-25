@@ -305,6 +305,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'edit'])->name('tsp.request-document.edit');
     Route::get('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDetail'])->name('tsp.request-document.showDetail');
     Route::get('/tsp/request-document/data/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getDetail'])->name('tsp.request-document.detail');
+    Route::get('/tsp/request-document/cancel-confirmation/{id}',[App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'cancelConfirmation'])->name('tsp.request-document.cancel-confirmation');
+    Route::post('/tsp/request-document/cancel/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'cancel'])->name('tsp.request-document.cancel');
 
 
 
