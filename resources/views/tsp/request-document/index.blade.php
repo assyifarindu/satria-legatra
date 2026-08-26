@@ -151,11 +151,11 @@
 
                             return `
                                 ${ (row.status_id == 1 || row.status_id == 2) ? `
-                                                                        <a href="${editUrl}"
-                                                                            class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
-                                                                            title="Edit" tabindex="0" data-plugin="tippy"
-                                                                            data-tippy-placement="top"><i class="fas fa-pen"></i></a>
-                                                                    ` : '' }
+                                                                            <a href="${editUrl}"
+                                                                                class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                                                                title="Edit" tabindex="0" data-plugin="tippy"
+                                                                                data-tippy-placement="top"><i class="fas fa-pen"></i></a>
+                                                                        ` : '' }
                                 <a href="${viewUrl}"
                                     class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
                                     title="View Detail" tabindex="0" data-plugin="tippy"
@@ -168,18 +168,18 @@
                                     class="mdi mdi-book-clock-outline"></i>
                                 </a>
                                 ${row.status_id == 1 || row.status_id == 2 ? `
-                                                                    <a href="javascript:void(0)"
-                                                                        class="btn btn-danger btn-xs d-inline waves-effect waves-light btn_cancel"
-                                                                        title="Cancel Request"
-                                                                        tabindex="0"
-                                                                        data-plugin="tippy"
-                                                                        data-tippy-placement="top"
-                                                                        data-id="${row.id}">
+                                                                        <a href="javascript:void(0)"
+                                                                            class="btn btn-danger btn-xs d-inline waves-effect waves-light btn_cancel"
+                                                                            title="Cancel Request"
+                                                                            tabindex="0"
+                                                                            data-plugin="tippy"
+                                                                            data-tippy-placement="top"
+                                                                            data-id="${row.id}">
 
-                                                                        <i class="fas fa-times"></i>
+                                                                            <i class="fas fa-times"></i>
 
-                                                                    </a>
-                                                                ` : ''}                            `;
+                                                                        </a>
+                                                                    ` : ''}                            `;
                         }
                     },
                 ]
@@ -290,6 +290,13 @@
                             .DataTable()
                             .ajax
                             .reload(null, false);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
 
 
                         // alert(response.message);

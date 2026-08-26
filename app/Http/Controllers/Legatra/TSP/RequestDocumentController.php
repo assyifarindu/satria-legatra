@@ -1212,15 +1212,6 @@ class RequestDocumentController extends Controller
         }
     }
 
-    // public function cancelConfirmation($id)
-    // {
-    //     $requestDocument = TspRequestDocument::findOrFail($id);
-
-    //     return view('tsp.request-document.modal.cancel-confirmation',
-    //         compact('requestDocument')
-    //     );
-    // }
-
     public function cancelConfirmation($id)
     {
         $requestDocument = TspRequestDocument::findOrFail($id);
@@ -1283,7 +1274,6 @@ class RequestDocumentController extends Controller
 
             });
 
-            Alert::success('Request Document berhasil dibatalkan.', 'Success Message');
             return response()->json([
 
                 'success' => true,
