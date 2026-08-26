@@ -635,11 +635,11 @@ class RequestDocumentController extends Controller
             }
 
 
-            $db->commit();
 
 
             /* RESPONSE */
             Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
             return redirect()
                 ->route('tsp.request-document')
                 ->with('success', $action === 'draft' ? 'Request document berhasil disimpan sebagai draft.' : 'Request document berhasil disubmit.');
@@ -869,309 +869,305 @@ class RequestDocumentController extends Controller
 
         $db = DB::connection('legatra');
 
+        $db->beginTransaction();
         try {
 
-            $db->transaction(function () use (
-                $request,
-                $validated,
-                $id,
-                $action
-            ) {
-                $requestDocument = TspRequestDocument::findOrFail($id);
+            $requestDocument = TspRequestDocument::findOrFail($id);
 
-                /* UPDATE REQUEST DOCUMENT */
+            /* UPDATE REQUEST DOCUMENT */
 
-                $requestDocument->update([
+            $requestDocument->update([
+                'stage_id' => 1,
+                'status_id' => $action === 'draft' ? 1 : 2,
+
+                'title' => $validated['title'],
+
+                'contract_type' => $validated['contract_type']
+                    ?? $requestDocument->contract_type,
+
+                'potential_amount' => $validated['potential_amount']
+                    ?? $requestDocument->potential_amount,
+
+                'sign_status' => $validated['sign_status']
+                    ?? $requestDocument->sign_status,
+
+                'is_project' => (bool) $validated['is_project']
+                    ?? $requestDocument->is_project,
+
+                'sow' => $validated['sow']
+                    ?? $requestDocument->sow,
+
+                'transaction_procedure' =>
+                $validated['transaction_procedure']
+                    ?? $requestDocument->transaction_procedure,
+
+                'kpi' => $validated['kpi']
+                    ?? $requestDocument->kpi,
+
+
+            ]);
+
+
+            // UPDATE PIC
+            $pic = TspRequestDocumentPic::updateOrCreate(
+                [
+                    'request_document_id' => $requestDocument->id,
+                ],
+                [
+                    'name' => $validated['pic_name'] ?? null,
+
+                    'position' => $validated['pic_position'] ?? null,
+
+                    'email' => $validated['pic_email'] ?? null,
+
+                    'phone' => $validated['pic_phone'] ?? null,
+                ]
+            );
+
+
+
+            /*  UPDATE CUSTOMER */
+
+            $customer = TspRequestDocumentCustomer::updateOrCreate(
+                [
+                    'request_document_id' => $requestDocument->id,
+                ],
+                [
+                    'name' => $validated['customer_name'] ?? null,
+
+                    'nib' => $validated['customer_nib'] ?? null,
+
+                    'npwp' => $validated['customer_npwp'] ?? null,
+
+                    'address' => $validated['customer_address'] ?? null,
+                    'postal_code' => $validated['customer_postal_code'] ?? null,
+
+                    'email' => $validated['customer_email'] ?? null,
+                ]
+            );
+
+
+
+            /*  UPDATE CUSTOMER PIC */
+
+            TspRequestDocumentCustomerPic::updateOrCreate(
+                [
+                    'request_document_customer_id' => $customer->id,
+                ],
+                [
+                    'name' => $validated['customer_pic_name'] ?? null,
+
+                    'position' => $validated['customer_pic_position'] ?? null,
+
+                    'email' => $validated['customer_pic_email'] ?? null,
+                    'phone' => $validated['customer_pic_phone'] ?? null,
+                ]
+            );
+
+
+
+            /*UPDATE DRAFT CONTRACT*/
+
+            if ($request->hasFile('draft_contract')) {
+
+                $file = $request->file('draft_contract');
+
+                $name = pathinfo(
+                    $file->getClientOriginalName(),
+                    PATHINFO_FILENAME
+                );
+
+                $fileName = $name
+                    . '-'
+                    . time()
+                    . '.'
+                    . $file->getClientOriginalExtension();
+
+                $file->move(
+                    public_path('upload/request_document'),
+                    $fileName
+                );
+
+                $filePath =
+                    'upload/request_document/' . $fileName;
+
+
+                $existingFile = TspRequestDocumentFile::where(
+                    'request_document_id',
+                    $requestDocument->id
+                )
+                    ->where(
+                        'document_type',
+                        'Draft Contract'
+                    )
+                    ->first();
+
+
+                if ($existingFile) {
+
+                    /*
+                    | Hapus file lama jika ada
+                    */
+
+                    if (
+                        $existingFile->file_path &&
+                        file_exists(
+                            public_path($existingFile->file_path)
+                        )
+                    ) {
+                        unlink(
+                            public_path(
+                                $existingFile->file_path
+                            )
+                        );
+                    }
+
+
+                    $existingFile->update([
+                        'name' =>
+                        $file->getClientOriginalName(),
+
+                        'file_path' =>
+                        $filePath,
+                    ]);
+                } else {
+
+                    TspRequestDocumentFile::create([
+                        'request_document_id' =>
+                        $requestDocument->id,
+
+                        'name' =>
+                        $file->getClientOriginalName(),
+
+                        'document_type' =>
+                        'Draft Contract',
+
+                        'file_path' =>
+                        $filePath,
+                    ]);
+                }
+            }
+
+
+            /*UPDATE QUOTATION*/
+
+            if ($request->hasFile('quotation')) {
+
+                $file = $request->file('quotation');
+
+                $name = pathinfo(
+                    $file->getClientOriginalName(),
+                    PATHINFO_FILENAME
+                );
+
+                $fileName = $name
+                    . '-'
+                    . time()
+                    . '.'
+                    . $file->getClientOriginalExtension();
+
+                $file->move(
+                    public_path('upload/request_document'),
+                    $fileName
+                );
+
+                $filePath =
+                    'upload/request_document/' . $fileName;
+
+
+                $existingFile = TspRequestDocumentFile::where(
+                    'request_document_id',
+                    $requestDocument->id
+                )
+                    ->where(
+                        'document_type',
+                        'Quotation'
+                    )
+                    ->first();
+
+
+                if ($existingFile) {
+
+                    if (
+                        $existingFile->file_path &&
+                        file_exists(
+                            public_path($existingFile->file_path)
+                        )
+                    ) {
+                        unlink(
+                            public_path(
+                                $existingFile->file_path
+                            )
+                        );
+                    }
+
+
+                    $existingFile->update([
+                        'name' =>
+                        $file->getClientOriginalName(),
+
+                        'file_path' =>
+                        $filePath,
+                    ]);
+                } else {
+
+                    TspRequestDocumentFile::create([
+                        'request_document_id' =>
+                        $requestDocument->id,
+
+                        'name' =>
+                        $file->getClientOriginalName(),
+
+                        'document_type' =>
+                        'Quotation',
+
+                        'file_path' =>
+                        $filePath,
+                    ]);
+                }
+            }
+
+
+            /*UPDATE HISTORY*/
+
+            if ($action === 'draft') {
+
+                TspRequestDocumentHistory::create([
+                    'request_document_id' =>
+                    $requestDocument->id,
+
                     'stage_id' => 1,
-                    'status_id' => $action === 'draft' ? 1 : 2,
+                    'substage_id' => null,
+                    'status_id' => 1,
+                    'action' => 'Update Draft',
+                    'created_by' => Auth::id(),
+                    'created_at' => now(),
+                ]);
+            } elseif ($action === 'submit') {
 
-                    'title' => $validated['title'],
+                TspRequestDocumentHistory::create([
+                    'request_document_id' =>
+                    $requestDocument->id,
 
-                    'contract_type' => $validated['contract_type']
-                        ?? $requestDocument->contract_type,
-
-                    'potential_amount' => $validated['potential_amount']
-                        ?? $requestDocument->potential_amount,
-
-                    'sign_status' => $validated['sign_status']
-                        ?? $requestDocument->sign_status,
-
-                    'is_project' => (bool) $validated['is_project']
-                        ?? $requestDocument->is_project,
-
-                    'sow' => $validated['sow']
-                        ?? $requestDocument->sow,
-
-                    'transaction_procedure' =>
-                    $validated['transaction_procedure']
-                        ?? $requestDocument->transaction_procedure,
-
-                    'kpi' => $validated['kpi']
-                        ?? $requestDocument->kpi,
-
-
+                    'stage_id' => 1,
+                    'substage_id' => null,
+                    'status_id' => 2,
+                    'action' => 'Submit',
+                    'created_by' => Auth::id(),
+                    'created_at' => now(),
                 ]);
 
-
-                // UPDATE PIC
-                $pic = TspRequestDocumentPic::updateOrCreate(
-                    [
-                        'request_document_id' => $requestDocument->id,
-                    ],
-                    [
-                        'name' => $validated['pic_name'] ?? null,
-
-                        'position' => $validated['pic_position'] ?? null,
-
-                        'email' => $validated['pic_email'] ?? null,
-
-                        'phone' => $validated['pic_phone'] ?? null,
-                    ]
+                /* SEND EMAIL NOTIFICATION TO PIC */
+                $detail_email = array(
+                    'title' => $requestDocument->title,
                 );
 
+                Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
+            }
 
-
-                /*  UPDATE CUSTOMER */
-
-                $customer = TspRequestDocumentCustomer::updateOrCreate(
-                    [
-                        'request_document_id' => $requestDocument->id,
-                    ],
-                    [
-                        'name' => $validated['customer_name'] ?? null,
-
-                        'nib' => $validated['customer_nib'] ?? null,
-
-                        'npwp' => $validated['customer_npwp'] ?? null,
-
-                        'address' => $validated['customer_address'] ?? null,
-                        'postal_code' => $validated['customer_postal_code'] ?? null,
-
-                        'email' => $validated['customer_email'] ?? null,
-                    ]
-                );
-
-
-
-                /*  UPDATE CUSTOMER PIC */
-
-                $customerPic = TspRequestDocumentCustomerPic::updateOrCreate(
-                    [
-                        'request_document_customer_id' => $customer->id,
-                    ],
-                    [
-                        'name' => $validated['customer_pic_name'] ?? null,
-
-                        'position' => $validated['customer_pic_position'] ?? null,
-
-                        'email' => $validated['customer_pic_email'] ?? null,
-                        'phone' => $validated['customer_pic_phone'] ?? null,
-                    ]
-                );
-
-
-
-                /*UPDATE DRAFT CONTRACT*/
-
-                if ($request->hasFile('draft_contract')) {
-
-                    $file = $request->file('draft_contract');
-
-                    $name = pathinfo(
-                        $file->getClientOriginalName(),
-                        PATHINFO_FILENAME
-                    );
-
-                    $fileName = $name
-                        . '-'
-                        . time()
-                        . '.'
-                        . $file->getClientOriginalExtension();
-
-                    $file->move(
-                        public_path('upload/request_document'),
-                        $fileName
-                    );
-
-                    $filePath =
-                        'upload/request_document/' . $fileName;
-
-
-                    $existingFile = TspRequestDocumentFile::where(
-                        'request_document_id',
-                        $requestDocument->id
-                    )
-                        ->where(
-                            'document_type',
-                            'Draft Contract'
-                        )
-                        ->first();
-
-
-                    if ($existingFile) {
-
-                        /*
-                        | Hapus file lama jika ada
-                        */
-
-                        if (
-                            $existingFile->file_path &&
-                            file_exists(
-                                public_path($existingFile->file_path)
-                            )
-                        ) {
-                            unlink(
-                                public_path(
-                                    $existingFile->file_path
-                                )
-                            );
-                        }
-
-
-                        $existingFile->update([
-                            'name' =>
-                            $file->getClientOriginalName(),
-
-                            'file_path' =>
-                            $filePath,
-                        ]);
-                    } else {
-
-                        TspRequestDocumentFile::create([
-                            'request_document_id' =>
-                            $requestDocument->id,
-
-                            'name' =>
-                            $file->getClientOriginalName(),
-
-                            'document_type' =>
-                            'Draft Contract',
-
-                            'file_path' =>
-                            $filePath,
-                        ]);
-                    }
-                }
-
-
-                /*UPDATE QUOTATION*/
-
-                if ($request->hasFile('quotation')) {
-
-                    $file = $request->file('quotation');
-
-                    $name = pathinfo(
-                        $file->getClientOriginalName(),
-                        PATHINFO_FILENAME
-                    );
-
-                    $fileName = $name
-                        . '-'
-                        . time()
-                        . '.'
-                        . $file->getClientOriginalExtension();
-
-                    $file->move(
-                        public_path('upload/request_document'),
-                        $fileName
-                    );
-
-                    $filePath =
-                        'upload/request_document/' . $fileName;
-
-
-                    $existingFile = TspRequestDocumentFile::where(
-                        'request_document_id',
-                        $requestDocument->id
-                    )
-                        ->where(
-                            'document_type',
-                            'Quotation'
-                        )
-                        ->first();
-
-
-                    if ($existingFile) {
-
-                        if (
-                            $existingFile->file_path &&
-                            file_exists(
-                                public_path($existingFile->file_path)
-                            )
-                        ) {
-                            unlink(
-                                public_path(
-                                    $existingFile->file_path
-                                )
-                            );
-                        }
-
-
-                        $existingFile->update([
-                            'name' =>
-                            $file->getClientOriginalName(),
-
-                            'file_path' =>
-                            $filePath,
-                        ]);
-                    } else {
-
-                        TspRequestDocumentFile::create([
-                            'request_document_id' =>
-                            $requestDocument->id,
-
-                            'name' =>
-                            $file->getClientOriginalName(),
-
-                            'document_type' =>
-                            'Quotation',
-
-                            'file_path' =>
-                            $filePath,
-                        ]);
-                    }
-                }
-
-
-                /*UPDATE HISTORY*/
-
-                if ($action === 'draft') {
-
-                    TspRequestDocumentHistory::create([
-                        'request_document_id' =>
-                        $requestDocument->id,
-
-                        'stage_id' => 1,
-                        'substage_id' => null,
-                        'status_id' => 1,
-                        'action' => 'Update Draft',
-                        'created_by' => Auth::id(),
-                        'created_at' => now(),
-                    ]);
-                } elseif ($action === 'submit') {
-
-                    TspRequestDocumentHistory::create([
-                        'request_document_id' =>
-                        $requestDocument->id,
-
-                        'stage_id' => 1,
-                        'substage_id' => null,
-                        'status_id' => 2,
-                        'action' => 'Submit',
-                        'created_by' => Auth::id(),
-                        'created_at' => now(),
-                    ]);
-
-                    /* SEND EMAIL NOTIFICATION TO PIC */
-                    $detail_email = array(
-                        'title' => $requestDocument->title,
-                    );
-
-                    Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
-                }
-            });
 
             Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
             return redirect()
                 ->route('tsp.request-document')
                 ->with(
@@ -1182,6 +1178,7 @@ class RequestDocumentController extends Controller
                 );
         } catch (\Throwable $e) {
             dd($e);
+            $db->rollBack();
 
             return back()
                 ->withInput()
@@ -1263,53 +1260,55 @@ class RequestDocumentController extends Controller
     {
         try {
 
-            $db = DB::connection('legatra')->transaction(function () use ($id) {
+            $db = DB::connection('legatra');
+            $db->beginTransaction();
 
-                $requestDocument =
-                    TspRequestDocument::findOrFail($id);
+            $requestDocument =
+                TspRequestDocument::findOrFail($id);
 
-                /*UPDATE REQUEST DOCUMENT*/
+            /*UPDATE REQUEST DOCUMENT*/
 
-                $requestDocument->update([
+            $requestDocument->update([
 
-                    'status_id' => 3,
+                'status_id' => 3,
 
-                    'stage_id' => 1,
+                'stage_id' => 1,
 
-                    'substage_id' => null,
+                'substage_id' => null,
 
-                    'updated_by' => Auth::id(),
+                'updated_by' => Auth::id(),
 
-                ]);
+            ]);
 
 
-                /*INSERT HISTORY*/
+            /*INSERT HISTORY*/
 
-                TspRequestDocumentHistory::create([
+            TspRequestDocumentHistory::create([
 
-                    'request_document_id' =>
-                    $requestDocument->id,
+                'request_document_id' =>
+                $requestDocument->id,
 
-                    'stage_id' =>
-                    1,
+                'stage_id' =>
+                1,
 
-                    'substage_id' =>
-                    null,
+                'substage_id' =>
+                null,
 
-                    'status_id' =>
-                    3,
+                'status_id' =>
+                3,
 
-                    'action' =>
-                    'Cancel',
+                'action' =>
+                'Cancel',
 
-                    'created_by' =>
-                    Auth::id(),
+                'created_by' =>
+                Auth::id(),
 
-                    'created_at' =>
-                    now(),
+                'created_at' =>
+                now(),
 
-                ]);
-            });
+            ]);
+
+            $db->commit();
 
             return response()->json([
 
@@ -1320,6 +1319,7 @@ class RequestDocumentController extends Controller
 
             ]);
         } catch (\Throwable $e) {
+            $db->rollBack();
 
             return response()->json([
 
