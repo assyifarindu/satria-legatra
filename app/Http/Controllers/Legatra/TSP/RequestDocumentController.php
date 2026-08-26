@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\Mail;
 
 class RequestDocumentController extends Controller
 {
@@ -68,33 +69,33 @@ class RequestDocumentController extends Controller
 
             // 3. Inisialisasi Query Base
             $query = TspRequestDocument::leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
-                    ->leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
-                    ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
-                    ->leftJoin('satria.users', 'satria_legatra.tsp_request_documents.requester_id', '=', 'satria.users.id')
-                    ->select(
-                        'satria_legatra.tsp_request_documents.id',
-                        'satria_legatra.tsp_request_documents.stage_id',
-                        'satria_legatra.tsp_request_documents.substage_id',
-                        'satria_legatra.tsp_request_documents.status_id',
-                        'satria_legatra.tsp_request_status.status as status',
-                        'satria_legatra.tsp_request_documents.document_number',
-                        'satria_legatra.tsp_request_documents.title',
-                        'satria_legatra.tsp_request_documents.contract_type',
-                        'satria.users.name as requester',
-                        'satria_legatra.tsp_request_documents.potential_amount',
-                        'satria_legatra.tsp_request_documents.sign_status',
-                        'satria_legatra.tsp_request_documents.is_project',
-                        'satria_legatra.tsp_request_documents.created_at',
-                        'satria_legatra.tsp_request_documents.updated_at'
-                    );
+                ->leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
+                ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
+                ->leftJoin('satria.users', 'satria_legatra.tsp_request_documents.requester_id', '=', 'satria.users.id')
+                ->select(
+                    'satria_legatra.tsp_request_documents.id',
+                    'satria_legatra.tsp_request_documents.stage_id',
+                    'satria_legatra.tsp_request_documents.substage_id',
+                    'satria_legatra.tsp_request_documents.status_id',
+                    'satria_legatra.tsp_request_status.status as status',
+                    'satria_legatra.tsp_request_documents.document_number',
+                    'satria_legatra.tsp_request_documents.title',
+                    'satria_legatra.tsp_request_documents.contract_type',
+                    'satria.users.name as requester',
+                    'satria_legatra.tsp_request_documents.potential_amount',
+                    'satria_legatra.tsp_request_documents.sign_status',
+                    'satria_legatra.tsp_request_documents.is_project',
+                    'satria_legatra.tsp_request_documents.created_at',
+                    'satria_legatra.tsp_request_documents.updated_at'
+                );
 
             // 4. Filtering Search
             if (!empty($searchValue)) {
-                $query->where(function($q) use ($searchValue) {
+                $query->where(function ($q) use ($searchValue) {
                     $q->where('satria_legatra.tsp_request_documents.document_number', 'like', '%' . $searchValue . '%')
-                    ->orWhere('satria_legatra.tsp_request_documents.title', 'like', '%' . $searchValue . '%')
-                    ->orWhere('satria_legatra.tsp_request_documents.contract_type', 'like', '%' . $searchValue . '%')
-                    ->orWhere('satria.users.name', 'like', '%' . $searchValue . '%');
+                        ->orWhere('satria_legatra.tsp_request_documents.title', 'like', '%' . $searchValue . '%')
+                        ->orWhere('satria_legatra.tsp_request_documents.contract_type', 'like', '%' . $searchValue . '%')
+                        ->orWhere('satria.users.name', 'like', '%' . $searchValue . '%');
                 });
             }
 
@@ -103,9 +104,9 @@ class RequestDocumentController extends Controller
 
             // 6. Ambil data terpaginasi
             $data = $query->orderBy($columnName, $dir)
-                        ->skip($start)
-                        ->take($length)
-                        ->get();
+                ->skip($start)
+                ->take($length)
+                ->get();
 
             // 7. Mapping data untuk response
             $data = $data->map(function ($item) {
@@ -123,17 +124,16 @@ class RequestDocumentController extends Controller
                     'sign_status' => $item->sign_status ?? '-',
                     'project_category' => $item->is_project === null
                         ? '-'
-                        :  ((bool) $item->is_project ? 'Project' : 'Non-Project')
+                        : ((bool) $item->is_project ? 'Project' : 'Non-Project')
                 ];
             });
-                        
+
             return response()->json([
                 'draw'            => (int) $draw,
                 'recordsTotal'    => $recordsTotal,
                 'recordsFiltered' => $recordsFiltered,
                 'data'            => $data
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 "success"       => false,
@@ -162,7 +162,7 @@ class RequestDocumentController extends Controller
         try {
             $q = $request->input('q', '');
             $customers = [
-               [
+                [
                     "id" => 1,
                     "name" => "Customer A",
                     "nib" => "1234567890",
@@ -170,8 +170,8 @@ class RequestDocumentController extends Controller
                     "address" => "Address A",
                     "postal_code" => "12345",
                     "email" => "customerA@example.com"
-               ],
-               [
+                ],
+                [
                     "id" => 2,
                     "name" => "Customer B",
                     "nib" => "0987654321",
@@ -179,8 +179,8 @@ class RequestDocumentController extends Controller
                     "address" => "Address B",
                     "postal_code" => "54321",
                     "email" => "customerB@example.com"
-               ],
-               [
+                ],
+                [
                     "id" => 3,
                     "name" => "Customer C",
                     "nib" => "1122334455",
@@ -188,7 +188,7 @@ class RequestDocumentController extends Controller
                     "address" => "Address C",
                     "postal_code" => "67890",
                     "email" => "customerC@example.com"
-               ]
+                ]
             ];
 
             $customers = collect($customers)->filter(function ($customer) use ($q) {
@@ -221,7 +221,7 @@ class RequestDocumentController extends Controller
     {
         try {
             $customers = [
-               [
+                [
                     "id" => 1,
                     "name" => "Customer A",
                     "nib" => "1234567890",
@@ -229,8 +229,8 @@ class RequestDocumentController extends Controller
                     "address" => "Address A",
                     "postal_code" => "12345",
                     "email" => "customerA@example.com"
-               ],
-               [
+                ],
+                [
                     "id" => 2,
                     "name" => "Customer B",
                     "nib" => "0987654321",
@@ -238,8 +238,8 @@ class RequestDocumentController extends Controller
                     "address" => "Address B",
                     "postal_code" => "54321",
                     "email" => "customerB@example.com"
-               ],
-               [
+                ],
+                [
                     "id" => 3,
                     "name" => "Customer C",
                     "nib" => "1122334455",
@@ -247,7 +247,7 @@ class RequestDocumentController extends Controller
                     "address" => "Address C",
                     "postal_code" => "67890",
                     "email" => "customerC@example.com"
-               ]
+                ]
             ];
 
             $customer = collect($customers)->firstWhere('id', (int)$id);
@@ -278,10 +278,11 @@ class RequestDocumentController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-     public function store(Request $request)
+    public function store(Request $request)
     {
         $db = DB::connection('legatra');
         $action = $request->input('action_type');
+        $rules = [];
 
         /* VALIDASI DRAFT*/
 
@@ -289,9 +290,10 @@ class RequestDocumentController extends Controller
 
             $rules = [
 
-                'title' => ['required','string','max:255'],
+                'title' => ['required', 'string', 'max:255'],
                 // Optional fields
-                'contract_type' => ['nullable',
+                'contract_type' => [
+                    'nullable',
                     Rule::in([
                         'Part',
                         'Service',
@@ -300,9 +302,10 @@ class RequestDocumentController extends Controller
                     ])
                 ],
 
-                'potential_amount' => ['nullable','numeric'],
+                'potential_amount' => ['nullable', 'numeric'],
 
-                'sign_status' => ['nullable',
+                'sign_status' => [
+                    'nullable',
                     Rule::in([
                         'Not Signed',
                         'Partial Signed',
@@ -310,38 +313,37 @@ class RequestDocumentController extends Controller
                     ])
                 ],
 
-                'is_project' => ['nullable','boolean'],
+                'is_project' => ['nullable', 'boolean'],
 
-                'sow' => ['nullable','string'],
-                'transaction_procedure' => ['nullable','string'],
-                'kpi' => ['nullable','string'],
+                'sow' => ['nullable', 'string'],
+                'transaction_procedure' => ['nullable', 'string'],
+                'kpi' => ['nullable', 'string'],
 
-                'pic_name' => ['nullable','string','max:255'],
+                'pic_name' => ['nullable', 'string', 'max:255'],
 
-                'pic_position' => ['nullable','string','max:255'],
+                'pic_position' => ['nullable', 'string', 'max:255'],
 
 
-                'pic_email' => ['nullable','email','max:255'],
+                'pic_email' => ['nullable', 'email', 'max:255'],
 
-                'pic_phone' => ['nullable','string','max:50'],
-                'draft_contract' => ['nullable','file','mimes:pdf','max:10240'],
+                'pic_phone' => ['nullable', 'string', 'max:50'],
+                'draft_contract' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
 
-                'quotation' => ['nullable','file','mimes:pdf','max:10240'],
-                
+                'quotation' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+
                 'customer_id' => ['nullable'],
 
-                'customer_name' => ['nullable','string','max:255'],
-                'customer_nib' => ['nullable','string','max:255'],
-                'customer_npwp' => ['nullable','string','max:255'],
-                'customer_address' => ['nullable','string','max:255'],
-                'customer_postal_code' => ['nullable','string','max:10'],
-                'customer_email' => ['nullable','email','max:255'],
-                'customer_pic_name' => ['nullable','string','max:255'],
-                'customer_pic_position' => ['nullable','string','max:255'],
-                'customer_pic_email' => ['nullable','email','max:255'],
-                'customer_pic_phone' => ['nullable','string','max:50'],
+                'customer_name' => ['nullable', 'string', 'max:255'],
+                'customer_nib' => ['nullable', 'string', 'max:255'],
+                'customer_npwp' => ['nullable', 'string', 'max:255'],
+                'customer_address' => ['nullable', 'string', 'max:255'],
+                'customer_postal_code' => ['nullable', 'string', 'max:10'],
+                'customer_email' => ['nullable', 'email', 'max:255'],
+                'customer_pic_name' => ['nullable', 'string', 'max:255'],
+                'customer_pic_position' => ['nullable', 'string', 'max:255'],
+                'customer_pic_email' => ['nullable', 'email', 'max:255'],
+                'customer_pic_phone' => ['nullable', 'string', 'max:50'],
             ];
-
         }
 
         /* VALIDASI SUBMIT
@@ -351,10 +353,11 @@ class RequestDocumentController extends Controller
 
             $rules = [
 
-                'title' => ['required','string','max:255'],
-                'contract_type' => ['required',Rule::in(['Part','Service','Reman','Unit'])],
-                'potential_amount' => ['required','numeric','min:0'],
-                'sign_status' => ['required',
+                'title' => ['required', 'string', 'max:255'],
+                'contract_type' => ['required', Rule::in(['Part', 'Service', 'Reman', 'Unit'])],
+                'potential_amount' => ['required', 'numeric', 'min:0'],
+                'sign_status' => [
+                    'required',
                     Rule::in([
                         'Not Signed',
                         'Partial Signed',
@@ -362,42 +365,42 @@ class RequestDocumentController extends Controller
                     ])
                 ],
 
-                'is_project' => ['required','boolean'],
+                'is_project' => ['required', 'boolean'],
 
-                'sow' => ['required','string'],
+                'sow' => ['required', 'string'],
 
-                'transaction_procedure' => ['required','string'],
+                'transaction_procedure' => ['required', 'string'],
 
-                'kpi' => ['required','string'],
+                'kpi' => ['required', 'string'],
 
-                'pic_name' => ['required','string','max:255'],
-                
+                'pic_name' => ['required', 'string', 'max:255'],
 
-                'pic_position' => ['required','string','max:255'],
 
-                'pic_email' => ['required','email','max:255'],
-                
+                'pic_position' => ['required', 'string', 'max:255'],
 
-                'pic_phone' => ['required','string','max:50'],
+                'pic_email' => ['required', 'email', 'max:255'],
 
-                'draft_contract' => ['required','file','mimes:pdf','max:10240'],
 
-                'quotation' => ['required','file','mimes:pdf','max:10240'],
+                'pic_phone' => ['required', 'string', 'max:50'],
+
+                'draft_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+
+                'quotation' => ['required', 'file', 'mimes:pdf', 'max:10240'],
                 'customer_id' => ['required'],
-                'customer_name' => ['required','string','max:255'],
-                'customer_nib' => ['required','string','max:255'],
-                'customer_npwp' => ['required','string','max:255'],
-                'customer_address' => ['required','string','max:255'],
-                'customer_postal_code' => ['required','string','max:10'],
+                'customer_name' => ['required', 'string', 'max:255'],
+                'customer_nib' => ['required', 'string', 'max:255'],
+                'customer_npwp' => ['required', 'string', 'max:255'],
+                'customer_address' => ['required', 'string', 'max:255'],
+                'customer_postal_code' => ['required', 'string', 'max:10'],
 
-                'customer_email' => ['required','email','max:255'],
-                'customer_pic_name' => ['required','string','max:255'],
-                'customer_pic_position' => ['required','string','max:255'],
+                'customer_email' => ['required', 'email', 'max:255'],
+                'customer_pic_name' => ['required', 'string', 'max:255'],
+                'customer_pic_position' => ['required', 'string', 'max:255'],
 
-                'customer_pic_email' => ['required','email','max:255'],
+                'customer_pic_email' => ['required', 'email', 'max:255'],
 
-                'customer_pic_phone' => ['required','string','max:50'],
-               
+                'customer_pic_phone' => ['required', 'string', 'max:50'],
+
 
             ];
         }
@@ -422,7 +425,7 @@ class RequestDocumentController extends Controller
                     ->withInput()
                     ->withErrors([
                         'draft_contract' =>
-                            'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
                     ]);
             }
         }
@@ -442,7 +445,7 @@ class RequestDocumentController extends Controller
                     ->withInput()
                     ->withErrors([
                         'quotation' =>
-                            'Nama file Quotation harus diawali dengan prefix Quotation_.'
+                        'Nama file Quotation harus diawali dengan prefix Quotation_.'
                     ]);
             }
         }
@@ -461,20 +464,20 @@ class RequestDocumentController extends Controller
                 'status_id' => $action === 'draft' ? 1 : 2,
                 'title' => $validated['title'],
                 'contract_type' => $validated['contract_type'] ?? null,
-                'requester_id' => Auth::id(), 
+                'requester_id' => Auth::id(),
                 'potential_amount' => $validated['potential_amount'] ?? null,
                 'sign_status' => $validated['sign_status'] ?? null,
                 'is_project' =>  $validated['is_project'] ?? null,
                 'sow' => $validated['sow'] ?? null,
                 'transaction_procedure' => $validated['transaction_procedure'] ?? null,
-                'kpi' =>$validated['kpi'] ?? null,   
+                'kpi' => $validated['kpi'] ?? null,
             ]);
 
             // CREATE PIC
             if (
                 !empty($validated['pic_name'])
             ) {
-                TspRequestDocumentPic::create([
+                $pic = TspRequestDocumentPic::create([
 
                     'request_document_id' => $requestDocument->id,
 
@@ -486,7 +489,6 @@ class RequestDocumentController extends Controller
 
                     'phone' => $validated['pic_phone'] ?? null,
                 ]);
-            
             }
 
             /*  CREATE CUSTOMER */
@@ -505,9 +507,8 @@ class RequestDocumentController extends Controller
                     'address' => $validated['customer_address'] ?? null,
                     'postal_code' => $validated['customer_postal_code'] ?? null,
 
-                    'email' =>$validated['customer_email'] ?? null,
+                    'email' => $validated['customer_email'] ?? null,
                 ]);
-            
             }
 
             /*  CREATE CUSTOMER PIC */
@@ -520,7 +521,7 @@ class RequestDocumentController extends Controller
                 TspRequestDocumentCustomerPic::create([
 
                     'request_document_customer_id' => $requestDocumentCustomer->id,
-    
+
                     'name' => $validated['customer_pic_name'] ?? null,
 
                     'position' => $validated['customer_pic_position'] ?? null,
@@ -530,7 +531,7 @@ class RequestDocumentController extends Controller
                 ]);
             }
 
-             /* UPLOAD FILE */
+            /* UPLOAD FILE */
 
             $draftContractPath = null;
             $quotationPath = null;
@@ -546,13 +547,13 @@ class RequestDocumentController extends Controller
                 );
 
                 // Buat nama file baru
-                $fileName = $name. '-'. time(). '.'. $file->getClientOriginalExtension();
+                $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
 
                 // Simpan langsung ke public/upload/request_document
-                $file->move(public_path('upload/request_document'),$fileName);
+                $file->move(public_path('upload/request_document'), $fileName);
 
                 // Path yang disimpan ke database
-                $draftContractPath ='upload/request_document/' . $fileName;
+                $draftContractPath = 'upload/request_document/' . $fileName;
 
                 // Simpan record ke database
                 TspRequestDocumentFile::create([
@@ -585,7 +586,7 @@ class RequestDocumentController extends Controller
                 );
 
                 // Buat nama file baru
-                $fileName = $name. '-'. time(). '.'. $file->getClientOriginalExtension();
+                $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
 
                 // Simpan langsung ke public/upload/request_document
                 $file->move(
@@ -610,16 +611,16 @@ class RequestDocumentController extends Controller
                 TspRequestDocumentHistory::create([
                     'request_document_id' => $requestDocument->id,
                     'stage_id' => 1,
-                    'status_id' => 1, 
+                    'status_id' => 1,
                     'action' => 'Create Draft',
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                 ]);
-            }else if ($action === 'submit') {
+            } else if ($action === 'submit') {
                 TspRequestDocumentHistory::create([
                     'request_document_id' => $requestDocument->id,
                     'stage_id' => 1,
-                    'status_id' => 2, 
+                    'status_id' => 2,
                     'action' => 'Submit',
                     'created_by' => Auth::id(),
                     'created_at' => now(),
@@ -629,13 +630,18 @@ class RequestDocumentController extends Controller
 
             $db->commit();
 
+            /* SEND EMAIL NOTIFICATION TO PIC */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+            );
+
+            Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
 
             /* RESPONSE */
             Alert::success('Data Saved Successfully', 'Success Message');
             return redirect()
                 ->route('tsp.request-document')
                 ->with('success', $action === 'draft' ? 'Request document berhasil disimpan sebagai draft.' : 'Request document berhasil disubmit.');
-
         } catch (\Throwable $e) {
             dd($e);
 
@@ -647,6 +653,10 @@ class RequestDocumentController extends Controller
         }
     }
 
+    /** Show the form for editing the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
     public function showEdit($id)
     {
         try {
@@ -655,8 +665,6 @@ class RequestDocumentController extends Controller
                 'customer',
                 'files',
             ])->findOrFail($id);
-
-            // dd($requestDocument);
 
             $draftContract = $requestDocument->files
                 ->where('document_type', 'Draft Contract')
@@ -674,14 +682,19 @@ class RequestDocumentController extends Controller
                     'quotation'
                 )
             );
-
         } catch (\Throwable $e) {
 
             return redirect()->route('tsp.request-document')
-                ->with('error','Data Request Document tidak ditemukan.');
+                ->with('error', 'Data Request Document tidak ditemukan.');
         }
     }
 
+
+    /** Edit the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function edit(Request $request, $id)
     {
         $action = $request->input('action_type');
@@ -693,9 +706,10 @@ class RequestDocumentController extends Controller
 
             $rules = [
 
-                'title' => ['required','string','max:255'],
+                'title' => ['required', 'string', 'max:255'],
                 // Optional fields
-                'contract_type' => ['nullable',
+                'contract_type' => [
+                    'nullable',
                     Rule::in([
                         'Part',
                         'Service',
@@ -704,9 +718,10 @@ class RequestDocumentController extends Controller
                     ])
                 ],
 
-                'potential_amount' => ['nullable','numeric'],
+                'potential_amount' => ['nullable', 'numeric'],
 
-                'sign_status' => ['nullable',
+                'sign_status' => [
+                    'nullable',
                     Rule::in([
                         'Not Signed',
                         'Partial Signed',
@@ -714,46 +729,46 @@ class RequestDocumentController extends Controller
                     ])
                 ],
 
-                'is_project' => ['nullable','boolean'],
+                'is_project' => ['nullable', 'boolean'],
 
-                'sow' => ['nullable','string'],
-                'transaction_procedure' => ['nullable','string'],
-                'kpi' => ['nullable','string'],
+                'sow' => ['nullable', 'string'],
+                'transaction_procedure' => ['nullable', 'string'],
+                'kpi' => ['nullable', 'string'],
 
-                'pic_name' => ['nullable','string','max:255'],
+                'pic_name' => ['nullable', 'string', 'max:255'],
 
-                'pic_position' => ['nullable','string','max:255'],
+                'pic_position' => ['nullable', 'string', 'max:255'],
 
 
-                'pic_email' => ['nullable','email','max:255'],
+                'pic_email' => ['nullable', 'email', 'max:255'],
 
-                'pic_phone' => ['nullable','string','max:50'],
-                'draft_contract' => ['nullable','file','mimes:pdf','max:10240'],
+                'pic_phone' => ['nullable', 'string', 'max:50'],
+                'draft_contract' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
 
-                'quotation' => ['nullable','file','mimes:pdf','max:10240'],
-                
+                'quotation' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+
                 'customer_id' => ['nullable'],
 
-                'customer_name' => ['nullable','string','max:255'],
-                'customer_nib' => ['nullable','string','max:255'],
-                'customer_npwp' => ['nullable','string','max:255'],
-                'customer_address' => ['nullable','string','max:255'],
-                'customer_postal_code' => ['nullable','string','max:10'],
-                'customer_email' => ['nullable','email','max:255'],
-                'customer_pic_name' => ['nullable','string','max:255'],
-                'customer_pic_position' => ['nullable','string','max:255'],
-                'customer_pic_email' => ['nullable','email','max:255'],
-                'customer_pic_phone' => ['nullable','string','max:50'],
+                'customer_name' => ['nullable', 'string', 'max:255'],
+                'customer_nib' => ['nullable', 'string', 'max:255'],
+                'customer_npwp' => ['nullable', 'string', 'max:255'],
+                'customer_address' => ['nullable', 'string', 'max:255'],
+                'customer_postal_code' => ['nullable', 'string', 'max:10'],
+                'customer_email' => ['nullable', 'email', 'max:255'],
+                'customer_pic_name' => ['nullable', 'string', 'max:255'],
+                'customer_pic_position' => ['nullable', 'string', 'max:255'],
+                'customer_pic_email' => ['nullable', 'email', 'max:255'],
+                'customer_pic_phone' => ['nullable', 'string', 'max:50'],
             ];
-
         } else {
 
             $rules = [
 
-                'title' => ['required','string','max:255'],
-                'contract_type' => ['required',Rule::in(['Part','Service','Reman','Unit'])],
-                'potential_amount' => ['required','numeric','min:0'],
-                'sign_status' => ['required',
+                'title' => ['required', 'string', 'max:255'],
+                'contract_type' => ['required', Rule::in(['Part', 'Service', 'Reman', 'Unit'])],
+                'potential_amount' => ['required', 'numeric', 'min:0'],
+                'sign_status' => [
+                    'required',
                     Rule::in([
                         'Not Signed',
                         'Partial Signed',
@@ -761,42 +776,42 @@ class RequestDocumentController extends Controller
                     ])
                 ],
 
-                'is_project' => ['required','boolean'],
+                'is_project' => ['required', 'boolean'],
 
-                'sow' => ['required','string'],
+                'sow' => ['required', 'string'],
 
-                'transaction_procedure' => ['required','string'],
+                'transaction_procedure' => ['required', 'string'],
 
-                'kpi' => ['required','string'],
+                'kpi' => ['required', 'string'],
 
-                'pic_name' => ['required','string','max:255'],
-                
+                'pic_name' => ['required', 'string', 'max:255'],
 
-                'pic_position' => ['required','string','max:255'],
 
-                'pic_email' => ['required','email','max:255'],
-                
+                'pic_position' => ['required', 'string', 'max:255'],
 
-                'pic_phone' => ['required','string','max:50'],
+                'pic_email' => ['required', 'email', 'max:255'],
+
+
+                'pic_phone' => ['required', 'string', 'max:50'],
 
                 'draft_contract' => [$requestDocument->status_id == 1 ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
 
                 'quotation' => [$requestDocument->status_id == 1 ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
                 'customer_id' => ['required'],
-                'customer_name' => ['required','string','max:255'],
-                'customer_nib' => ['required','string','max:255'],
-                'customer_npwp' => ['required','string','max:255'],
-                'customer_address' => ['required','string','max:255'],
-                'customer_postal_code' => ['required','string','max:10'],
+                'customer_name' => ['required', 'string', 'max:255'],
+                'customer_nib' => ['required', 'string', 'max:255'],
+                'customer_npwp' => ['required', 'string', 'max:255'],
+                'customer_address' => ['required', 'string', 'max:255'],
+                'customer_postal_code' => ['required', 'string', 'max:10'],
 
-                'customer_email' => ['required','email','max:255'],
-                'customer_pic_name' => ['required','string','max:255'],
-                'customer_pic_position' => ['required','string','max:255'],
+                'customer_email' => ['required', 'email', 'max:255'],
+                'customer_pic_name' => ['required', 'string', 'max:255'],
+                'customer_pic_position' => ['required', 'string', 'max:255'],
 
-                'customer_pic_email' => ['required','email','max:255'],
+                'customer_pic_email' => ['required', 'email', 'max:255'],
 
-                'customer_pic_phone' => ['required','string','max:50'],
-               
+                'customer_pic_phone' => ['required', 'string', 'max:50'],
+
 
             ];
         }
@@ -822,7 +837,7 @@ class RequestDocumentController extends Controller
                     ->withInput()
                     ->withErrors([
                         'draft_contract' =>
-                            'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
                     ]);
             }
         }
@@ -843,7 +858,7 @@ class RequestDocumentController extends Controller
                     ->withInput()
                     ->withErrors([
                         'quotation' =>
-                            'Nama file Quotation harus diawali dengan prefix Quotation_.'
+                        'Nama file Quotation harus diawali dengan prefix Quotation_.'
                     ]);
             }
         }
@@ -879,7 +894,7 @@ class RequestDocumentController extends Controller
 
                     'sign_status' => $validated['sign_status']
                         ?? $requestDocument->sign_status,
-                    
+
                     'is_project' => (bool) $validated['is_project']
                         ?? $requestDocument->is_project,
 
@@ -887,68 +902,72 @@ class RequestDocumentController extends Controller
                         ?? $requestDocument->sow,
 
                     'transaction_procedure' =>
-                        $validated['transaction_procedure']
+                    $validated['transaction_procedure']
                         ?? $requestDocument->transaction_procedure,
 
                     'kpi' => $validated['kpi']
                         ?? $requestDocument->kpi,
 
-                    
+
                 ]);
 
-                
+
                 // UPDATE PIC
-                $pic = TspRequestDocumentPic::updateOrCreate([
-                    'request_document_id' => $requestDocument->id,
-                ],
-                [
-                    'name' => $validated['pic_name'] ?? null,
+                $pic = TspRequestDocumentPic::updateOrCreate(
+                    [
+                        'request_document_id' => $requestDocument->id,
+                    ],
+                    [
+                        'name' => $validated['pic_name'] ?? null,
 
-                    'position' => $validated['pic_position'] ?? null,
+                        'position' => $validated['pic_position'] ?? null,
 
-                    'email' => $validated['pic_email'] ?? null,
+                        'email' => $validated['pic_email'] ?? null,
 
-                    'phone' => $validated['pic_phone'] ?? null,
-                ]);
-            
-                
+                        'phone' => $validated['pic_phone'] ?? null,
+                    ]
+                );
+
+
 
                 /*  UPDATE CUSTOMER */
-                
+
                 $customer = TspRequestDocumentCustomer::updateOrCreate(
-                [
-                    'request_document_id' => $requestDocument->id,
-                ],
-                [
-                    'name' => $validated['customer_name'] ?? null,
+                    [
+                        'request_document_id' => $requestDocument->id,
+                    ],
+                    [
+                        'name' => $validated['customer_name'] ?? null,
 
-                    'nib' => $validated['customer_nib'] ?? null,
+                        'nib' => $validated['customer_nib'] ?? null,
 
-                    'npwp' => $validated['customer_npwp'] ?? null,
+                        'npwp' => $validated['customer_npwp'] ?? null,
 
-                    'address' => $validated['customer_address'] ?? null,
-                    'postal_code' => $validated['customer_postal_code'] ?? null,
+                        'address' => $validated['customer_address'] ?? null,
+                        'postal_code' => $validated['customer_postal_code'] ?? null,
 
-                    'email' =>$validated['customer_email'] ?? null,
-                ]);
-                
-                
+                        'email' => $validated['customer_email'] ?? null,
+                    ]
+                );
+
+
 
                 /*  UPDATE CUSTOMER PIC */
-               
+
                 $customerPic = TspRequestDocumentCustomerPic::updateOrCreate(
-                [
-                    'request_document_customer_id' => $customer->id,
-                ],
-                [
-                    'name' => $validated['customer_pic_name'] ?? null,
+                    [
+                        'request_document_customer_id' => $customer->id,
+                    ],
+                    [
+                        'name' => $validated['customer_pic_name'] ?? null,
 
-                    'position' => $validated['customer_pic_position'] ?? null,
+                        'position' => $validated['customer_pic_position'] ?? null,
 
-                    'email' => $validated['customer_pic_email'] ?? null,
-                    'phone' => $validated['customer_pic_phone'] ?? null,
-                ]);
-            
+                        'email' => $validated['customer_pic_email'] ?? null,
+                        'phone' => $validated['customer_pic_phone'] ?? null,
+                    ]
+                );
+
 
 
                 /*UPDATE DRAFT CONTRACT*/
@@ -981,11 +1000,11 @@ class RequestDocumentController extends Controller
                         'request_document_id',
                         $requestDocument->id
                     )
-                    ->where(
-                        'document_type',
-                        'Draft Contract'
-                    )
-                    ->first();
+                        ->where(
+                            'document_type',
+                            'Draft Contract'
+                        )
+                        ->first();
 
 
                     if ($existingFile) {
@@ -1010,26 +1029,25 @@ class RequestDocumentController extends Controller
 
                         $existingFile->update([
                             'name' =>
-                                $file->getClientOriginalName(),
+                            $file->getClientOriginalName(),
 
                             'file_path' =>
-                                $filePath,
+                            $filePath,
                         ]);
-
                     } else {
 
                         TspRequestDocumentFile::create([
                             'request_document_id' =>
-                                $requestDocument->id,
+                            $requestDocument->id,
 
                             'name' =>
-                                $file->getClientOriginalName(),
+                            $file->getClientOriginalName(),
 
                             'document_type' =>
-                                'Draft Contract',
+                            'Draft Contract',
 
                             'file_path' =>
-                                $filePath,
+                            $filePath,
                         ]);
                     }
                 }
@@ -1065,11 +1083,11 @@ class RequestDocumentController extends Controller
                         'request_document_id',
                         $requestDocument->id
                     )
-                    ->where(
-                        'document_type',
-                        'Quotation'
-                    )
-                    ->first();
+                        ->where(
+                            'document_type',
+                            'Quotation'
+                        )
+                        ->first();
 
 
                     if ($existingFile) {
@@ -1090,26 +1108,25 @@ class RequestDocumentController extends Controller
 
                         $existingFile->update([
                             'name' =>
-                                $file->getClientOriginalName(),
+                            $file->getClientOriginalName(),
 
                             'file_path' =>
-                                $filePath,
+                            $filePath,
                         ]);
-
                     } else {
 
                         TspRequestDocumentFile::create([
                             'request_document_id' =>
-                                $requestDocument->id,
+                            $requestDocument->id,
 
                             'name' =>
-                                $file->getClientOriginalName(),
+                            $file->getClientOriginalName(),
 
                             'document_type' =>
-                                'Quotation',
+                            'Quotation',
 
                             'file_path' =>
-                                $filePath,
+                            $filePath,
                         ]);
                     }
                 }
@@ -1121,7 +1138,7 @@ class RequestDocumentController extends Controller
 
                     TspRequestDocumentHistory::create([
                         'request_document_id' =>
-                            $requestDocument->id,
+                        $requestDocument->id,
 
                         'stage_id' => 1,
                         'substage_id' => null,
@@ -1130,12 +1147,11 @@ class RequestDocumentController extends Controller
                         'created_by' => Auth::id(),
                         'created_at' => now(),
                     ]);
-
                 } elseif ($action === 'submit') {
 
                     TspRequestDocumentHistory::create([
                         'request_document_id' =>
-                            $requestDocument->id,
+                        $requestDocument->id,
 
                         'stage_id' => 1,
                         'substage_id' => null,
@@ -1144,8 +1160,14 @@ class RequestDocumentController extends Controller
                         'created_by' => Auth::id(),
                         'created_at' => now(),
                     ]);
-                }
 
+                    /* SEND EMAIL NOTIFICATION TO PIC */
+                    $detail_email = array(
+                        'title' => $requestDocument->title,
+                    );
+
+                    Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
+                }
             });
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -1157,7 +1179,6 @@ class RequestDocumentController extends Controller
                         ? 'Draft berhasil diperbarui.'
                         : 'Request Document berhasil diperbarui dan disubmit.'
                 );
-
         } catch (\Throwable $e) {
             dd($e);
 
@@ -1170,24 +1191,32 @@ class RequestDocumentController extends Controller
         }
     }
 
+    /** Display the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
     public function showDetail($id)
     {
         $requestDocument = TspRequestDocument::findOrFail($id);
         return view('tsp.request-document.detail', compact('requestDocument'));
     }
 
+    /** Get the specified request document detail as JSON.
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getDetail($id)
     {
         try {
 
             $requestDocument = TspRequestDocument::leftJoin('satria.users', 'satria_legatra.tsp_request_documents.requester_id', '=', 'satria.users.id')
-            ->select('satria_legatra.tsp_request_documents.*', 'satria.users.name as requester')
-            ->with([
-                'customer',
-                'customer.customerPics',
-                'files',
-                'pics',
-            ])->findOrFail($id);
+                ->select('satria_legatra.tsp_request_documents.*', 'satria.users.name as requester')
+                ->with([
+                    'customer',
+                    'customer.customerPics',
+                    'files',
+                    'pics',
+                ])->findOrFail($id);
 
             // dd($requestDocument);
 
@@ -1199,28 +1228,36 @@ class RequestDocumentController extends Controller
                 ->where('document_type', 'Quotation')
                 ->first();
 
-             return response()->json([
+            return response()->json([
                 'success' => true,
                 'message' => 'Data retrieved successfully',
                 'data' => $requestDocument,
             ]);
-
         } catch (\Throwable $e) {
 
             return redirect()->route('tsp.request-document')
-                ->with('error','Data Request Document tidak ditemukan.');
+                ->with('error', 'Data Request Document tidak ditemukan.');
         }
     }
 
+    /** Show the cancel confirmation modal for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
     public function cancelConfirmation($id)
     {
         $requestDocument = TspRequestDocument::findOrFail($id);
 
-        return view('tsp.request-document.modal.cancel-confirmation',
+        return view(
+            'tsp.request-document.modal.cancel-confirmation',
             compact('requestDocument')
         );
     }
 
+    /** Cancel Request Document
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function cancel($id)
     {
         try {
@@ -1250,28 +1287,27 @@ class RequestDocumentController extends Controller
                 TspRequestDocumentHistory::create([
 
                     'request_document_id' =>
-                        $requestDocument->id,
+                    $requestDocument->id,
 
                     'stage_id' =>
-                        1,
+                    1,
 
                     'substage_id' =>
-                        null,
+                    null,
 
                     'status_id' =>
-                        3,
+                    3,
 
                     'action' =>
-                        'Cancel',
+                    'Cancel',
 
                     'created_by' =>
-                        Auth::id(),
+                    Auth::id(),
 
                     'created_at' =>
-                        now(),
+                    now(),
 
                 ]);
-
             });
 
             return response()->json([
@@ -1279,10 +1315,9 @@ class RequestDocumentController extends Controller
                 'success' => true,
 
                 'message' =>
-                    'Request Document berhasil dibatalkan.',
+                'Request Document berhasil dibatalkan.',
 
             ]);
-
         } catch (\Throwable $e) {
 
             return response()->json([
@@ -1290,13 +1325,12 @@ class RequestDocumentController extends Controller
                 'success' => false,
 
                 'message' =>
-                    'Gagal membatalkan Request Document.',
+                'Gagal membatalkan Request Document.',
 
                 'error' =>
-                    $e->getMessage(),
+                $e->getMessage(),
 
             ], 500);
-
         }
     }
 }
