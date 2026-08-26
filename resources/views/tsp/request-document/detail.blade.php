@@ -266,194 +266,191 @@
                                 ${data.document_number ?? '-'} ${data.title ?? '-'}
                             </h5>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Contract Type :
-                                </span>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Contract Type :
+                                        </span>
+                                        ${data.contract_type ?? '-'}
+                                    </p>
 
-                                ${data.contract_type ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Potential Amount :
+                                        </span>
+                                        ${data.potential_amount ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Potential Amount :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Requester :
+                                        </span>
+                                        ${data.requester ?? '-'}
+                                    </p>
 
-                                ${data.potential_amount ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Sign Status :
+                                        </span>
+                                        ${data.sign_status ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Requester :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Project Category :
+                                        </span>
+                                        ${data.is_project ? 'Project' : 'Non-Project'}
+                                    </p>
 
-                                ${data.requester ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            SOW :
+                                        </span>
+                                        ${data.sow ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Sign Status :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Transaction Procedure :
+                                        </span>
+                                        ${data.transaction_procedure ?? '-'}
+                                    </p>
 
-                                ${data.sign_status ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            KPI :
+                                        </span>
+                                        ${data.kpi ?? '-'}
+                                    </p>
+                                </div>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Project Category :
-                                </span>
+                                <div class="col-md-6">
+                                    <p class="mb-2 ps-3 pt-1 fw-semibold">PIC Data</p>
 
-                                ${
-                                    data.is_project
-                                        ? 'Project'
-                                        : 'Non-Project'
-                                }
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            PIC Name :
+                                        </span>
+                                        ${data.pics?.name ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    SOW :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            PIC Position :
+                                        </span>
+                                        ${data.pics?.position ?? '-'}
+                                    </p>
 
-                                ${data.sow ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            PIC Email :
+                                        </span>
+                                        ${data.pics?.email ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Transaction Procedure :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            PIC Phone :
+                                        </span>
+                                        ${data.pics?.phone ?? '-'}
+                                    </p>
+                                </div>
+                            </div>
 
-                                ${data.transaction_procedure ?? '-'}
-                            </p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer :
+                                        </span>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    KPI :
-                                </span>
+                                        ${data.customer
+                                            ? data.customer.name
+                                            : '-'
+                                        }
+                                    </p>
 
-                                ${data.kpi ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer NIB :
+                                        </span>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    PIC Name :
-                                </span>
+                                        ${data.customer
+                                            ? data.customer.nib
+                                            : '-'
+                                        }
+                                    </p>
 
-                                ${data.pics?.name ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer NPWP :
+                                        </span>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    PIC Position :
-                                </span>
+                                        ${data.customer
+                                            ? data.customer.npwp
+                                            : '-'
+                                        }
+                                    </p>
 
-                                ${data.pics?.position ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer Address :
+                                        </span>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    PIC Email :
-                                </span>
+                                        ${data.customer?.address ?? '-'}
+                                    </p>
 
-                                ${data.pics?.email ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer Postal Code :
+                                        </span>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    PIC Phone :
-                                </span>
+                                        ${data.customer?.postal_code ?? '-'}
+                                    </p>
 
-                                ${data.pics?.phone ?? '-'}
-                            </p>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer Email :
+                                        </span>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer :
-                                </span>
+                                        ${data.customer?.email ?? '-'}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer PIC Name :
+                                        </span>
 
-                                ${data.customer
-                                    ? data.customer.name
-                                    : '-'
-                                }
-                            </p>
+                                        ${data.customer?.customer_pics?.[0]?.name ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer NIB :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer PIC Position :
+                                        </span>
 
-                                ${data.customer
-                                    ? data.customer.nib
-                                    : '-'
-                                }
-                            </p>
+                                        ${data.customer?.customer_pics?.[0]?.position ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer NPWP :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer PIC Email :
+                                        </span>
 
-                                ${data.customer
-                                    ? data.customer.npwp
-                                    : '-'
-                                }
-                            </p>
+                                        ${data.customer?.customer_pics?.[0]?.email ?? '-'}
+                                    </p>
 
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer Address :
-                                </span>
+                                    <p class="mb-2 ps-3 pt-1">
+                                        <span class="fw-semibold me-2">
+                                            Customer PIC Phone :
+                                        </span>
 
-                                ${data.customer?.address ?? '-'}
-                            </p>
-
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer Postal Code :
-                                </span>
-
-                                ${data.customer?.postal_code ?? '-'}
-                            </p>
-
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer Email :
-                                </span>
-
-                                ${data.customer?.email ?? '-'}
-                            </p>
-
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer PIC Name :
-                                </span>
-
-                                ${data.customer?.customer_pics?.[0]?.name ?? '-'}
-                            </p>
-
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer PIC Position :
-                                </span>
-
-                                ${data.customer?.customer_pics?.[0]?.position ?? '-'}
-                            </p>
-
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer PIC Email :
-                                </span>
-
-                                ${data.customer?.customer_pics?.[0]?.email ?? '-'}
-                            </p>
-
-                            <p class="mb-2 ps-3 pt-1">
-                                <span class="fw-semibold me-2">
-                                    Customer PIC Phone :
-                                </span>
-
-                                ${data.customer?.customer_pics?.[0]?.phone ?? '-'}
-                            </p>
+                                        ${data.customer?.customer_pics?.[0]?.phone ?? '-'}
+                                    </p>
+                                </div>
+                            </div>
 
                             
 
