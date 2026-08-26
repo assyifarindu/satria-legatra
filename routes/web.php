@@ -309,6 +309,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/tsp/request-document/cancel/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'cancel'])->name('tsp.request-document.cancel');
     Route::get('/tsp/request-document/show-history/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showHistory'])->name('tsp.request-document.show-history');
     Route::get('/tsp/request-document/history/data/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'history'])->name('tsp.request-document.history');
+    Route::get('/tsp/request-document/decline-confirmation/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'declineConfirmation'])->name('tsp.request-document.decline-confirmation');
+    Route::post('/tsp/request-document/decline/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'decline'])->name('tsp.request-document.decline');
+
 
 
 

@@ -64,7 +64,7 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            <b>REQUEST DOCUMENT!</b>
+                                            <b>REQUEST DOCUMENT DECLINED!</b>
                                         </td>
                                     </tr>
                                     <tr
@@ -72,9 +72,10 @@
                                         <td class="content-block"
                                             style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            Email Pemberitahuan, ada request document yang harus di tindak lanjut:
+                                            Email Pemberitahuan, ada request document yang telah ditolak:
                                             <br><br>
                                             <b>{{ $data['title'] }}</b><br>
+                                            Alasan Penolakan: <b>{{ $data['remark'] }}</b>
                                         </td>
                                     </tr>
                                     <tr

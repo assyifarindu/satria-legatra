@@ -486,10 +486,20 @@
                                 <div>
                                     <label for="draft_contract" class="form-label">Draf Contract</label>
                                     <input type="file"
-                                        class="form-control @error('draft_contract') is-invalid @enderror "
+                                        class="form-control @error('draft_contract') is-invalid @enderror"
                                         name="draft_contract" id="draft_contract" accept=".pdf"
-                                        value="{{ old('draft_contract', $requestDocument->draft_contract) }}"
                                         placeholder="Draft Contract">
+
+                                    @if ($draftContract)
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block">Existing Document:</small>
+                                            <a href="{{ url('/') }}/{{ $draftContract->file_path }}"
+                                                target="_blank" rel="noopener">
+                                                {{ $draftContract->name ?? basename($draftContract->file_path) }}
+                                            </a>
+                                        </div>
+                                    @endif
+
                                     @error('draft_contract')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -507,6 +517,16 @@
                                         name="quotation" id="quotation" accept=".pdf"
                                         value="{{ old('quotation', $requestDocument->quotation) }}"
                                         placeholder="Quotation">
+
+                                    @if ($quotation)
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block">Existing Document:</small>
+                                            <a href="{{ url('/') }}/{{ $quotation->file_path }}" target="_blank"
+                                                rel="noopener">
+                                                {{ $quotation->name ?? basename($quotation->file_path) }}
+                                            </a>
+                                        </div>
+                                    @endif
                                     @error('quotation')
                                         <div class="invalid-feedback">
                                             {{ $message }}

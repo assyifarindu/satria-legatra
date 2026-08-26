@@ -27,10 +27,12 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <div class="float-end">
-                                <a href="{{ route('tsp.request-document.create') }}" class="btn btn-sm btn-primary"><i
-                                        class="fas fa-plus"></i> Create Request</a>
-                            </div>
+                            @if (getRoles(Auth::user()->id) !== 'Admin Legal')
+                                <div class="float-end">
+                                    <a href="{{ route('tsp.request-document.create') }}" class="btn btn-sm btn-primary"><i
+                                            class="fas fa-plus"></i> Create Request</a>
+                                </div>
+                            @endif
                             <h4 class="header-title">Request Document Contract</h4>
                             <br><br>
                             <table id="request-document-table" class="table nowrap w-100 scroll-horizontal-datatable">
@@ -151,11 +153,11 @@
 
                             return `
                                 ${ (row.status_id == 1 || row.status_id == 2) ? `
-                                                                                    <a href="${editUrl}"
-                                                                                        class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
-                                                                                        title="Edit" tabindex="0" data-plugin="tippy"
-                                                                                        data-tippy-placement="top"><i class="fas fa-pen"></i></a>
-                                                                                ` : '' }
+                                                                                                    <a href="${editUrl}"
+                                                                                                        class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                                                                                        title="Edit" tabindex="0" data-plugin="tippy"
+                                                                                                        data-tippy-placement="top"><i class="fas fa-pen"></i></a>
+                                                                                                ` : '' }
                                 <a href="${viewUrl}"
                                     class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
                                     title="View Detail" tabindex="0" data-plugin="tippy"
@@ -168,18 +170,18 @@
                                     class="mdi mdi-book-clock-outline"></i>
                                 </a>
                                 ${row.status_id == 1 || row.status_id == 2 ? `
-                                            <a href="javascript:void(0)"
-                                                class="btn btn-danger btn-xs d-inline waves-effect waves-light btn_cancel"
-                                                title="Cancel Request"
-                                                tabindex="0"
-                                                data-plugin="tippy"
-                                                data-tippy-placement="top"
-                                                data-id="${row.id}">
+                                                                                <a href="javascript:void(0)"
+                                                                                    class="btn btn-danger btn-xs d-inline waves-effect waves-light {{ getRoles(Auth::user()->id) === 'Admin Legal' ? 'btn_decline' : 'btn_cancel' }}"
+                                                                                    title="{{ getRoles(Auth::user()->id) === 'Admin Legal' ? 'Decline Request' : 'Cancel Request' }}"
+                                                                                    tabindex="0"
+                                                                                    data-plugin="tippy"
+                                                                                    data-tippy-placement="top"
+                                                                                    data-id="${row.id}">
 
-                                                <i class="fas fa-times"></i>
+                                                                                    <i class="fas fa-times"></i>
 
-                                            </a>
-                                        ` : ''}                            `;
+                                                                                </a>
+                                                                            ` : ''}                            `;
                         }
                     },
                 ]
@@ -190,16 +192,10 @@
 
             e.preventDefault();
 
-            console.log('CANCEL BUTTON CLICKED');
-
             const id = $(this).data('id');
-
-            console.log('ID:', id);
 
             const url =
                 "{{ url('tsp/request-document') }}/cancel-confirmation/" + id;
-
-            console.log('URL:', url);
 
             $.ajax({
                 url: url,
@@ -217,14 +213,10 @@
 
                 success: function(response) {
 
-                    console.log('AJAX SUCCESS:', response);
-
                     $('#modal-container').html(response);
 
                     const modalElement =
                         document.getElementById('cancel-modal');
-
-                    console.log('MODAL ELEMENT:', modalElement);
 
                     if (!modalElement) {
                         console.error('Element #cancel-modal tidak ditemukan!');
@@ -340,9 +332,6 @@
             e.preventDefault();
 
             const id = $(this).data('id');
-
-            console.log('HISTORY CLICKED');
-            console.log('ID:', id);
 
             const url = "{{ url('tsp/request-document/show-history') }}/" + id;
 
@@ -486,6 +475,223 @@
                         xhr.responseJSON?.message ??
                         'Gagal memuat History Process.'
                     );
+
+                }
+
+            });
+
+        });
+
+        $(document).on('click', '.btn_decline', function() {
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/decline-confirmation') }}/" + id;
+
+            $.ajax({
+
+                url: url,
+
+                type: 'GET',
+
+                beforeSend: function() {
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('decline-modal');
+
+                    if (!modalElement) {
+
+                        console.error(
+                            'Modal decline-modal tidak ditemukan.'
+                        );
+
+                        return;
+
+                    }
+
+                    const declineModal =
+                        new bootstrap.Modal(modalElement);
+
+                    declineModal.show();
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        'Gagal memuat form Decline.'
+                    );
+
+                }
+
+            });
+
+        });
+
+        $(document).on('submit', '#decline-form', function(e) {
+
+            e.preventDefault();
+
+            const form = $(this);
+
+            const id = form.data('id');
+
+            const button = $('#confirm-decline');
+
+            const remarkInput = $('#remark');
+
+            const remarkError = $('#remark-error');
+
+
+            /*
+            RESET ERROR
+            */
+
+            remarkInput.removeClass('is-invalid');
+
+            remarkError.text('');
+
+
+            /*
+            LOADING BUTTON
+            */
+
+            button.prop('disabled', true);
+
+            button.html(`
+                <span class="spinner-border spinner-border-sm me-1"></span>
+                Processing...
+            `);
+
+
+            /*
+            AJAX DECLINE
+            */
+
+            console.log('Decline Request Document ID 2:', id);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document') }}/decline/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    remark: remarkInput.val()
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement =
+                            document.getElementById('decline-modal');
+
+                        const modal =
+                            bootstrap.Modal.getInstance(modalElement);
+
+                        if (modal) {
+                            modal.hide();
+                        }
+
+
+                        /*
+                        RELOAD DATATABLE
+                        */
+
+                        $('#request-document-table')
+                            .DataTable()
+                            .ajax
+                            .reload(null, false);
+
+
+                        /*
+                        SUCCESS ALERT
+                        */
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+
+                    /*
+                    VALIDATION ERROR
+                    */
+
+                    if (xhr.status === 422) {
+
+                        const errors = xhr.responseJSON.errors;
+
+                        if (errors.remark) {
+
+                            remarkInput.addClass('is-invalid');
+
+                            remarkError.text(
+                                errors.remark[0]
+                            );
+
+                        }
+
+                        return;
+                    }
+
+
+                    /*
+                    SYSTEM ERROR
+                    */
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message ??
+                            'Terjadi kesalahan saat menolak Request Document.'
+                    });
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                        <i class="fas fa-times me-1"></i>
+                        Yes, Decline Request
+                    `);
 
                 }
 

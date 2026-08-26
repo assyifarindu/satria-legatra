@@ -28,9 +28,11 @@ use App\Models\View\VwPicDocument;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Vinkla\Hashids\Facades\Hashids;
 use App\Models\Table\Company;
+use App\Models\UserRoleGroup;
 
 function getTimeAgo($time)
 {
@@ -110,7 +112,7 @@ function getUserName($id)
 
 function getDocumentDrafting($id)
 {
-    
+
     $document = Document::where('request_document_id', $id)->first();
     // if(Auth::user()->id == 178){
     //     dd($id);
@@ -452,7 +454,7 @@ function getSlaRequestDocumentFour($id)
     if (!$get_step_one || !$get_step_seven) {
         return 0; // atau bisa return 0, atau pesan error sesuai kebutuhan
     }
-   
+
     $start = strtotime($get_step_one->created_at);
     $end = strtotime($get_step_seven->created_at);
 
@@ -539,7 +541,7 @@ function countContract()
     $company = $user->company_name;
 
     $contract = RequestDocument::join('satria.users', 'request_documents.created_by', '=', 'satria.users.id')
-    ->where('status', '<', 7)->where('type', 'Contract')->where('is_cancel', 0)->where('satria.users.company_name', $company)->count();
+        ->where('status', '<', 7)->where('type', 'Contract')->where('is_cancel', 0)->where('satria.users.company_name', $company)->count();
 
     return $contract;
 }
@@ -551,7 +553,7 @@ function countLicense()
     $company = $user->company_name;
 
     $contract = RequestDocument::join('satria.users', 'request_documents.created_by', '=', 'satria.users.id')
-    ->where('status', '<', 4)->where('type', 'License')->where('is_cancel', 0)->where('satria.users.company_name', $company)->count();
+        ->where('status', '<', 4)->where('type', 'License')->where('is_cancel', 0)->where('satria.users.company_name', $company)->count();
 
     return $contract;
 }
@@ -563,7 +565,7 @@ function countHaki()
     $company = $user->company_name;
 
     $contract = RequestDocument::join('satria.users', 'request_documents.created_by', '=', 'satria.users.id')
-    ->where('status', '<', 4)->where('type', 'Haki')->where('is_cancel', 0)->where('satria.users.company_name', $company)->count();
+        ->where('status', '<', 4)->where('type', 'Haki')->where('is_cancel', 0)->where('satria.users.company_name', $company)->count();
 
     return $contract;
 }
@@ -575,7 +577,7 @@ function countExisting()
     $company = $user->company_name;
 
     $contract = RequestExisting::join('satria.users', 'request_existings.created_by', '=', 'satria.users.id')
-    ->where('status', '<', 5)->where('is_deleted', false)->where('is_cancel', false)->where('satria.users.company_name', $company)->count();
+        ->where('status', '<', 5)->where('is_deleted', false)->where('is_cancel', false)->where('satria.users.company_name', $company)->count();
 
     return $contract;
 }
@@ -588,7 +590,7 @@ function countRequestQR()
 
 
     $request = RequestDocumentQR::join('satria.users', 'user_id', '=', 'satria.users.id')->where('satria.users.company_name', $company_name)
-    ->where('status_action', 'New')->count();
+        ->where('status_action', 'New')->count();
 
     return $request;
 }
@@ -598,35 +600,35 @@ function countRequest()
     $id = Auth::user()->id;
     $user = User::findOrFail($id);
     $company = $user->company_name;
-    
+
     // $contract = RequestDocument::where('status', '<', 4)->where('type', 'Haki')->where('is_cancel', 0)->count();
     // $license = RequestDocument::where('status', '<', 4)->where('type', 'License')->where('is_cancel', 0)->count();
     // $haki = RequestDocument::where('status', '<', 7)->where('type', 'Contract')->where('is_cancel', 0)->count();
 
     $docCount = RequestDocument::join('satria.users', 'request_documents.created_by', '=', 'satria.users.id')
-    ->where('request_documents.is_cancel', 0)
-    ->where('satria.users.company_name', $company)
-    ->where(function ($query) {
-        $query->where(function ($q) {
-            // Kondisi untuk tipe Haki (misalnya untuk $contract)
-            $q->where('request_documents.type', 'Haki')
-              ->where('request_documents.status', '<', 4);
+        ->where('request_documents.is_cancel', 0)
+        ->where('satria.users.company_name', $company)
+        ->where(function ($query) {
+            $query->where(function ($q) {
+                // Kondisi untuk tipe Haki (misalnya untuk $contract)
+                $q->where('request_documents.type', 'Haki')
+                    ->where('request_documents.status', '<', 4);
+            })
+                ->orWhere(function ($q) {
+                    // Kondisi untuk tipe License
+                    $q->where('request_documents.type', 'License')
+                        ->where('request_documents.status', '<', 4);
+                })
+                ->orWhere(function ($q) {
+                    // Kondisi untuk tipe Contract (misalnya untuk $haki)
+                    $q->where('request_documents.type', 'Contract')
+                        ->where('request_documents.status', '<', 7);
+                });
         })
-        ->orWhere(function ($q) {
-            // Kondisi untuk tipe License
-            $q->where('request_documents.type', 'License')
-              ->where('request_documents.status', '<', 4);
-        })
-        ->orWhere(function ($q) {
-            // Kondisi untuk tipe Contract (misalnya untuk $haki)
-            $q->where('request_documents.type', 'Contract')
-              ->where('request_documents.status', '<', 7);
-        });
-    })
-    ->count();
+        ->count();
 
     $existing = RequestExisting::join('satria.users', 'request_existings.created_by', '=', 'satria.users.id')
-    ->where('status', '<', 5)->where('is_deleted', false)->where('is_cancel', false)->where('satria.users.company_name', $company)->count();
+        ->where('status', '<', 5)->where('is_deleted', false)->where('is_cancel', false)->where('satria.users.company_name', $company)->count();
 
     // return $contract + $license + $haki + $existing;
     return $docCount + $existing;
@@ -849,8 +851,8 @@ function sendEmailPic()
         $company = Company::where('company_id', $company_id)->first();
 
         $pic = Pic::where('is_email_notification', true)->where('company_id', $company->id)->get();
-    
-    
+
+
         // $pic = Pic::where('is_email_notification', true)->get();
 
         foreach ($pic as $key => $value) {
@@ -859,7 +861,7 @@ function sendEmailPic()
                 'body' => 'From Legatra',
             ];
 
-            
+
 
             Mail::to($value->email)->send(new \App\Mail\RequestEmailService($details));
             // dd('success');
@@ -871,7 +873,7 @@ function sendEmailPic()
             // }
         }
     } catch (\Exception $e) {
-        \Log::error("Gagal mengirim email ke {$value->email}: " . $e->getMessage());
+        Log::error("Gagal mengirim email ke {$value->email}: " . $e->getMessage());
     }
 }
 
@@ -880,16 +882,16 @@ function sendEmailFeedbacktoPic($data)
     $user = User::where('id', Auth::user()->id)->first();
     $company_id = $user->companyid;
     $company = Company::where('company_id', $company_id)->first();
-    
+
 
 
     //PIC yang menerima email notifikasi
     $pic = Pic::where('is_email_notification', true)->where('company_id', $company->id)->get();
 
-   
+
 
     foreach ($pic as $key => $value) {
-        
+
         $details = [
             'type' => $data['type'],
             'id' => $data['id'],
@@ -899,10 +901,7 @@ function sendEmailFeedbacktoPic($data)
 
         // dd('Before send', $value->email);
         Mail::to($value->email)->send(new \App\Mail\FeedbackEmailService($details));
-
-       
     }
-
 }
 
 function sendEmailNegotiation($data)
@@ -910,16 +909,16 @@ function sendEmailNegotiation($data)
     $user = User::where('id', Auth::user()->id)->first();
     $company_id = $user->companyid;
     $company = Company::where('company_id', $company_id)->first();
-    
+
 
 
     //PIC yang menerima email notifikasi
     $pic = Pic::where('is_email_notification', true)->where('company_id', $company->id)->get();
 
-   
+
 
     foreach ($pic as $key => $value) {
-        
+
         $details = [
             'type' => $data['type'],
             'id' => $data['id'],
@@ -929,9 +928,6 @@ function sendEmailNegotiation($data)
 
         // dd('Before send', $value->email);
         Mail::to($value->email)->send(new \App\Mail\ReminderNegotiation\ReminderEmailToLegal($details));
-        
-
-       
     }
 }
 
@@ -943,4 +939,23 @@ function sendReminder($email, $details)
         dd($e);
         return redirect()->back()->with('error', 'Error Request, Exception Error ');
     }
+}
+
+/**
+ * Get the role name of a user by their ID.
+ *
+ * @param int $id The ID of the user.
+ * @return string|null The name of the role, or null if not found.
+ */
+function getRoles($id)
+{
+    $user = UserRoleGroup::where('user', $id)->where('satria.role_group.apps', '=', 31)
+        ->leftjoin('satria.role_group', 'satria.user_role_group.group', '=', 'satria.role_group.id')
+        ->select('satria.role_group.*')->first();
+    if (!$user) {
+        return null; // Return null if no user is found
+    }
+    $role = $user->name;
+
+    return $role;
 }

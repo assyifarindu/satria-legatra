@@ -58,10 +58,10 @@ class TspRequestDocument extends Model
         return $this->belongsTo(TspRequestStatus::class, 'status_id');
     }
 
-    public function requester()
-    {
-        return $this->belongsTo(User::class, 'requester_id');
-    }
+    // public function requester()
+    // {
+    //     return $this->belongsTo(User::class, 'requester_id');
+    // }
 
     public function pics()
     {
@@ -78,10 +78,10 @@ class TspRequestDocument extends Model
         return $this->hasMany(TspRequestDocumentFile::class, 'request_document_id');
     }
 
-    public function committees()
-    {
-        return $this->hasMany(TspRequestDocumentCommittee::class, 'request_document_id');
-    }
+    // public function committees()
+    // {
+    //     return $this->hasMany(TspRequestDocumentCommittee::class, 'request_document_id');
+    // }
 
     public function feedbacks()
     {
@@ -93,8 +93,8 @@ class TspRequestDocument extends Model
         return $this->hasMany(TspRequestDocumentHistory::class, 'request_document_id');
     }
 
-    public function formLegalReview()
-    {
-        return $this->hasOne(TspFormLegalReview::class, 'request_document_id');
-    }
+    // public function formLegalReview()
+    // {
+    //     return $this->hasOne(TspFormLegalReview::class, 'request_document_id');
+    // }
 }

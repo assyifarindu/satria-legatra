@@ -8,8 +8,9 @@ use App\Models\Table\TspRequestDocumentFile;
 use App\Models\Table\TspRequestDocumentPic;
 use App\Models\Table\TspRequestDocumentCustomer;
 use App\Models\Table\TspRequestDocumentCustomerPic;
-use App\Models\Table\TspRequestStatus;
+use App\Models\Table\TspRequestDocumentFeedback;
 use App\Models\Table\TspRequestDocumentHistory;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Exception;
@@ -17,6 +18,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
+
+
 
 class RequestDocumentController extends Controller
 {
@@ -53,6 +57,8 @@ class RequestDocumentController extends Controller
     public function getRequestDocuments(Request $request)
     {
         try {
+            $user_id = Auth::id();
+            $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
             $length = $request->input('length', 10);
@@ -88,6 +94,12 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.created_at',
                     'satria_legatra.tsp_request_documents.updated_at'
                 );
+
+            // Jika bukan Admin Legal, tampilkan hanya data milik user login
+
+            if ($role !== 'Admin Legal') {
+                $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
+            }
 
             // 4. Filtering Search
             if (!empty($searchValue)) {
@@ -909,60 +921,70 @@ class RequestDocumentController extends Controller
 
 
             // UPDATE PIC
-            $pic = TspRequestDocumentPic::updateOrCreate(
-                [
-                    'request_document_id' => $requestDocument->id,
-                ],
-                [
-                    'name' => $validated['pic_name'] ?? null,
+            if (
+                !empty($validated['pic_name'])
+            ) {
+                $pic = TspRequestDocumentPic::updateOrCreate(
+                    [
+                        'request_document_id' => $requestDocument->id,
+                    ],
+                    [
+                        'name' => $validated['pic_name'] ?? null,
 
-                    'position' => $validated['pic_position'] ?? null,
+                        'position' => $validated['pic_position'] ?? null,
 
-                    'email' => $validated['pic_email'] ?? null,
+                        'email' => $validated['pic_email'] ?? null,
 
-                    'phone' => $validated['pic_phone'] ?? null,
-                ]
-            );
+                        'phone' => $validated['pic_phone'] ?? null,
+                    ]
+                );
+            }
 
 
 
             /*  UPDATE CUSTOMER */
+            if (
+                !empty($validated['customer_name'])
+            ) {
+                $customer = TspRequestDocumentCustomer::updateOrCreate(
+                    [
+                        'request_document_id' => $requestDocument->id,
+                    ],
+                    [
+                        'name' => $validated['customer_name'] ?? null,
 
-            $customer = TspRequestDocumentCustomer::updateOrCreate(
-                [
-                    'request_document_id' => $requestDocument->id,
-                ],
-                [
-                    'name' => $validated['customer_name'] ?? null,
+                        'nib' => $validated['customer_nib'] ?? null,
 
-                    'nib' => $validated['customer_nib'] ?? null,
+                        'npwp' => $validated['customer_npwp'] ?? null,
 
-                    'npwp' => $validated['customer_npwp'] ?? null,
+                        'address' => $validated['customer_address'] ?? null,
+                        'postal_code' => $validated['customer_postal_code'] ?? null,
 
-                    'address' => $validated['customer_address'] ?? null,
-                    'postal_code' => $validated['customer_postal_code'] ?? null,
-
-                    'email' => $validated['customer_email'] ?? null,
-                ]
-            );
-
+                        'email' => $validated['customer_email'] ?? null,
+                    ]
+                );
+            }
 
 
             /*  UPDATE CUSTOMER PIC */
+            if (
+                !empty($validated['customer_id']) ||
+                !empty($validated['customer_pic_name'])
+            ) {
+                TspRequestDocumentCustomerPic::updateOrCreate(
+                    [
+                        'request_document_customer_id' => $customer->id,
+                    ],
+                    [
+                        'name' => $validated['customer_pic_name'] ?? null,
 
-            TspRequestDocumentCustomerPic::updateOrCreate(
-                [
-                    'request_document_customer_id' => $customer->id,
-                ],
-                [
-                    'name' => $validated['customer_pic_name'] ?? null,
+                        'position' => $validated['customer_pic_position'] ?? null,
 
-                    'position' => $validated['customer_pic_position'] ?? null,
-
-                    'email' => $validated['customer_pic_email'] ?? null,
-                    'phone' => $validated['customer_pic_phone'] ?? null,
-                ]
-            );
+                        'email' => $validated['customer_pic_email'] ?? null,
+                        'phone' => $validated['customer_pic_phone'] ?? null,
+                    ]
+                );
+            }
 
 
 
@@ -1258,9 +1280,9 @@ class RequestDocumentController extends Controller
      */
     public function cancel($id)
     {
+        $db = DB::connection('legatra');
         try {
 
-            $db = DB::connection('legatra');
             $db->beginTransaction();
 
             $requestDocument =
@@ -1462,6 +1484,120 @@ class RequestDocumentController extends Controller
 
                 'error' => $e->getMessage()
 
+            ], 500);
+        }
+    }
+
+    /** Show the decline confirmation modal for the specified request document.
+     * @param int $id
+     *  @return \Illuminate\View\View
+     */
+    public function declineConfirmation($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.form-decline',
+            compact('requestDocument')
+        );
+    }
+
+    /** Decline Request Document
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function decline(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'remark' => ['required', 'string'],
+            ]);
+
+
+            $db->beginTransaction();
+
+            $requestDocument =
+                TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+
+                'status_id' => 4,
+
+            ]);
+
+            /*INSERT HISTORY*/
+
+            $history = TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+
+                'stage_id' => $requestDocument->stage_id,
+
+                'substage_id' => $requestDocument->substage_id ?? null,
+
+                'status_id' => 4,
+
+                'action' => 'Decline',
+
+                'created_by' => Auth::id(),
+
+                'created_at' => now(),
+
+            ]);
+
+            /*INSERT REMARKS DECLINE*/
+            TspRequestDocumentFeedback::create([
+
+                'request_document_id' => $requestDocument->id,
+
+                'history_id' => $history->id,
+
+                'stage_id' => $requestDocument->stage_id,
+
+                'substage_id' => $requestDocument->substage_id ?? null,
+
+                'remark' => $validated['remark'],
+
+            ]);
+
+            /* SEND EMAIL NOTIFICATION TO PIC */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'remark' => $validated['remark'],
+            );
+
+            $pic_document = User::where('id', $requestDocument->requester_id)->first();
+
+            Mail::to($pic_document->email_sf)->send(new \App\Mail\TSP\DeclineRequestDocument($detail_email));
+
+            $db->commit();
+
+            return response()->json([
+
+                'success' => true,
+
+                'message' =>
+                'Request Document berhasil dibatalkan.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menolak Request Document.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
