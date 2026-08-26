@@ -1,4 +1,4 @@
-@extends('layouts.master_tsp')
+@extends('layouts.tsp_master')
 
 @section('title')
     Dashboard |

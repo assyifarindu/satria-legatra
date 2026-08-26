@@ -625,17 +625,18 @@ class RequestDocumentController extends Controller
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                 ]);
+
+                /* SEND EMAIL NOTIFICATION TO PIC */
+                $detail_email = array(
+                    'title' => $requestDocument->title,
+                );
+
+                Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
             }
 
 
             $db->commit();
 
-            /* SEND EMAIL NOTIFICATION TO PIC */
-            $detail_email = array(
-                'title' => $requestDocument->title,
-            );
-
-            Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
 
             /* RESPONSE */
             Alert::success('Data Saved Successfully', 'Success Message');
