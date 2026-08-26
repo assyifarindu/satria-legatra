@@ -34,7 +34,7 @@ Auth::routes();
 
 Route::middleware('auth')->group(function () {
 
-// Route::middleware('token.login')->group(function() {
+    // Route::middleware('token.login')->group(function() {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'home'])->name('index');
     Route::get('home', [App\Http\Controllers\HomeController::class, 'home'])->name('home');
     Route::get('logout', [App\Http\Controllers\Legatra\User\HomeController::class, 'logout'])->name('logout');
@@ -88,7 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('tracking-drafting/final-download/{id}', [App\Http\Controllers\Legatra\TrackingController::class, 'finalDownload'])->name('tracking-drafting.final-download');
     Route::post('tracking-drafting/cancel', [App\Http\Controllers\Legatra\TrackingController::class, 'cancel'])->name('tracking-drafting.cancel');
     Route::post('tracking-drafting/negotiation-approve/{id}', [App\Http\Controllers\Legatra\TrackingController::class, 'negotiationApprove'])->name('tracking-drafting.negotiation-approve');
-    
+
     Route::get('contract-request-export-document', [App\Http\Controllers\Legatra\TrackingController::class, 'export'])->name('contract-request-export-document');
 
 
@@ -305,8 +305,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'edit'])->name('tsp.request-document.edit');
     Route::get('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDetail'])->name('tsp.request-document.showDetail');
     Route::get('/tsp/request-document/data/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getDetail'])->name('tsp.request-document.detail');
-    Route::get('/tsp/request-document/cancel-confirmation/{id}',[App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'cancelConfirmation'])->name('tsp.request-document.cancel-confirmation');
+    Route::get('/tsp/request-document/cancel-confirmation/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'cancelConfirmation'])->name('tsp.request-document.cancel-confirmation');
     Route::post('/tsp/request-document/cancel/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'cancel'])->name('tsp.request-document.cancel');
+    Route::get('/tsp/request-document/show-history/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showHistory'])->name('tsp.request-document.show-history');
+    Route::get('/tsp/request-document/history/data/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'history'])->name('tsp.request-document.history');
+
 
 
 

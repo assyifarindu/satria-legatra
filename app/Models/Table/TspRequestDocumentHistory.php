@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TspRequestDocumentHistory extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $connection = 'legatra';
 
@@ -33,18 +33,16 @@ class TspRequestDocumentHistory extends Model
 
     public function stage()
     {
-        return $this->belongsTo(TspStage::class, 'stage_id');
+        return $this->belongsTo(TspRequestStage::class, 'stage_id');
     }
 
     public function substage()
     {
-        return $this->belongsTo(TspSubstage::class, 'substage_id');
+        return $this->belongsTo(TspRequestSubstage::class, 'substage_id');
     }
 
     public function status()
     {
-        return $this->belongsTo(TspStatus::class, 'status_id');
+        return $this->belongsTo(TspRequestStatus::class, 'status_id');
     }
-
-
 }

@@ -1333,4 +1333,135 @@ class RequestDocumentController extends Controller
             ], 500);
         }
     }
+
+    /** Show the history modal for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showHistory($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+        return view('tsp.request-document.modal.history', compact('requestDocument'));
+    }
+
+    /** Get the history of the specified request document as JSON.
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function history(Request $request, $id)
+    {
+        try {
+
+            $start = $request->input('start', 0);
+            $draw = $request->input('draw', 1);
+            $length = $request->input('length', 10);
+            $searchValue = $request->input('search.value');
+
+            /*ORDERING*/
+
+            $order = $request->input('order.0');
+
+            $columnIndex = $order['column'] ?? 1;
+
+            $columnName = $request->input(
+                "columns.{$columnIndex}.name"
+            ) ?? 'satria_legatra.tsp_request_document_histories.created_at';
+
+            $dir = ($order['dir'] ?? 'desc') === 'asc'
+                ? 'asc'
+                : 'desc';
+
+
+            /*BASE QUERY*/
+
+            $query = TspRequestDocumentHistory::leftJoin(
+                'satria.users',
+                'satria_legatra.tsp_request_document_histories.created_by',
+                '=',
+                'satria.users.id'
+            )
+                ->select(
+                    'satria_legatra.tsp_request_document_histories.id',
+
+                    'satria_legatra.tsp_request_document_histories.created_at as date',
+
+                    'satria_legatra.tsp_request_document_histories.action',
+
+                    'satria.users.name as action_by'
+                )
+                ->where(
+                    'satria_legatra.tsp_request_document_histories.request_document_id',
+                    $id
+                );
+
+
+            /*TOTAL DATA*/
+
+            $recordsTotal = TspRequestDocumentHistory::where(
+                'request_document_id',
+                $id
+            )->count();
+
+
+            /*SEARCH*/
+
+            if (!empty($searchValue)) {
+
+                $query->where(function ($q) use ($searchValue) {
+
+                    $q->where(
+                        'satria_legatra.tsp_request_document_histories.action',
+                        'like',
+                        '%' . $searchValue . '%'
+                    )
+
+                        ->orWhere(
+                            'satria.users.name',
+                            'like',
+                            '%' . $searchValue . '%'
+                        );
+                });
+            }
+
+
+            /*FILTERED TOTAL*/
+
+            $recordsFiltered = $query->count();
+
+
+            /*PAGINATION*/
+
+            $data = $query
+                ->orderBy($columnName, $dir)
+                ->skip($start)
+                ->take($length)
+                ->get();
+
+
+            /*RESPONSE*/
+
+            return response()->json([
+
+                'draw' => (int) $draw,
+
+                'recordsTotal' => $recordsTotal,
+
+                'recordsFiltered' => $recordsFiltered,
+
+                'data' => $data
+
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' => 'Gagal mengambil data history.',
+
+                'error' => $e->getMessage()
+
+            ], 500);
+        }
+    }
 }

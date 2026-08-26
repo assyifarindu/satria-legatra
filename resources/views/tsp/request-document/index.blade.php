@@ -151,11 +151,11 @@
 
                             return `
                                 ${ (row.status_id == 1 || row.status_id == 2) ? `
-                                                                            <a href="${editUrl}"
-                                                                                class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
-                                                                                title="Edit" tabindex="0" data-plugin="tippy"
-                                                                                data-tippy-placement="top"><i class="fas fa-pen"></i></a>
-                                                                        ` : '' }
+                                                                                    <a href="${editUrl}"
+                                                                                        class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                                                                        title="Edit" tabindex="0" data-plugin="tippy"
+                                                                                        data-tippy-placement="top"><i class="fas fa-pen"></i></a>
+                                                                                ` : '' }
                                 <a href="${viewUrl}"
                                     class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
                                     title="View Detail" tabindex="0" data-plugin="tippy"
@@ -168,18 +168,18 @@
                                     class="mdi mdi-book-clock-outline"></i>
                                 </a>
                                 ${row.status_id == 1 || row.status_id == 2 ? `
-                                                                        <a href="javascript:void(0)"
-                                                                            class="btn btn-danger btn-xs d-inline waves-effect waves-light btn_cancel"
-                                                                            title="Cancel Request"
-                                                                            tabindex="0"
-                                                                            data-plugin="tippy"
-                                                                            data-tippy-placement="top"
-                                                                            data-id="${row.id}">
+                                            <a href="javascript:void(0)"
+                                                class="btn btn-danger btn-xs d-inline waves-effect waves-light btn_cancel"
+                                                title="Cancel Request"
+                                                tabindex="0"
+                                                data-plugin="tippy"
+                                                data-tippy-placement="top"
+                                                data-id="${row.id}">
 
-                                                                            <i class="fas fa-times"></i>
+                                                <i class="fas fa-times"></i>
 
-                                                                        </a>
-                                                                    ` : ''}                            `;
+                                            </a>
+                                        ` : ''}                            `;
                         }
                     },
                 ]
@@ -328,6 +328,164 @@
                     <i class="fas fa-times me-1"></i>
                     Yes, Cancel Request
                 `);
+
+                }
+
+            });
+
+        });
+
+        $(document).on('click', '.history_process', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            console.log('HISTORY CLICKED');
+            console.log('ID:', id);
+
+            const url = "{{ url('tsp/request-document/show-history') }}/" + id;
+
+            $.ajax({
+
+                url: url,
+
+                type: 'GET',
+
+                beforeSend: function() {
+
+                    $('#modal-container').html(`
+                    <div class="text-center p-3">
+                        Loading...
+                    </div>
+                `);
+
+                },
+
+                success: function(response) {
+
+                    /*INSERT MODAL*/
+
+                    $('#modal-container').html(response);
+
+                    /*SHOW MODAL*/
+
+                    const modalElement =
+                        document.getElementById('history-modal');
+
+                    if (!modalElement) {
+
+                        console.error(
+                            'Element #history-modal tidak ditemukan!'
+                        );
+
+                        return;
+
+                    }
+
+                    const historyModal =
+                        new bootstrap.Modal(modalElement);
+
+                    historyModal.show();
+
+
+                    /*DESTROY DATATABLE JIKA SUDAH ADA*/
+
+                    if ($.fn.DataTable.isDataTable('#history-table')) {
+
+                        $('#history-table')
+                            .DataTable()
+                            .destroy();
+
+                    }
+
+
+                    /*INITIALIZE HISTORY DATATABLE*/
+                    $('#history-table').DataTable({
+
+                        processing: true,
+
+                        serverSide: true,
+
+                        destroy: true,
+
+                        scrollX: true,
+
+                        ajax: {
+                            url: "{{ url('tsp/request-document/history/data') }}/" + id,
+                            type: 'GET'
+                        },
+
+                        columns: [
+
+                            {
+                                data: null,
+
+                                orderable: false,
+
+                                searchable: false,
+
+                                render: function(
+                                    data,
+                                    type,
+                                    row,
+                                    meta
+                                ) {
+
+                                    return meta.row +
+                                        meta.settings._iDisplayStart +
+                                        1;
+
+                                }
+
+                            },
+
+                            {
+                                data: 'date',
+
+                                name: 'date',
+
+                                render: function(data) {
+
+                                    if (!data) {
+                                        return '-';
+                                    }
+
+                                    return data;
+
+                                }
+
+                            },
+
+                            {
+                                data: 'action',
+
+                                name: 'action',
+                            },
+
+                            {
+                                data: 'action_by',
+
+                                name: 'action_by',
+
+                            }
+
+                        ]
+
+                    });
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    $('#modal-container').html('');
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Gagal memuat History Process.'
+                    );
 
                 }
 
