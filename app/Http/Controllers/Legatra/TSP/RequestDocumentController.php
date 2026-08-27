@@ -95,9 +95,9 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.updated_at'
                 );
 
-            // Jika bukan Admin Legal, tampilkan hanya data milik user login
-
-            if ($role !== 'Admin Legal') {
+            if ($role === 'Admin Legal') {
+                $query->where('satria_legatra.tsp_request_documents.status_id', '!=', 1);
+            } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
             }
 
