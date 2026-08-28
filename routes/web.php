@@ -311,6 +311,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/tsp/request-document/history/data/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'history'])->name('tsp.request-document.history');
     Route::get('/tsp/request-document/decline-confirmation/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'declineConfirmation'])->name('tsp.request-document.decline-confirmation');
     Route::post('/tsp/request-document/decline/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'decline'])->name('tsp.request-document.decline');
+    Route::get('/tsp/request-document/tracking/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showTracking'])->name('tsp.request-document.tracking');
+    Route::get('/tsp/request-document/legal-drafting/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showLegalDrafting'])->name('tsp.request-document.legal-drafting');
+    Route::post('/tsp/request-document/legal-drafting/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeLegalDrafting'])->name('tsp.request-document.store-legal-drafting');
+
 
 
 

@@ -959,3 +959,14 @@ function getRoles($id)
 
     return $role;
 }
+
+function getAdminLegalTSP()
+{
+    $adminLegalTSP = UserRoleGroup::where('satria.role_group.apps', '=', 31)
+        ->where('satria.role_group.name', 'Admin Legal TSP')
+        ->leftjoin('satria.role_group', 'satria.user_role_group.group', '=', 'satria.role_group.id')
+        ->leftjoin('satria.users', 'satria.user_role_group.user', '=', 'satria.users.id')
+        ->select('satria.users.id')->get();
+
+    return $adminLegalTSP;
+}

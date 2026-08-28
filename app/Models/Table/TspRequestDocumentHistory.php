@@ -22,6 +22,8 @@ class TspRequestDocumentHistory extends Model
         'substage_id',
         'status_id',
         'action',
+        'action_by',
+        'assigned_to',
         'created_by',
         'created_at',
     ];

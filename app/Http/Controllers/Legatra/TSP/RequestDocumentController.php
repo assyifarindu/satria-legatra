@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Legatra\TSP;
 
 use App\Http\Controllers\Controller;
 use App\Models\Table\TspRequestDocument;
+use App\Models\Table\TspRequestDocumentCommittess;
 use App\Models\Table\TspRequestDocumentFile;
 use App\Models\Table\TspRequestDocumentPic;
 use App\Models\Table\TspRequestDocumentCustomer;
@@ -95,7 +96,7 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.updated_at'
                 );
 
-            if ($role === 'Admin Legal') {
+            if ($role === 'Admin Legal TSP') {
                 $query->where('satria_legatra.tsp_request_documents.status_id', '!=', 1);
             } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
@@ -625,6 +626,7 @@ class RequestDocumentController extends Controller
                     'stage_id' => 1,
                     'status_id' => 1,
                     'action' => 'Create Draft',
+                    'action_by' => Auth::id(),
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                 ]);
@@ -634,16 +636,21 @@ class RequestDocumentController extends Controller
                     'stage_id' => 1,
                     'status_id' => 2,
                     'action' => 'Submit',
+                    'action_by' => Auth::id(),
+                    'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                 ]);
 
-                /* SEND EMAIL NOTIFICATION TO PIC */
+                /* SEND EMAIL NOTIFICATION TO ADMIN */
                 $detail_email = array(
                     'title' => $requestDocument->title,
+                    'subject' => 'Request Document',
+                    'message' => 'Email Pemberitahuan, ada request document baru yang perlu ditindaklanjuti.',
+
                 );
 
-                Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
+                Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             }
 
 
@@ -712,6 +719,18 @@ class RequestDocumentController extends Controller
     {
         $action = $request->input('action_type');
         $requestDocument = TspRequestDocument::findOrFail($id);
+        $draftContract = TspRequestDocumentFile::where('request_document_id', $requestDocument->id)
+            ->where(
+                'document_type',
+                'Draft Contract'
+            )
+            ->first();
+        $quotation = TspRequestDocumentFile::where('request_document_id', $requestDocument->id)
+            ->where(
+                'document_type',
+                'Quotation'
+            )
+            ->first();
 
         /*VALIDATION */
 
@@ -807,9 +826,10 @@ class RequestDocumentController extends Controller
 
                 'pic_phone' => ['required', 'string', 'max:50'],
 
-                'draft_contract' => [$requestDocument->status_id == 1 ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
+                'draft_contract' => [($requestDocument->status_id == 1 && !$draftContract) ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
 
-                'quotation' => [$requestDocument->status_id == 1 ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
+                'quotation' => [($requestDocument->status_id == 1 && !$quotation) ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
+
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
                 'customer_nib' => ['required', 'string', 'max:255'],
@@ -1046,8 +1066,7 @@ class RequestDocumentController extends Controller
 
 
                     $existingFile->update([
-                        'name' =>
-                        $file->getClientOriginalName(),
+                        'name' => $fileName,
 
                         'file_path' =>
                         $filePath,
@@ -1058,8 +1077,7 @@ class RequestDocumentController extends Controller
                         'request_document_id' =>
                         $requestDocument->id,
 
-                        'name' =>
-                        $file->getClientOriginalName(),
+                        'name' => $fileName,
 
                         'document_type' =>
                         'Draft Contract',
@@ -1125,8 +1143,7 @@ class RequestDocumentController extends Controller
 
 
                     $existingFile->update([
-                        'name' =>
-                        $file->getClientOriginalName(),
+                        'name' => $fileName,
 
                         'file_path' =>
                         $filePath,
@@ -1137,8 +1154,7 @@ class RequestDocumentController extends Controller
                         'request_document_id' =>
                         $requestDocument->id,
 
-                        'name' =>
-                        $file->getClientOriginalName(),
+                        'name' => $fileName,
 
                         'document_type' =>
                         'Quotation',
@@ -1162,6 +1178,7 @@ class RequestDocumentController extends Controller
                     'substage_id' => null,
                     'status_id' => 1,
                     'action' => 'Update Draft',
+                    'action_by' => Auth::id(),
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                 ]);
@@ -1175,16 +1192,18 @@ class RequestDocumentController extends Controller
                     'substage_id' => null,
                     'status_id' => 2,
                     'action' => 'Submit',
+                    'action_by' => Auth::id(),
+                    'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
                     'created_by' => Auth::id(),
                     'created_at' => now(),
                 ]);
 
-                /* SEND EMAIL NOTIFICATION TO PIC */
-                $detail_email = array(
-                    'title' => $requestDocument->title,
-                );
+                /* SEND EMAIL NOTIFICATION TO ADMIN */
+                // $detail_email = array(
+                //     'title' => $requestDocument->title,
+                // );
 
-                Mail::to($pic->email)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
+                // Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
             }
 
 
@@ -1217,7 +1236,16 @@ class RequestDocumentController extends Controller
      */
     public function showDetail($id)
     {
-        $requestDocument = TspRequestDocument::findOrFail($id);
+        $requestDocument = TspRequestDocument::leftJoin('satria_legatra.tsp_request_document_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_document_stages.id')
+            ->leftJoin('satria_legatra.tsp_request_document_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_document_status.id')
+            ->leftJoin('satria_legatra.tsp_request_document_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_document_substages.id')
+            ->select(
+                'satria_legatra.tsp_request_documents.*',
+                'satria_legatra.tsp_request_document_stages.name as stage_name',
+                'satria_legatra.tsp_request_document_status.name as status_name',
+                'satria_legatra.tsp_request_document_substages.name as substage_name'
+            )
+            ->findOrFail($id);
         return view('tsp.request-document.detail', compact('requestDocument'));
     }
 
@@ -1307,27 +1335,14 @@ class RequestDocumentController extends Controller
 
             TspRequestDocumentHistory::create([
 
-                'request_document_id' =>
-                $requestDocument->id,
-
-                'stage_id' =>
-                1,
-
-                'substage_id' =>
-                null,
-
-                'status_id' =>
-                3,
-
-                'action' =>
-                'Cancel',
-
-                'created_by' =>
-                Auth::id(),
-
-                'created_at' =>
-                now(),
-
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => 1,
+                'substage_id' => null,
+                'status_id' => 3,
+                'action' => 'Cancel',
+                'action_by' => Auth::id(),
+                'created_by' => Auth::id(),
+                'created_at' => now(),
             ]);
 
             $db->commit();
@@ -1335,7 +1350,6 @@ class RequestDocumentController extends Controller
             return response()->json([
 
                 'success' => true,
-
                 'message' =>
                 'Request Document berhasil dibatalkan.',
 
@@ -1346,7 +1360,6 @@ class RequestDocumentController extends Controller
             return response()->json([
 
                 'success' => false,
-
                 'message' =>
                 'Gagal membatalkan Request Document.',
 
@@ -1399,7 +1412,7 @@ class RequestDocumentController extends Controller
 
             $query = TspRequestDocumentHistory::leftJoin(
                 'satria.users',
-                'satria_legatra.tsp_request_document_histories.created_by',
+                'satria_legatra.tsp_request_document_histories.action_by',
                 '=',
                 'satria.users.id'
             )
@@ -1533,17 +1546,13 @@ class RequestDocumentController extends Controller
             $history = TspRequestDocumentHistory::create([
 
                 'request_document_id' => $requestDocument->id,
-
                 'stage_id' => $requestDocument->stage_id,
-
                 'substage_id' => $requestDocument->substage_id ?? null,
-
                 'status_id' => 4,
-
                 'action' => 'Decline',
-
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
                 'created_by' => Auth::id(),
-
                 'created_at' => now(),
 
             ]);
@@ -1567,11 +1576,13 @@ class RequestDocumentController extends Controller
             $detail_email = array(
                 'title' => $requestDocument->title,
                 'remark' => $validated['remark'],
+                'subject' => 'Request Document Declined',
+                'message' => 'Email Pemberitahuan, request document anda telah ditolak',
             );
 
-            $pic_document = User::where('id', $requestDocument->requester_id)->first();
+            $user = User::find($requestDocument->requester_id);
 
-            Mail::to($pic_document->email_sf)->send(new \App\Mail\TSP\DeclineRequestDocument($detail_email));
+            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
 
             $db->commit();
 
@@ -1597,6 +1608,257 @@ class RequestDocumentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menolak Request Document.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the detail view for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showTracking($id)
+    {
+        $requestDocument = TspRequestDocument::leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
+            ->leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
+            ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
+            ->select(
+                'satria_legatra.tsp_request_documents.*',
+                'satria_legatra.tsp_request_stages.stage as stage_name',
+                'satria_legatra.tsp_request_status.status as status_name',
+                'satria_legatra.tsp_request_substages.substage as substage_name'
+            )
+            ->findOrFail($id);
+        return view('tsp.request-document.tracking', compact('requestDocument'));
+    }
+
+    /** Show the legal drafting view for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showLegalDrafting($id)
+    {
+        $db = DB::connection('legatra');
+        try {
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+            $committee = User::where(function ($query) {
+                $query->where(function ($q) {
+                    $q->where('companyid', 16731)
+                        ->where(function ($qq) {
+                            $qq->where('title', 'like', '%Dept Head%')
+                                ->orWhere('title', 'like', '%Div Head%')
+                                ->orWhere('title', 'like', '%Func Head%');
+                        });
+                })->orWhere('division', 'Board of Directors');
+            })
+                ->orderBy('name')
+                ->get();
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+
+                'status_id' => 5,
+
+                'stage_id' => 2,
+
+                'substage_id' => null,
+
+                'updated_by' => Auth::id(),
+
+            ]);
+
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+
+                'stage_id' => 2,
+
+                'substage_id' => null,
+
+                'status_id' => 5,
+
+                'action' => 'Legal Drafting',
+                'action_by' => Auth::id(),
+
+                'created_by' => Auth::id(),
+
+                'created_at' => now(),
+
+            ]);
+
+            $db->commit();
+
+            return view('tsp.request-document.legal-drafting', compact('requestDocument', 'committee'));
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menampilkan halaman legal drafting.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Store the legal drafting action for the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function storeLegalDrafting(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'draft_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+
+                'committee' => ['required', 'array', 'min:1'],
+            ]);
+
+            /*VALIDASI PREFIX FILE*/
+
+            if ($request->hasFile('draft_contract')) {
+
+                $fileName = strtolower(
+                    $request
+                        ->file('draft_contract')
+                        ->getClientOriginalName()
+                );
+
+                if (!str_starts_with(
+                    $fileName,
+                    'draft_contract_'
+                )) {
+                    return back()
+                        ->withInput()
+                        ->withErrors([
+                            'draft_contract' =>
+                            'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        ]);
+                }
+            }
+
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 6,
+                'stage_id' => 3,
+                'substage_id' => 1,
+            ]);
+
+            /*INSERT COMMITTEE*/
+            foreach ($validated['committee'] as $index => $committeeId) {
+
+                TspRequestDocumentCommittess::create([
+
+                    'request_document_id' => $requestDocument->id,
+
+                    'committee_id' => $committeeId,
+
+                    'sequence' => $index + 1,
+                    'verification_ld_status' => false,
+                    'verification_flr_status' => false,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            $name = pathinfo(
+                $validated['draft_contract']->getClientOriginalName(),
+                PATHINFO_FILENAME
+            );
+
+            $file = $validated['draft_contract'];
+
+            // Buat nama file baru
+            $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+
+            // Simpan langsung ke public/upload/request_document
+            $file->move(
+                public_path('upload/request_document'),
+                $fileName
+            );
+
+            // Path yang disimpan ke database
+            $path =  'upload/request_document/' . $fileName;
+
+            /*UPDATE DRAFT CONTRACT*/
+            TspRequestDocumentFile::updateOrCreate(
+                [
+                    'request_document_id' => $requestDocument->id,
+                    'document_type' => 'Draft Contract',
+                ],
+                [
+                    'name' => $fileName,
+
+                    'file_path' => $path,
+                ]
+            );
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Submit Legal Drafting',
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+
+            ]);
+
+
+            /* SEND EMAIL NOTIFICATION TO USER */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Dokumen Siap untuk Direview',
+                'message' => 'Request dokumen Anda telah selesai dibuat dan saat ini sudah siap untuk direview.',
+
+            );
+
+            $user = User::find($requestDocument->requester_id);
+
+            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+            Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return redirect()
+                ->route('tsp.request-document')
+                ->with(
+                    'success',
+                    'Legal Drafting berhasil disubmit.'
+                );
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Legal Drafting gagal disubmit.',
                 'error' => $e->getMessage(),
             ], 500);
         }

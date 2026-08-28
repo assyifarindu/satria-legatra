@@ -48,10 +48,9 @@
                                         <div class="tab-pane fade active show" id="request-document" role="tabpanel"
                                             aria-labelledby="custom-v-pills-billing-tab">
                                             <div>
-                                                <h4 class="header-title">{{ $requestDocument->stage_name }}</h4>
+                                                <h4 class="header-title" id="request-document-title">Loading...</h4>
 
-                                                <p class="sub-header">Berikut adalah data permintaan dokumen yang telah
-                                                    dibuat.</p>
+                                                <p class="sub-header" id="request-document-description">Loading...</p>
                                                 <div id="request-document-detail">
 
                                                     <div class="text-center">
@@ -60,6 +59,21 @@
 
                                                 </div>
                                                 <br>
+                                            </div>
+
+                                            <div class="row mt-4">
+                                                <div class="col-sm-6">
+                                                </div> <!-- end col -->
+                                                @if ($requestDocument->stage_id == 1 && getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.legal-drafting', $requestDocument->id) }}"
+                                                                class="btn btn-success">
+                                                                <i class="mdi mdi-file me-1"></i> Continue to
+                                                                Drafting </a>
+                                                        </div>
+                                                    </div><!-- end col -->
+                                                @endif
                                             </div>
                                         </div>
 
@@ -78,6 +92,8 @@
 
 @section('js')
     <script>
+        let requestDocumentData = null;
+
         $(document).ready(function() {
             const stages = [{
                     id: 1,
@@ -93,7 +109,6 @@
                     id: 3,
                     name: 'Feedback LD',
                     target: 'send-draft',
-
                     substages: [{
                             id: 1,
                             sequence: 1,
@@ -125,7 +140,6 @@
                     id: 6,
                     name: 'Feedback FLR',
                     target: 'send-rekanan',
-
                     substages: [{
                             id: 4,
                             sequence: 1,
@@ -189,13 +203,14 @@
 
                     html += `
                         <a
-                            class="nav-link mt-2 py-2
+                            href="javascript:void(0)"
+                            class="nav-link mt-2 py-2 stage-navigation
                                 ${isCurrentStage ? 'active show' : ''}
                                 ${isDisabled ? 'disabled' : ''}
                             "
                             id="${stage.target}-tab"
-                            data-bs-toggle="pill"
-                            href="#${stage.target}"
+                            data-stage-id="${stage.id}"
+                            data-stage-name="${stage.name}"
                             role="tab"
                             aria-selected="${isCurrentStage ? 'true' : 'false'}"
                         >
@@ -241,16 +256,20 @@
 
                             html += `
                                 <a
-                                    class="nav-link
+                                    href="javascript:void(0)"
+                                    class="nav-link substage-navigation
                                         ${isActiveSubstage ? 'active show' : ''}
                                         ${isDisabledSubstage ? 'disabled' : ''}
                                         ${isCompletedSubstage ? 'text-success' : ''}
                                     "
                                     id="${stage.target}-substage-${substage.id}-tab"
-                                    data-bs-toggle="pill"
-                                    href="#${stage.target}"
+
+                                    data-stage-id="${stage.id}"
+                                    data-stage-name="${stage.name}"
+                                    data-substage-id="${substage.id}"
+                                    data-substage-name="${substage.name}"
+
                                     role="tab"
-                                    aria-selected="${isActiveSubstage ? 'true' : 'false'}"
 
                                     style="
                                         font-size: 12px;
@@ -300,8 +319,111 @@
                 $('#v-pills-tab').html(html);
             }
 
-            function renderRequestDocument(data) {
+            function renderRequestDocument(data, selectedStageId = null, selectedSubstageId = null) {
+
                 let filesHtml = '';
+                const stageInformation = {
+                    1: {
+                        title: 'Request Document',
+                        description: 'Berikut adalah data permintaan dokumen yang telah dibuat.'
+                    },
+
+                    2: {
+                        title: 'Legal Drafting (LD)',
+                        description: 'Pada tahap ini, tim Legal melakukan proses penyusunan dan pembuatan draft kontrak berdasarkan Request Document yang telah diajukan.'
+                    },
+
+                    3: {
+                        title: 'Feedback LD',
+                        description: 'Draft kontrak telah dikirimkan dan sedang menunggu proses review serta feedback dari pihak terkait.'
+                    },
+
+                    4: {
+                        title: 'Negotiation',
+                        description: 'Pada tahap ini dilakukan proses negosiasi dan pembahasan terhadap draft kontrak beserta masukan yang diberikan.'
+                    },
+
+                    5: {
+                        title: 'Form Legal Review (FLR)',
+                        description: 'Draft kontrak sedang melalui proses Form Legal Review untuk memastikan kesesuaian aspek legal dan ketentuan yang berlaku.'
+                    },
+
+                    6: {
+                        title: 'Feedback FLR',
+                        description: 'Hasil review telah disampaikan dan sedang menunggu feedback atau tindak lanjut dari pihak terkait.'
+                    },
+
+                    7: {
+                        title: 'Under Review BOD',
+                        description: 'Dokumen sedang dalam proses review dan persetujuan oleh Board of Directors.'
+                    },
+
+                    8: {
+                        title: 'Cleared for Delivery',
+                        description: 'Dokumen telah selesai melalui proses review dan dinyatakan siap untuk proses delivery.'
+                    },
+
+                    9: {
+                        title: 'Final Contract',
+                        description: 'Kontrak telah memasuki tahap finalisasi dokumen sebelum proses administrasi dan filing.'
+                    },
+
+                    10: {
+                        title: 'Document Filing',
+                        description: 'Dokumen kontrak sedang dalam proses pengarsipan dan penyimpanan dokumen.'
+                    },
+
+                    11: {
+                        title: 'Contract Active',
+                        description: 'Kontrak telah aktif dan proses Request Document telah selesai.'
+                    }
+                };
+
+                const stageId = Number(
+                    selectedStageId ?? data.stage_id
+                );
+
+
+                const stageInfo =
+                    stageInformation[stageId] ?? {
+                        title: 'Request Document',
+                        description: 'Berikut adalah informasi dan proses Request Document.'
+                    };
+
+                let title = stageInfo.title;
+
+                /*
+                JIKA ADA SUBSTAGE YANG DIPILIH
+                */
+
+                if (
+                    selectedSubstageId &&
+                    stageId === Number(data.stage_id)
+                ) {
+
+                    const selectedSubstage = stages
+                        .find(stage => stage.id === stageId)
+                        ?.substages
+                        ?.find(
+                            substage =>
+                            Number(substage.id) === Number(selectedSubstageId)
+                        );
+
+                    if (selectedSubstage) {
+
+                        title += ` - ${selectedSubstage.name}`;
+
+                    }
+                }
+
+
+                $('#request-document-title').text(title);
+
+                $('#request-document-description').text(
+                    stageInfo.description
+                );
+
+                // RENDER FILES
 
                 if (data.files && data.files.length > 0) {
 
@@ -354,6 +476,8 @@
                         </div>
                     `;
                 }
+
+                // RENDER DETAIL REQUEST DOCUMENT
 
                 let html = `
                 <div class="row">
@@ -581,10 +705,11 @@
                         return;
                     }
 
-                    const data = response.data;
+                    requestDocumentData = response.data;
 
-                    renderStages(data.stage_id, data.substage_id);
-                    renderRequestDocument(data);
+                    renderStages(requestDocumentData.stage_id, requestDocumentData.substage_id);
+                    renderRequestDocument(requestDocumentData, requestDocumentData.stage_id,
+                        requestDocumentData.substage_id);
 
                 },
 
@@ -600,6 +725,101 @@
                 }
             });
 
+            //DELAGATED EVENT LISTENER UNTUK STAGE NAVIGATION
+            $(document).on(
+                'click',
+                '.stage-navigation',
+                function() {
+
+                    const stageId = $(this).data('stage-id');
+
+
+                    /*
+                    JANGAN BISA KLIK STAGE YANG BELUM TERSEDIA
+                    */
+
+                    if ($(this).hasClass('disabled')) {
+                        return;
+                    }
+
+
+                    /*
+                    UPDATE ACTIVE MENU
+                    */
+
+                    $('.stage-navigation').removeClass(
+                        'active show'
+                    );
+
+                    $('.substage-navigation').removeClass(
+                        'active show'
+                    );
+
+                    $(this).addClass(
+                        'active show'
+                    );
+
+
+                    /*
+                    RENDER HEADER DAN CONTENT
+                    */
+
+                    renderRequestDocument(
+                        requestDocumentData,
+                        stageId,
+                        null
+                    );
+
+                }
+            );
+
+            //DELAGATED EVENT LISTENER UNTUK SUBSTAGE NAVIGATION
+            $(document).on(
+                'click',
+                '.substage-navigation',
+                function() {
+
+                    const stageId =
+                        $(this).data('stage-id');
+
+                    const substageId =
+                        $(this).data('substage-id');
+
+
+                    if ($(this).hasClass('disabled')) {
+                        return;
+                    }
+
+
+                    /*
+                    UPDATE ACTIVE
+                    */
+
+                    $('.stage-navigation').removeClass(
+                        'active show'
+                    );
+
+                    $('.substage-navigation').removeClass(
+                        'active show'
+                    );
+
+                    $(this).addClass(
+                        'active show'
+                    );
+
+
+                    /*
+                    RENDER DATA
+                    */
+
+                    renderRequestDocument(
+                        requestDocumentData,
+                        stageId,
+                        substageId
+                    );
+
+                }
+            );
         });
     </script>
 @endsection
