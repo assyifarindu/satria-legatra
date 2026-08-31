@@ -1236,14 +1236,14 @@ class RequestDocumentController extends Controller
      */
     public function showDetail($id)
     {
-        $requestDocument = TspRequestDocument::leftJoin('satria_legatra.tsp_request_document_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_document_stages.id')
-            ->leftJoin('satria_legatra.tsp_request_document_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_document_status.id')
-            ->leftJoin('satria_legatra.tsp_request_document_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_document_substages.id')
+        $requestDocument = TspRequestDocument::leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
+            ->leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
+            ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
             ->select(
                 'satria_legatra.tsp_request_documents.*',
-                'satria_legatra.tsp_request_document_stages.name as stage_name',
-                'satria_legatra.tsp_request_document_status.name as status_name',
-                'satria_legatra.tsp_request_document_substages.name as substage_name'
+                'satria_legatra.tsp_request_stages.stage as stage_name',
+                'satria_legatra.tsp_request_status.status as status_name',
+                'satria_legatra.tsp_request_substages.substage as substage_name'
             )
             ->findOrFail($id);
         return view('tsp.request-document.detail', compact('requestDocument'));

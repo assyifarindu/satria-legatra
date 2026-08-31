@@ -734,18 +734,14 @@
                     const stageId = $(this).data('stage-id');
 
 
-                    /*
-                    JANGAN BISA KLIK STAGE YANG BELUM TERSEDIA
-                    */
+                    /*JANGAN BISA KLIK STAGE YANG BELUM TERSEDIA*/
 
                     if ($(this).hasClass('disabled')) {
                         return;
                     }
 
 
-                    /*
-                    UPDATE ACTIVE MENU
-                    */
+                    /*UPDATE ACTIVE MENU*/
 
                     $('.stage-navigation').removeClass(
                         'active show'
@@ -760,9 +756,7 @@
                     );
 
 
-                    /*
-                    RENDER HEADER DAN CONTENT
-                    */
+                    /*RENDER HEADER DAN CONTENT*/
 
                     renderRequestDocument(
                         requestDocumentData,
@@ -791,9 +785,7 @@
                     }
 
 
-                    /*
-                    UPDATE ACTIVE
-                    */
+                    /*UPDATE ACTIVE*/
 
                     $('.stage-navigation').removeClass(
                         'active show'
@@ -808,9 +800,7 @@
                     );
 
 
-                    /*
-                    RENDER DATA
-                    */
+                    /*RENDER DATA*/
 
                     renderRequestDocument(
                         requestDocumentData,
