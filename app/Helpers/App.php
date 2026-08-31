@@ -966,7 +966,7 @@ function getAdminLegalTSP()
         ->where('satria.role_group.name', 'Admin Legal TSP')
         ->leftjoin('satria.role_group', 'satria.user_role_group.group', '=', 'satria.role_group.id')
         ->leftjoin('satria.users', 'satria.user_role_group.user', '=', 'satria.users.id')
-        ->select('satria.users.id')->get();
+        ->select('satria.users.*')->get();
 
     return $adminLegalTSP;
 }
