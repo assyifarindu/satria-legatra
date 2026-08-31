@@ -97,7 +97,7 @@ class RequestDocumentController extends Controller
                 );
 
             if ($role === 'Admin Legal TSP') {
-                $query->where('satria_legatra.tsp_request_documents.status_id', '!=', 1);
+                $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
             } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
             }

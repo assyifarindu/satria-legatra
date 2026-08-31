@@ -473,7 +473,7 @@
                         <div class="border p-3 rounded mb-3">
 
                             <h5 class="mt-3 ps-3 pt-1">
-                                ${data.document_number ?? '-'} ${data.title ?? '-'}
+                                ${data.document_number ?? ''} ${data.title ?? '-'}
                             </h5>
 
                             <div class="row">

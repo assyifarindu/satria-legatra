@@ -5,6 +5,35 @@
 @endsection
 
 @section('css')
+    <style>
+        .stage-navigation.active {
+            background-color: #6658dd !important;
+            color: #ffffff !important;
+            /* #6658dd */
+        }
+
+        .substage-navigation {
+            background-color: #e9e8f7;
+            color: #6c6f7a !important;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .substage-navigation.active {
+            background-color: #a49ce7 !important;
+            color: #ffffff !important;
+        }
+
+        .substage-navigation.text-success {
+            background-color: #e8f5ed;
+        }
+
+        .substage-navigation.disabled {
+            background-color: #eef0f2;
+            color: #9aa0a6 !important;
+            opacity: 1;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -270,15 +299,13 @@
                                     data-substage-name="${substage.name}"
 
                                     role="tab"
-
                                     style="
-                                        font-size: 12px;
-                                        width: 95px;
-                                        text-align: center;
-                                        padding: 7px 8px;
+                                        width: 95%;
                                         margin: 0;
-                                        line-height: 18px;
+                                        padding: 8px 10px;
                                     "
+
+                                   
                                 >
                                     ${substage.sequence}. ${substage.name}
                                 </a>
@@ -486,7 +513,7 @@
                         <div class="border p-3 rounded mb-3">
 
                             <h5 class="mt-3 ps-3 pt-1">
-                                ${data.document_number ?? '-'} ${data.title ?? '-'}
+                                ${data.document_number ?? ''} ${data.title ?? '-'}
                             </h5>
 
                             <div class="row">
@@ -767,25 +794,25 @@
                 }
             );
 
-            //DELAGATED EVENT LISTENER UNTUK SUBSTAGE NAVIGATION
+            // DELEGATED EVENT LISTENER UNTUK SUBSTAGE NAVIGATION
             $(document).on(
                 'click',
                 '.substage-navigation',
                 function() {
 
-                    const stageId =
-                        $(this).data('stage-id');
+                    const stageId = $(this).data('stage-id');
 
-                    const substageId =
-                        $(this).data('substage-id');
+                    const substageId = $(this).data('substage-id');
 
+
+                    /* JANGAN BISA KLIK SUBSTAGE YANG BELUM TERSEDIA */
 
                     if ($(this).hasClass('disabled')) {
                         return;
                     }
 
 
-                    /*UPDATE ACTIVE*/
+                    /* RESET ACTIVE MENU*/
 
                     $('.stage-navigation').removeClass(
                         'active show'
@@ -795,12 +822,21 @@
                         'active show'
                     );
 
+
+                    /*ACTIVE SUBSTAGE */
+
                     $(this).addClass(
                         'active show'
                     );
 
 
-                    /*RENDER DATA*/
+                    /*ACTIVE PARENT STAGE */
+
+                    $(`.stage-navigation[data-stage-id="${stageId}"]`)
+                        .addClass('active show');
+
+
+                    /*RENDER DATA */
 
                     renderRequestDocument(
                         requestDocumentData,
