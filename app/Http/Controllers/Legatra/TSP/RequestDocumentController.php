@@ -650,7 +650,7 @@ class RequestDocumentController extends Controller
 
                 );
 
-                Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             }
 
 
