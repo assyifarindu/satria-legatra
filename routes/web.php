@@ -314,6 +314,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/tsp/request-document/tracking/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showTracking'])->name('tsp.request-document.tracking');
     Route::get('/tsp/request-document/legal-drafting/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showLegalDrafting'])->name('tsp.request-document.legal-drafting');
     Route::post('/tsp/request-document/legal-drafting/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeLegalDrafting'])->name('tsp.request-document.store-legal-drafting');
+    Route::get('/tsp/request-document/legal-drafting/show-request-to-revision-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRequestToRevisionByUser'])->name('tsp.request-document.legal-drafting.show-request-to-revision-by-user');
+    Route::post('/tsp/request-document/legal-drafting/request-to-revision-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'requestToRevisionLDByUser'])->name('tsp.request-document.legal-drafting.request-to-revision-by-user');
+    Route::get('/tsp/request-document/legal-drafting/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showLegalDraftingRevision'])->name('tsp.request-document.legal-drafting.show-revision');
+    Route::post('/tsp/request-document/legal-drafting/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeLegalDraftingRevision'])->name('tsp.request-document.store-legal-drafting.revision');
+
+
+
 
 
 

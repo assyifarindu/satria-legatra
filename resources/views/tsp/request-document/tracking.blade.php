@@ -80,6 +80,9 @@
                                                 <h4 class="header-title" id="request-document-title">Loading...</h4>
 
                                                 <p class="sub-header" id="request-document-description">Loading...</p>
+
+                                                <div id="feedback-list-container"></div>
+
                                                 <div id="request-document-detail">
 
                                                     <div class="text-center">
@@ -92,10 +95,11 @@
 
                                             <div class="row mt-4">
                                                 <div class="col-sm-6">
-                                                </div> <!-- end col -->
+                                                </div>
+                                                {{-- button continue to drafting by admin --}}
                                                 @if (
-                                                    ($requestDocument->stage_id == 1 || $requestDocument->stage_id == 2) && getRoles(Auth::user()->id) === 'Admin Legal TSP'
-                                                )
+                                                    ($requestDocument->stage_id == 1 || $requestDocument->stage_id == 2) &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.legal-drafting', $requestDocument->id) }}"
@@ -103,7 +107,41 @@
                                                                 <i class="mdi mdi-file me-1"></i> Continue to
                                                                 Drafting </a>
                                                         </div>
-                                                    </div><!-- end col -->
+                                                    </div>
+                                                @endif
+
+                                                {{-- button request to revision dan verify by user --}}
+                                                @if ($requestDocument->stage_id == 3 && getRoles(Auth::user()->id) !== 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-warning btn-request-revision"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i>
+
+                                                                Request to Revision
+
+                                                            </a>
+                                                            <a href="{{ route('tsp.request-document.legal-drafting', $requestDocument->id) }}"
+                                                                class="btn btn-success">
+                                                                <i class="mdi mdi-file me-1"></i>Verify</a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button revise legal drafting request document by admin --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 3 &&
+                                                        $requestDocument->substage_id == 3 &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.legal-drafting.show-revision', $requestDocument->id) }}"
+                                                                class="btn btn-warning">
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
+                                                        </div>
+                                                    </div>
                                                 @endif
                                             </div>
                                         </div>
@@ -119,6 +157,7 @@
             </div>
         </div>
     </div>
+    <div id="modal-container"></div>
 @endsection
 
 @section('js')
@@ -346,6 +385,53 @@
                 });
 
                 $('#v-pills-tab').html(html);
+            }
+
+            function renderFeedbacks(feedbacks) {
+                let html = '';
+
+                const currentStage = Number(requestDocumentData?.stage_id ?? 0);
+
+                if (currentStage >= 3 && feedbacks && feedbacks.length > 0) {
+                    feedbacks.forEach(function(feedback) {
+                        const feedbackDate = feedback.created_at_formatted ??
+                            (feedback.created_at ?
+                                new Date(feedback.created_at).toLocaleDateString('id-ID', {
+                                    day: '2-digit',
+                                    month: 'long',
+                                    year: 'numeric'
+                                }) :
+                                '-');
+
+                        const fileUrl = feedback.file_path ?
+                            `{{ url('/') }}/${String(feedback.file_path).replace(/^\/+/, '')}` :
+                            null;
+
+                        html += `
+                            <div class="border p-3 mb-3 rounded">
+                                ${fileUrl ? `
+                                                        <div class="float-end">
+                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                    title="Download" tabindex="0"
+                                                                    data-plugin="tippy"
+                                                                    data-tippy-placement="top"></i>
+                                                            </a>
+                                                        </div>
+                                                    ` : ''}
+
+                                <div class="form-check">
+                                    <label class="form-check-label font-16 fw-bold">
+                                        Feedback dari <b>${feedback.action_by_name ?? '-'}</b> - ${feedbackDate}
+                                    </label>
+                                </div>
+                                <p class="mb-0 ps-3 pt-1">${feedback.remark ?? '-'}.</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                $('#feedback-list-container').html(html);
             }
 
             function renderRequestDocument(data, selectedStageId = null, selectedSubstageId = null) {
@@ -735,8 +821,10 @@
                     }
 
                     requestDocumentData = response.data;
+                    feedbacks = response.feedbacks;
 
                     renderStages(requestDocumentData.stage_id, requestDocumentData.substage_id);
+                    renderFeedbacks(feedbacks);
                     renderRequestDocument(requestDocumentData, requestDocumentData.stage_id,
                         requestDocumentData.substage_id);
 
@@ -845,6 +933,224 @@
                         stageId,
                         substageId
                     );
+
+                }
+            );
+
+            // KLIK BUTTON REQUEST TO REVISION
+            $(document).on(
+                'click',
+                '.btn-request-revision',
+                function() {
+
+                    const id = $(this).data('id');
+                    const url =
+                        "{{ url('tsp/request-document/legal-drafting/show-request-to-revision-by-user') }}/" +
+                        id;
+
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        beforeSend: function() {
+
+                            $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                        },
+
+
+                        success: function(response) {
+                            $('#modal-container').html(response);
+                            const modalElement =
+                                document.getElementById(
+                                    'request-to-revision-modal'
+                                );
+                            if (!modalElement) {
+
+                                console.error(
+                                    'Modal request-to-revision-modal tidak ditemukan.'
+                                );
+
+                                return;
+
+                            }
+
+                            const revisionModal = new bootstrap.Modal(modalElement);
+                            revisionModal.show();
+
+                        },
+
+
+                        error: function(xhr) {
+                            console.error(xhr);
+                            Swal.fire({
+
+                                icon: 'error',
+
+                                title: 'Error',
+
+                                text: xhr.responseJSON?.message ??
+                                    'Gagal memuat form Request to Revision.'
+
+                            });
+
+                        }
+
+                    });
+
+                }
+            );
+
+            /*SUBMIT REQUEST TO REVISION*/
+            $(document).on(
+                'submit',
+                '#request-to-revision-form',
+                function(e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    const id = form.data('id');
+                    const button = $('#confirm-request-revision');
+
+                    /*FORM DATA*/
+                    const formData = new FormData(this);
+
+                    /*INPUT*/
+
+                    const remarkInput = $('#revision-remark');
+
+                    const attachmentInput = $('#revision-attachment');
+
+                    /*ERROR ELEMENT*/
+
+                    const remarkError = $('#revision-remark-error');
+
+                    const attachmentError = $('#revision-attachment-error');
+
+                    /*RESET VALIDATION*/
+
+                    remarkInput.removeClass('is-invalid');
+
+                    attachmentInput.removeClass('is-invalid');
+
+                    remarkError.text('');
+
+                    attachmentError.text('');
+
+
+                    /* LOADING BUTTON */
+
+                    button.prop('disabled', true);
+
+                    button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                    /* AJAX */
+                    $.ajax({
+
+                        url: "{{ url('tsp/request-document/legal-drafting/request-to-revision-by-user') }}/" +
+                            id,
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+
+                            if (response.success) {
+
+                                /*HIDE MODAL */
+                                const modalElement = document.getElementById(
+                                    'request-to-revision-modal');
+
+                                const modal = bootstrap.Modal.getInstance(modalElement);
+
+                                if (modal) {
+                                    modal.hide();
+                                }
+
+                                /*SUCCESS */
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: response.message,
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+
+                                    /*REDIRECT*/
+
+                                    window.location.href =
+                                        "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                                });
+
+                            }
+
+                        },
+                        error: function(xhr) {
+
+                            console.error(xhr);
+                            /*VALIDATION ERROR*/
+
+                            if (xhr.status === 422) {
+
+                                const errors = xhr.responseJSON.errors;
+
+                                /*REMARK ERROR*/
+
+                                if (errors.remark) {
+                                    remarkInput.addClass('is-invalid');
+                                    remarkError.text(errors.remark[0]);
+
+                                }
+
+                                /*ATTACHMENT ERROR*/
+
+                                if (errors.attachment) {
+                                    attachmentInput.addClass('is-invalid');
+
+                                    attachmentError.text(errors.attachment[0]
+
+                                    );
+
+                                }
+
+                                return;
+
+                            }
+
+                            /* SYSTEM ERROR*/
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: xhr.responseJSON?.message ??
+                                    'Request to Revision gagal disubmit.'
+                            });
+
+                        },
+
+                        complete: function() {
+                            button.prop('disabled', false);
+                            button.html(`
+
+                                <i
+                                    class="mdi mdi-file-edit-outline me-1">
+                                </i>
+
+                                Request to Revision
+
+                            `);
+
+                        }
+
+                    });
 
                 }
             );

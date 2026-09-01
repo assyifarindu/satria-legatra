@@ -78,10 +78,14 @@ class TspRequestDocument extends Model
         return $this->hasMany(TspRequestDocumentFile::class, 'request_document_id');
     }
 
-    // public function committees()
-    // {
-    //     return $this->hasMany(TspRequestDocumentCommittee::class, 'request_document_id');
-    // }
+    public function committees()
+    {
+        return $this->hasMany(
+            TspRequestDocumentCommittees::class,
+            'request_document_id',
+            'id'
+        )->where('deleted_at', null)->orderBy('sequence', 'asc');
+    }
 
     public function feedbacks()
     {

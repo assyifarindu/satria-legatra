@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Legatra\TSP;
 
 use App\Http\Controllers\Controller;
 use App\Models\Table\TspRequestDocument;
-use App\Models\Table\TspRequestDocumentCommittess;
+use App\Models\Table\TspRequestDocumentCommittees;
 use App\Models\Table\TspRequestDocumentFile;
 use App\Models\Table\TspRequestDocumentPic;
 use App\Models\Table\TspRequestDocumentCustomer;
 use App\Models\Table\TspRequestDocumentCustomerPic;
 use App\Models\Table\TspRequestDocumentFeedback;
 use App\Models\Table\TspRequestDocumentHistory;
+use App\Models\Table\TspRequestDocumentFeedbackFile;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
@@ -97,7 +98,7 @@ class RequestDocumentController extends Controller
                 );
 
             if ($role === 'Admin Legal TSP') {
-                $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
+                $query->where('satria_legatra.tsp_request_documents.status_id', '!=', 1);
             } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
             }
@@ -574,6 +575,7 @@ class RequestDocumentController extends Controller
                     'name' => $fileName,
                     'document_type' => 'Draft Contract',
                     'file_path' => $draftContractPath,
+                    'created_by' => Auth::id(),
                 ]);
             }
 
@@ -617,6 +619,7 @@ class RequestDocumentController extends Controller
                     'name' => $fileName,
                     'document_type' => 'Quotation',
                     'file_path' => $quotationPath,
+                    'created_by' => Auth::id(),
                 ]);
             }
 
@@ -1084,6 +1087,7 @@ class RequestDocumentController extends Controller
 
                         'file_path' =>
                         $filePath,
+                        'created_by' => Auth::id(),
                     ]);
                 }
             }
@@ -1161,6 +1165,7 @@ class RequestDocumentController extends Controller
 
                         'file_path' =>
                         $filePath,
+                        'created_by' => Auth::id(),
                     ]);
                 }
             }
@@ -1266,20 +1271,25 @@ class RequestDocumentController extends Controller
                     'pics',
                 ])->findOrFail($id);
 
-            // dd($requestDocument);
-
-            $draftContract = $requestDocument->files
-                ->where('document_type', 'Draft Contract')
-                ->first();
-
-            $quotation = $requestDocument->files
-                ->where('document_type', 'Quotation')
-                ->first();
+            $feedbacks = TspRequestDocumentFeedback::where('satria_legatra.tsp_request_document_feedbacks.request_document_id', $id)
+                ->leftJoin('satria_legatra.tsp_request_document_feedback_files', 'satria_legatra.tsp_request_document_feedbacks.id', '=', 'satria_legatra.tsp_request_document_feedback_files.request_document_feedback_id')
+                ->leftJoin('satria_legatra.tsp_request_document_histories', 'satria_legatra.tsp_request_document_feedbacks.history_id', '=', 'satria_legatra.tsp_request_document_histories.id')
+                ->leftJoin('satria.users', 'satria_legatra.tsp_request_document_histories.action_by', '=', 'satria.users.id')
+                ->select(
+                    'satria_legatra.tsp_request_document_feedbacks.*',
+                    'satria.users.name as action_by_name',
+                    'satria_legatra.tsp_request_document_histories.action as history_action',
+                    'satria_legatra.tsp_request_document_histories.created_at as created_at',
+                    'satria_legatra.tsp_request_document_feedback_files.name as file_name',
+                    'satria_legatra.tsp_request_document_feedback_files.file_path as file_path'
+                )
+                ->get();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data retrieved successfully',
                 'data' => $requestDocument,
+                'feedbacks' => $feedbacks,
             ]);
         } catch (\Throwable $e) {
 
@@ -1629,6 +1639,7 @@ class RequestDocumentController extends Controller
                 'satria_legatra.tsp_request_substages.substage as substage_name'
             )
             ->findOrFail($id);
+
         return view('tsp.request-document.tracking', compact('requestDocument'));
     }
 
@@ -1763,7 +1774,7 @@ class RequestDocumentController extends Controller
             /*INSERT COMMITTEE*/
             foreach ($validated['committee'] as $index => $committeeId) {
 
-                TspRequestDocumentCommittess::create([
+                TspRequestDocumentCommittees::create([
 
                     'request_document_id' => $requestDocument->id,
 
@@ -1805,6 +1816,7 @@ class RequestDocumentController extends Controller
                     'name' => $fileName,
 
                     'file_path' => $path,
+                    'updated_by' => Auth::id(),
                 ]
             );
 
@@ -1859,6 +1871,330 @@ class RequestDocumentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Legal Drafting gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the request to revision modal for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showRequestToRevisionByUser($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.ld.form-request-to-revision-by-user',
+            compact('requestDocument')
+        );
+    }
+
+    /** Request to Revision LD by User
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function requestToRevisionLDByUser(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'remark' => ['required', 'string'],
+                'attachment' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 10,
+                'substage_id' => 3,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            $history = TspRequestDocumentHistory::create([
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Request to Revision LD by User',
+                'action_by' => Auth::id(),
+                'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
+            ]);
+
+            /*INSERT REMARKS REQUEST TO REVISION*/
+            $feedback = TspRequestDocumentFeedback::create([
+                'request_document_id' => $requestDocument->id,
+                'history_id' => $history->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'remark' => $validated['remark'],
+            ]);
+
+            /*INSERT ATTACHMENT REQUEST TO REVISION */
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('upload/request_document'), $fileName);
+                $filePath = 'upload/request_document/' . $fileName;
+
+                TspRequestDocumentFeedbackFile::create([
+                    'request_document_feedback_id' => $feedback->id,
+                    'name' => $fileName,
+                    'file_path' => $filePath,
+                ]);
+            }
+
+            $data_email = array(
+                'title' => $requestDocument->title,
+                'remark' => $validated['remark'],
+                'subject' => 'Request Document Revisi',
+                'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
+            );
+
+            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+
+            Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return response()->json([
+
+                'success' => true,
+
+                'message' => 'Request to Revision berhasil disubmit.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Request to Revision gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the legal drafting revision view for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showLegalDraftingRevision($id)
+    {
+        try {
+
+            $requestDocument = TspRequestDocument::with([
+                'committees' => function ($query) {
+                    $query->orderBy('sequence', 'asc');
+                },
+                'files',
+            ])->findOrFail($id);
+
+            $draftContract = $requestDocument->files
+                ->where('document_type', 'Draft Contract')
+                ->first();
+
+            $committee = User::where(function ($query) {
+                $query->where(function ($q) {
+                    $q->where('companyid', 16731)
+                        ->where(function ($qq) {
+                            $qq->where('title', 'like', '%Dept Head%')
+                                ->orWhere('title', 'like', '%Div Head%')
+                                ->orWhere('title', 'like', '%Func Head%');
+                        });
+                })->orWhere('division', 'Board of Directors');
+            })
+                ->orderBy('name')
+                ->get();
+
+            // dd($committee);
+
+            return view('tsp.request-document.legal-drafting-revision', compact('requestDocument', 'committee', 'draftContract'));
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menampilkan halaman revisi legal drafting.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Store the legal drafting revision action for the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeLegalDraftingRevision(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'draft_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+
+                'committee' => ['required', 'array', 'min:1'],
+            ]);
+
+            /*VALIDASI PREFIX FILE*/
+
+            if ($request->hasFile('draft_contract')) {
+
+                $fileName = strtolower(
+                    $request
+                        ->file('draft_contract')
+                        ->getClientOriginalName()
+                );
+
+                if (!str_starts_with(
+                    $fileName,
+                    'draft_contract_'
+                )) {
+                    return back()
+                        ->withInput()
+                        ->withErrors([
+                            'draft_contract' =>
+                            'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        ]);
+                }
+            }
+
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 6,
+                'stage_id' => 3,
+                'substage_id' => 1,
+            ]);
+
+            /*DELETE COMMITTEE KEMUDIAN CREATE ULANG*/
+            TspRequestDocumentCommittees::where(
+                'request_document_id',
+                $requestDocument->id
+            )->delete();
+
+
+            foreach ($validated['committee'] as $index => $committeeId) {
+
+                TspRequestDocumentCommittees::create([
+
+                    'request_document_id' => $requestDocument->id,
+
+                    'committee_id' => $committeeId,
+
+                    'sequence' => $index + 1,
+
+                    'verification_ld_status' => false,
+
+                    'verification_flr_status' => false,
+
+                    'created_by' => Auth::id(),
+
+                ]);
+            }
+
+            $name = pathinfo(
+                $validated['draft_contract']->getClientOriginalName(),
+                PATHINFO_FILENAME
+            );
+
+            $file = $validated['draft_contract'];
+
+            // Buat nama file baru
+            $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+
+            // Simpan langsung ke public/upload/request_document
+            $file->move(
+                public_path('upload/request_document'),
+                $fileName
+            );
+
+            // Path yang disimpan ke database
+            $path =  'upload/request_document/' . $fileName;
+
+            /*UPDATE DRAFT CONTRACT*/
+            TspRequestDocumentFile::updateOrCreate(
+                [
+                    'request_document_id' => $requestDocument->id,
+                    'document_type' => 'Draft Contract',
+                ],
+                [
+                    'name' => $fileName,
+
+                    'file_path' => $path,
+                    'updated_by' => Auth::id(),
+
+                ]
+            );
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Revisi Legal Drafting',
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+
+            ]);
+
+
+            /* SEND EMAIL NOTIFICATION TO USER */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Dokumen Siap untuk Direview',
+                'message' => 'Request dokumen Anda telah selesai direvisi dan saat ini sudah siap untuk direview.',
+
+            );
+
+            $user = User::find($requestDocument->requester_id);
+
+            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+            Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return redirect()
+                ->route('tsp.request-document')
+                ->with(
+                    'success',
+                    'Revisi Legal Drafting berhasil disubmit.'
+                );
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Revisi Legal Drafting gagal disubmit.',
                 'error' => $e->getMessage(),
             ], 500);
         }
