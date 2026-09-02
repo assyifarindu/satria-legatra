@@ -111,7 +111,12 @@
                                                 @endif
 
                                                 {{-- button request to revision dan verify by user --}}
-                                                @if ($requestDocument->stage_id == 3 && getRoles(Auth::user()->id) !== 'Admin Legal TSP')
+                                                @if (
+                                                    $requestDocument->stage_id == 3 &&
+                                                        $requestDocument->substage_id == 1 &&
+                                                        $requestDocument->status_id == 6 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -123,9 +128,15 @@
                                                                 Request to Revision
 
                                                             </a>
-                                                            <a href="{{ route('tsp.request-document.legal-drafting', $requestDocument->id) }}"
-                                                                class="btn btn-success">
-                                                                <i class="mdi mdi-file me-1"></i>Verify</a>
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-verify-by-user"
+                                                                title="Verify Request Document" tabindex="0"
+                                                                data-plugin="tippy" data-tippy-placement="top"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-check"></i>
+                                                                Verify
+                                                            </a>
                                                         </div>
                                                     </div>
                                                 @endif
@@ -135,6 +146,53 @@
                                                     $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 3 &&
                                                         getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.legal-drafting.show-revision', $requestDocument->id) }}"
+                                                                class="btn btn-warning">
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button request to revision dan verify by committee --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 3 &&
+                                                        $requestDocument->substage_id == 2 &&
+                                                        $requestDocument->status_id == 7 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division === 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-warning btn-request-revision-committe"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i>
+
+                                                                Request to Revision
+
+                                                            </a>
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-verify-by-committe"
+                                                                title="Verify Request Document" tabindex="0"
+                                                                data-plugin="tippy" data-tippy-placement="top"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-check"></i>
+                                                                Verify
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button revise legal drafting request document by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 3 &&
+                                                        $requestDocument->substage_id == 3 &&
+                                                        $requestDocument->status_id == 11 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.legal-drafting.show-revision', $requestDocument->id) }}"
@@ -410,15 +468,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                        <div class="float-end">
-                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                    title="Download" tabindex="0"
-                                                                    data-plugin="tippy"
-                                                                    data-tippy-placement="top"></i>
-                                                            </a>
-                                                        </div>
-                                                    ` : ''}
+                                                                                                            <div class="float-end">
+                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                        title="Download" tabindex="0"
+                                                                                                                        data-plugin="tippy"
+                                                                                                                        data-tippy-placement="top"></i>
+                                                                                                                </a>
+                                                                                                            </div>
+                                                                                                        ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -937,7 +995,7 @@
                 }
             );
 
-            // KLIK BUTTON REQUEST TO REVISION
+            // KLIK BUTTON REQUEST TO REVISION BY USER
             $(document).on(
                 'click',
                 '.btn-request-revision',
@@ -1004,7 +1062,7 @@
                 }
             );
 
-            /*SUBMIT REQUEST TO REVISION*/
+            /*SUBMIT REQUEST TO REVISION BY USER */
             $(document).on(
                 'submit',
                 '#request-to-revision-form',
@@ -1155,5 +1213,360 @@
                 }
             );
         });
+
+        $(document).on('click', '.btn-verify-by-user', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/legal-drafting') }}/verify-confirmation/" + id;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+
+                beforeSend: function() {
+                    console.log('AJAX STARTED');
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('verify-by-user-modal');
+
+                    if (!modalElement) {
+                        console.error('Element #verify-by-user-modal tidak ditemukan!');
+                        return;
+                    }
+
+                    const verifyByUserModal =
+                        new bootstrap.Modal(modalElement);
+
+                    verifyByUserModal.show();
+                },
+
+                error: function(xhr) {
+
+                    console.error('AJAX ERROR:', xhr);
+
+                    alert('Gagal memuat konfirmasi verifikasi.');
+                }
+            });
+
+        });
+
+        $(document).on('click', '#confirm-verify', function() {
+
+            const id = $(this).data('id');
+
+            const button = $(this);
+
+            button.prop('disabled', true);
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Processing...
+        `);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document/legal-drafting') }}/verify-by-user/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement = document.getElementById('verify-by-user-modal');
+
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+
+                            /*REDIRECT*/
+
+                            window.location.href =
+                                "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Terjadi kesalahan saat memverifikasi Request Document.'
+                    );
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                    <i class="fas fa-check me-1"></i>
+                    Yes, Cancel Request
+                `);
+
+                }
+
+            });
+
+        });
+
+
+        // KLIK BUTTON REQUEST TO REVISION COMMITE
+        $(document).on(
+            'click',
+            '.btn-request-revision-committe',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/legal-drafting/show-request-to-revision-by-committee') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'request-to-revision-committee-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal request-to-revision-committee-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const revisionModal = new bootstrap.Modal(modalElement);
+                        revisionModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Request to Revision.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT REQUEST TO REVISION COMMITTEE*/
+        $(document).on(
+            'submit',
+            '#request-to-revision-committee-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-request-revision-committee');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const remarkInput = $('#revision-remark');
+
+                const attachmentInput = $('#revision-attachment');
+
+                /*ERROR ELEMENT*/
+
+                const remarkError = $('#revision-remark-error');
+
+                const attachmentError = $('#revision-attachment-error');
+
+                /*RESET VALIDATION*/
+
+                remarkInput.removeClass('is-invalid');
+
+                attachmentInput.removeClass('is-invalid');
+
+                remarkError.text('');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/legal-drafting/request-to-revision-by-committee') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'request-to-revision-committee-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*REMARK ERROR*/
+
+                            if (errors.remark) {
+                                remarkInput.addClass('is-invalid');
+                                remarkError.text(errors.remark[0]);
+
+                            }
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Request to Revision gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i
+                                    class="mdi mdi-file-edit-outline me-1">
+                                </i>
+
+                                Request to Revision
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
     </script>
 @endsection

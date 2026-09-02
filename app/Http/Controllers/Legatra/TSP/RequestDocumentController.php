@@ -60,6 +60,7 @@ class RequestDocumentController extends Controller
     {
         try {
             $user_id = Auth::id();
+            $division = Auth::user()->division;
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
@@ -80,6 +81,7 @@ class RequestDocumentController extends Controller
                 ->leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
                 ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
                 ->leftJoin('satria.users', 'satria_legatra.tsp_request_documents.requester_id', '=', 'satria.users.id')
+                ->leftJoin('satria_legatra.tsp_request_document_histories', 'satria_legatra.tsp_request_documents.id', '=', 'satria_legatra.tsp_request_document_histories.request_document_id')
                 ->select(
                     'satria_legatra.tsp_request_documents.id',
                     'satria_legatra.tsp_request_documents.stage_id',
@@ -95,10 +97,13 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.is_project',
                     'satria_legatra.tsp_request_documents.created_at',
                     'satria_legatra.tsp_request_documents.updated_at'
-                );
+                )
+                ->distinct();
 
             if ($role === 'Admin Legal TSP') {
-                $query->where('satria_legatra.tsp_request_documents.status_id', '!=', 1);
+                $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
+            } else if ($division === 'Board Of Directors') {
+                $query->where('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
             } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
             }
@@ -1661,9 +1666,10 @@ class RequestDocumentController extends Controller
                         ->where(function ($qq) {
                             $qq->where('title', 'like', '%Dept Head%')
                                 ->orWhere('title', 'like', '%Div Head%')
-                                ->orWhere('title', 'like', '%Func Head%');
+                                ->orWhere('title', 'like', '%Func Head%')
+                                ->orWhere('division', 'Board of Directors');
                         });
-                })->orWhere('division', 'Board of Directors');
+                });
             })
                 ->orderBy('name')
                 ->get();
@@ -1732,7 +1738,8 @@ class RequestDocumentController extends Controller
             $validated = $request->validate([
                 'draft_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
 
-                'committee' => ['required', 'array', 'min:1'],
+                'committee_id' => ['required', 'array', 'min:1'],
+                'committee_id.*' => ['required', 'integer'],
             ]);
 
             /*VALIDASI PREFIX FILE*/
@@ -1772,7 +1779,7 @@ class RequestDocumentController extends Controller
             ]);
 
             /*INSERT COMMITTEE*/
-            foreach ($validated['committee'] as $index => $committeeId) {
+            foreach ($validated['committee_id'] as $index => $committeeId) {
 
                 TspRequestDocumentCommittees::create([
 
@@ -1840,7 +1847,7 @@ class RequestDocumentController extends Controller
             /* SEND EMAIL NOTIFICATION TO USER */
             $detail_email = array(
                 'title' => $requestDocument->title,
-                'subject' => 'Dokumen Siap untuk Direview',
+                'subject' => 'Request Document Legal Drafting Completed',
                 'message' => 'Request dokumen Anda telah selesai dibuat dan saat ini sudah siap untuk direview.',
 
             );
@@ -1859,11 +1866,9 @@ class RequestDocumentController extends Controller
                 );
         } catch (ValidationException $e) {
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Throwable $e) {
 
             $db->rollBack();
@@ -1954,13 +1959,13 @@ class RequestDocumentController extends Controller
             $data_email = array(
                 'title' => $requestDocument->title,
                 'remark' => $validated['remark'],
-                'subject' => 'Request Document Revisi',
+                'subject' => 'Request Document Need Revision',
                 'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
             );
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
 
-            Alert::success('Data Saved Successfully', 'Success Message');
+            // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
             return response()->json([
 
@@ -2013,9 +2018,10 @@ class RequestDocumentController extends Controller
                         ->where(function ($qq) {
                             $qq->where('title', 'like', '%Dept Head%')
                                 ->orWhere('title', 'like', '%Div Head%')
-                                ->orWhere('title', 'like', '%Func Head%');
+                                ->orWhere('title', 'like', '%Func Head%')
+                                ->orWhere('division', 'Board of Directors');
                         });
-                })->orWhere('division', 'Board of Directors');
+                });
             })
                 ->orderBy('name')
                 ->get();
@@ -2164,7 +2170,7 @@ class RequestDocumentController extends Controller
             /* SEND EMAIL NOTIFICATION TO USER */
             $detail_email = array(
                 'title' => $requestDocument->title,
-                'subject' => 'Dokumen Siap untuk Direview',
+                'subject' => 'Request Document Legal Drafting Revision Completed',
                 'message' => 'Request dokumen Anda telah selesai direvisi dan saat ini sudah siap untuk direview.',
 
             );
@@ -2173,7 +2179,7 @@ class RequestDocumentController extends Controller
 
             Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
 
-            Alert::success('Data Saved Successfully', 'Success Message');
+            // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
             return redirect()
                 ->route('tsp.request-document')
@@ -2195,6 +2201,228 @@ class RequestDocumentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Revisi Legal Drafting gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the verify confirmation modal for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function verifyConfirmation($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.ld.verify-by-user',
+            compact('requestDocument')
+        );
+    }
+
+    /** Verify LD by User
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyLDByUser($id)
+    {
+        $db = DB::connection('legatra');
+        try {
+
+            $db->beginTransaction();
+
+            $requestDocument =
+                TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+
+                'status_id' => 7,
+                'stage_id' => 3,
+                'substage_id' => 2,
+            ]);
+
+            /*CARI COMMITTEE YANG BELUM VERIFIKASI*/
+            $committee = TspRequestDocumentCommittees::where('request_document_id', $requestDocument->id)
+                ->where('deleted_at', null)
+                ->where('verification_ld_status', false)
+                ->first();
+
+            /*INSERT HISTORY*/
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Verified by user',
+                'action_by' => Auth::id(),
+                'assigned_to' => $committee->committee_id,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+
+            ]);
+
+            /* SEND EMAIL NOTIFICATION TO PIC */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Request Document Verified by User',
+                'message' => 'Email Pemberitahuan, request document telah diverifikasi oleh user dan saat ini sudah siap untuk diverifikasi oleh committee terkait.',
+            );
+
+            $committee = User::find($committee->committee_id);
+
+            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+            $db->commit();
+
+            return response()->json([
+
+                'success' => true,
+
+                'message' =>
+                'Request Document berhasil diverifikasi oleh user.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memverifikasi Request Document.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the request to revision modal for the specified request document by committee.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showRequestToRevisionByCommittee($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.ld.form-request-to-revision-by-committee',
+            compact('requestDocument')
+        );
+    }
+
+    /** Request to Revision LD by Committee
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestToRevisionLDByCommittee(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'remark' => ['required', 'string'],
+                'attachment' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 11,
+                'substage_id' => 3,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            $history = TspRequestDocumentHistory::create([
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Request to Revision LD by Committee',
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
+            ]);
+
+            /*INSERT REMARKS REQUEST TO REVISION*/
+            $feedback = TspRequestDocumentFeedback::create([
+                'request_document_id' => $requestDocument->id,
+                'history_id' => $history->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'remark' => $validated['remark'],
+            ]);
+
+            /*INSERT ATTACHMENT REQUEST TO REVISION */
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('upload/request_document'), $fileName);
+                $filePath = 'upload/request_document/' . $fileName;
+
+                TspRequestDocumentFeedbackFile::create([
+                    'request_document_feedback_id' => $feedback->id,
+                    'name' => $fileName,
+                    'file_path' => $filePath,
+                ]);
+            }
+
+            /*UPDATE COMMITTEE VERIFICATION STATUS*/
+            TspRequestDocumentCommittees::where(
+                'request_document_id',
+                $requestDocument->id
+            )->update([
+                'verification_ld_status' => false,
+            ]);
+
+            /* SEND EMAIL NOTIFICATION TO USER */
+            $data_email = array(
+                'title' => $requestDocument->title,
+                'remark' => $validated['remark'],
+                'subject' => 'Request Document Need Revision',
+                'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
+            );
+
+            $user = User::find($requestDocument->requester_id);
+
+            Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+
+            // Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return response()->json([
+
+                'success' => true,
+
+                'message' => 'Request to Revision berhasil disubmit.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Request to Revision gagal disubmit.',
                 'error' => $e->getMessage(),
             ], 500);
         }

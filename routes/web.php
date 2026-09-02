@@ -318,6 +318,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/tsp/request-document/legal-drafting/request-to-revision-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'requestToRevisionLDByUser'])->name('tsp.request-document.legal-drafting.request-to-revision-by-user');
     Route::get('/tsp/request-document/legal-drafting/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showLegalDraftingRevision'])->name('tsp.request-document.legal-drafting.show-revision');
     Route::post('/tsp/request-document/legal-drafting/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeLegalDraftingRevision'])->name('tsp.request-document.store-legal-drafting.revision');
+    Route::get('/tsp/request-document/legal-drafting/verify-confirmation/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyConfirmation'])->name('tsp.request-document.legal-drafting.verify-confirmation');
+    Route::post('/tsp/request-document/legal-drafting/verify-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyLDByUser'])->name('tsp.request-document.legal-drafting.verify-by-user');
+    Route::get('/tsp/request-document/legal-drafting/show-request-to-revision-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRequestToRevisionByCommittee'])->name('tsp.request-document.legal-drafting.show-request-to-revision-by-committee');
+    Route::post('/tsp/request-document/legal-drafting/request-to-revision-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'requestToRevisionLDByCommittee'])->name('tsp.request-document.legal-drafting.request-to-revision-by-committee');
+
 
 
 

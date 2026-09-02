@@ -128,7 +128,7 @@
                                         <span class="text-danger">*</span>
                                     </label>
 
-                                    <div id="committee-container">
+                                    {{-- <div id="committee-container">
 
                                         <div class="committee-row mb-2">
 
@@ -136,8 +136,8 @@
 
                                                 <div class="col-md-10">
 
-                                                    <select name="committee[]"
-                                                        class="form-select committee-select @error('committee') is-invalid @enderror">
+                                                    <select name="committee_id[]"
+                                                        class="form-select committee-select  @error('committee_id.0') is-invalid @enderror">
 
                                                         <option value="">
                                                             Pilih Committee
@@ -157,6 +157,7 @@
 
                                                     </select>
 
+
                                                 </div>
 
 
@@ -169,18 +170,92 @@
                                                     </button>
 
                                                 </div>
+                                                @error('committee_id.0')
+                                                    <div class="invalid-feedback d-block">
+
+                                                        {{ $message }}
+
+                                                    </div>
+                                                @enderror
 
                                             </div>
 
                                         </div>
 
-                                    </div>
+                                    </div> --}}
 
-                                    @error('committee')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
+                                    <div id="committee-container">
+
+                                        @php
+                                            $oldCommittee = old('committee_id', ['']);
+                                        @endphp
+
+                                        @foreach ($oldCommittee as $index => $selectedCommittee)
+                                            <div class="committee-row mb-2">
+
+                                                <div class="row align-items-center">
+
+                                                    <div class="col-md-10">
+
+                                                        <select name="committee_id[]"
+                                                            class="form-select committee-select
+                                                            @error("committee_id.$index") is-invalid @enderror">
+
+                                                            <option value="">
+                                                                Pilih Committee
+                                                            </option>
+
+                                                            @foreach ($committee as $item)
+                                                                <option value="{{ $item->id }}"
+                                                                    {{ $selectedCommittee == $item->id ? 'selected' : '' }}>
+
+                                                                    {{ $item->name }}
+
+                                                                    @if ($item->title)
+                                                                        - {{ $item->title }}
+                                                                    @endif
+
+                                                                </option>
+                                                            @endforeach
+
+                                                        </select>
+
+
+
+                                                    </div>
+
+
+                                                    <div class="col-md-2">
+
+                                                        @if ($index === 0)
+                                                            <button type="button"
+                                                                class="btn btn-primary btn-add-committee">
+                                                                <i class="fas fa-plus"></i>
+                                                            </button>
+                                                        @endif
+
+
+                                                        {{-- <button type="button" class="btn btn-danger btn-remove-committee">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button> --}}
+
+                                                    </div>
+                                                    {{-- ERROR UNTUK COMMITTEE SESUAI INDEX --}}
+
+                                                    @error("committee_id.$index")
+                                                        <div class="invalid-feedback d-block">
+
+                                                            {{ $message }}
+
+                                                        </div>
+                                                    @enderror
+
+                                                </div>
+
+                                            </div>
+                                        @endforeach
+
+                                    </div>
 
                                 </div>
 
@@ -263,7 +338,7 @@
                         <div class="col-md-10">
 
                             <select
-                                name="committee[]"
+                                name="committee_id[]"
                                 class="form-select committee-select">
 
                                 <option value="">

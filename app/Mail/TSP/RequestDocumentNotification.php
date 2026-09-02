@@ -29,8 +29,7 @@ class RequestDocumentNotification extends Mailable
      */
     public function build()
     {
-        return $this->from('admin.satria@patria.co.id')
-            ->subject($this->details['subject'])
+        return $this->subject($this->details['subject'])
             ->view('email.tsp.email_request_document_notification')->with('data', $this->details);
     }
 }

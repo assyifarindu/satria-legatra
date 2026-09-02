@@ -1,9 +1,9 @@
-<div class="modal fade" id="request-to-revision-modal" tabindex="-1" aria-labelledby="requestToRevisionModalLabel"
-    aria-hidden="true">
+<div class="modal fade" id="request-to-revision-committee-modal" tabindex="-1"
+    aria-labelledby="requestToRevisionCommitteeModalLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-lg">
 
-        <form id="request-to-revision-form" data-id="{{ $requestDocument->id }}" enctype="multipart/form-data">
+        <form id="request-to-revision-committee-form" data-id="{{ $requestDocument->id }}" enctype="multipart/form-data">
 
             @csrf
 
@@ -12,7 +12,7 @@
                 {{-- HEADER --}}
                 <div class="modal-header">
 
-                    <h5 class="modal-title" id="requestToRevisionModalLabel">
+                    <h5 class="modal-title" id="requestToRevisionCommitteeModalLabel">
 
                         Request to Revision
 
@@ -122,7 +122,7 @@
                     </button>
 
 
-                    <button type="submit" class="btn btn-primary" id="confirm-request-revision">
+                    <button type="submit" class="btn btn-primary" id="confirm-request-revision-committee">
 
                         <i class="fas fa-save me-1"></i>
 
