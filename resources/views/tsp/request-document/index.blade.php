@@ -140,7 +140,19 @@
                     },
                     {
                         data: 'sign_status',
-                        name: 'sign_status'
+                        name: 'sign_status',
+                        render: function(data) {
+                            switch (data) {
+                                case 'Not Signed':
+                                    return `<span class="badge bg-danger">${data}</span>`;
+                                case 'Partial Signed':
+                                    return `<span class="badge bg-warning">${data}</span>`;
+                                case 'Fully Signed':
+                                    return `<span class="badge bg-success">${data}</span>`;
+                                default:
+                                    return `<span class="badge bg-secondary">${data}</span>`;
+                            }
+                        }
                     },
                     {
                         data: 'project_category',

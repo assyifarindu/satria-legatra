@@ -61,6 +61,8 @@ class RequestDocumentController extends Controller
         try {
             $user_id = Auth::id();
             $division = Auth::user()->division;
+            $superior = Auth::user()->superior;
+            $is_bod = $division === 'Board Of Directors' && $superior === null;
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
@@ -102,7 +104,7 @@ class RequestDocumentController extends Controller
 
             if ($role === 'Admin Legal TSP') {
                 $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
-            } else if ($division === 'Board Of Directors') {
+            } else if ($is_bod) {
                 $query->where('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
             } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
