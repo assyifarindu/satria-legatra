@@ -493,15 +493,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                        <div class="float-end">
-                                                                                                                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                    title="Download" tabindex="0"
-                                                                                                                                                                    data-plugin="tippy"
-                                                                                                                                                                    data-tippy-placement="top"></i>
-                                                                                                                                                            </a>
-                                                                                                                                                        </div>
-                                                                                                                                                    ` : ''}
+                                                                                                                                                            <div class="float-end">
+                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                        title="Download" tabindex="0"
+                                                                                                                                                                        data-plugin="tippy"
+                                                                                                                                                                        data-tippy-placement="top"></i>
+                                                                                                                                                                </a>
+                                                                                                                                                            </div>
+                                                                                                                                                        ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -594,13 +594,13 @@
                 JIKA ADA SUBSTAGE YANG DIPILIH
                 */
 
-                if (
-                    selectedSubstageId &&
-                    stageId === Number(data.stage_id)
-                ) {
+                if (selectedSubstageId) {
 
-                    const selectedSubstage = stages
-                        .find(stage => stage.id === stageId)
+                    const selectedStage = stages.find(
+                        stage => Number(stage.id) === Number(stageId)
+                    );
+
+                    const selectedSubstage = selectedStage
                         ?.substages
                         ?.find(
                             substage =>
