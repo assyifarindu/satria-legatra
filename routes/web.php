@@ -322,6 +322,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/tsp/request-document/legal-drafting/verify-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyLDByUser'])->name('tsp.request-document.legal-drafting.verify-by-user');
     Route::get('/tsp/request-document/legal-drafting/show-request-to-revision-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRequestToRevisionByCommittee'])->name('tsp.request-document.legal-drafting.show-request-to-revision-by-committee');
     Route::post('/tsp/request-document/legal-drafting/request-to-revision-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'requestToRevisionLDByCommittee'])->name('tsp.request-document.legal-drafting.request-to-revision-by-committee');
+    Route::get('/tsp/request-document/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRevision'])->name('tsp.request-document.show-revision');
+    Route::put('/tsp/request-document/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeRevision'])->name('tsp.request-document.store-revision');
+    Route::get('/tsp/request-document/legal-drafting/verify-confirmation-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyConfirmationCommittee'])->name('tsp.request-document.legal-drafting.verify-confirmation-committee');
+    Route::post('/tsp/request-document/legal-drafting/verify-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyLDByCommittee'])->name('tsp.request-document.legal-drafting.verify-by-committee');
+    Route::get('/tsp/request-document/upload-final-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showUploadFinalDocument'])->name('tsp.request-document.legal-drafting.show-upload-final-document');
+    Route::post('/tsp/request-document/upload-final-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'uploadFinalDocument'])->name('tsp.request-document.upload-final-document');
+
+
+
 
 
 

@@ -159,9 +159,10 @@
                                                 @if (
                                                     $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 2 &&
-                                                        $requestDocument->status_id == 7 &&
+                                                        ($requestDocument->status_id == 7 || $requestDocument->status_id == 8) &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division === 'Board Of Directors')
+                                                        Auth::user()->division === 'Board Of Directors' &&
+                                                        getBODNotVerified($requestDocument->id))
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -174,7 +175,7 @@
 
                                                             </a>
                                                             <a href="javascript:void(0)"
-                                                                class="btn btn-success btn-verify-by-committe"
+                                                                class="btn btn-success btn-verify-by-committee"
                                                                 title="Verify Request Document" tabindex="0"
                                                                 data-plugin="tippy" data-tippy-placement="top"
                                                                 data-id="{{ $requestDocument->id }}">
@@ -195,9 +196,33 @@
                                                         Auth::user()->division !== 'Board Of Directors')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
-                                                            <a href="{{ route('tsp.request-document.legal-drafting.show-revision', $requestDocument->id) }}"
+                                                            <a href="{{ route('tsp.request-document.show-revision', $requestDocument->id) }}"
                                                                 class="btn btn-warning">
                                                                 <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button revise legal drafting request document by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 4 &&
+                                                        $requestDocument->status_id == 9 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.show-revision', $requestDocument->id) }}"
+                                                                class="btn btn-warning">
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-upload-final-document"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-upload me-1"></i>
+
+                                                                Upload Final Document
+
+                                                            </a>
                                                         </div>
                                                     </div>
                                                 @endif
@@ -468,15 +493,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                            <div class="float-end">
-                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                        title="Download" tabindex="0"
-                                                                                                                        data-plugin="tippy"
-                                                                                                                        data-tippy-placement="top"></i>
-                                                                                                                </a>
-                                                                                                            </div>
-                                                                                                        ` : ''}
+                                                                                                                                                        <div class="float-end">
+                                                                                                                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                    title="Download" tabindex="0"
+                                                                                                                                                                    data-plugin="tippy"
+                                                                                                                                                                    data-tippy-placement="top"></i>
+                                                                                                                                                            </a>
+                                                                                                                                                        </div>
+                                                                                                                                                    ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -659,7 +684,7 @@
                         <div class="border p-3 rounded mb-3">
 
                             <h5 class="mt-3 ps-3 pt-1">
-                                ${data.document_number ?? ''} ${data.title ?? '-'}
+                                ${data.document_number ? data.document_number + ' - ' : ''}${data.title ?? '-'}
                             </h5>
 
                             <div class="row">
@@ -1214,6 +1239,7 @@
             );
         });
 
+        // KLIK BUTTON VERIFY BY USER
         $(document).on('click', '.btn-verify-by-user', function(e) {
 
             e.preventDefault();
@@ -1265,6 +1291,7 @@
 
         });
 
+        // KLIK BUTTON CONFIRM VERIFY BY USER
         $(document).on('click', '#confirm-verify', function() {
 
             const id = $(this).data('id');
@@ -1559,6 +1586,345 @@
                                 </i>
 
                                 Request to Revision
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON VERIFY BY COMMITTEE
+        $(document).on('click', '.btn-verify-by-committee', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/legal-drafting') }}/verify-confirmation-committee/" + id;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+
+                beforeSend: function() {
+                    console.log('AJAX STARTED');
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('verify-by-committee-modal');
+
+                    if (!modalElement) {
+                        console.error('Element #verify-by-committee-modal tidak ditemukan!');
+                        return;
+                    }
+
+                    const verifyByCommitteeModal =
+                        new bootstrap.Modal(modalElement);
+
+                    verifyByCommitteeModal.show();
+                },
+
+                error: function(xhr) {
+
+                    console.error('AJAX ERROR:', xhr);
+
+                    alert('Gagal memuat konfirmasi verifikasi.');
+                }
+            });
+
+        });
+
+        // KLIK BUTTON CONFIRM VERIFY BY COMMITTEE
+        $(document).on('click', '#confirm-verify-committee', function() {
+
+            const id = $(this).data('id');
+
+            const button = $(this);
+
+            button.prop('disabled', true);
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Processing...
+        `);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document/legal-drafting') }}/verify-by-committee/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement = document.getElementById('verify-by-committee-modal');
+
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+
+                            /*REDIRECT*/
+
+                            window.location.href =
+                                "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Terjadi kesalahan saat memverifikasi Request Document.'
+                    );
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                    <i class="fas fa-check me-1"></i>
+                    Yes, Cancel Request
+                `);
+
+                }
+
+            });
+
+        });
+
+        // KLIK BUTTON UPLOAD FINAL DOCUMENT BY USER
+        $(document).on(
+            'click',
+            '.btn-upload-final-document',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/upload-final-document') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'upload-final-document-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal upload-final-document-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const uploadFinalDocumentModal = new bootstrap.Modal(modalElement);
+                        uploadFinalDocumentModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Upload Final Document.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT UPLOAD FINAL DOCUMENT BY USER */
+        $(document).on(
+            'submit',
+            '#upload-final-document-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-upload-final-document');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const attachmentInput = $('#final_document');
+
+                /*ERROR ELEMENT*/
+
+                const attachmentError = $('#final-document-error');
+
+                /*RESET VALIDATION*/
+
+                attachmentInput.removeClass('is-invalid');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/upload-final-document') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'upload-final-document-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*FINAL DOCUMENT ERROR*/
+
+                            if (errors.final_document) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.final_document[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Upload Final Document gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i
+                                    class="fas fa-upload me-1">
+                                </i>
+
+                                Upload Final Document
 
                             `);
 
