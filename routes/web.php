@@ -335,4 +335,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/tsp/customers', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomers'])->name('tsp.customers');
     Route::get('/tsp/customers/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomerById'])->name('tsp.customers.by-id');
     Route::post('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'store'])->name('tsp.request-document.store');
+    Route::delete('/tsp/request-document/delete-file/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'deleteFile'])->name('tsp.request-document.delete-file');
 });

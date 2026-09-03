@@ -150,7 +150,7 @@
                                 case 'Fully Signed':
                                     return `<span class="badge bg-success">${data}</span>`;
                                 default:
-                                    return `<span class="badge bg-secondary">${data}</span>`;
+                                    return "-";
                             }
                         }
                     },
