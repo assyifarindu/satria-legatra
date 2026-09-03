@@ -534,6 +534,44 @@
                                     @enderror
                                 </div>
 
+                                <div>
+                                    <label for="other" class="form-label">Other</label>
+                                    <input 
+                                        type="file" 
+                                        class="form-control @error('other') is-invalid @enderror"
+                                        name="other[]" 
+                                        id="other"
+                                        accept=".pdf"
+                                        multiple
+                                    >
+                                    @if ($other && count($other) > 0)
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block">Existing Document:</small>
+                                            @foreach ($other as $file)
+                                                <div class="d-flex align-items-center gap-1 mb-1">
+                                                    <a href="{{ url('/') }}/{{ $file->file_path }}" target="_blank"
+                                                    rel="noopener">
+                                                        {{ $file->name ?? basename($file->file_path) }}
+                                                    </a><br>
+                                                    <button type="button" class="btn btn-danger btn-xs delete-file-btn" data-file-id="{{ $file->id }}" data-file-name="{{ $file->name ?? basename($file->file_path) }}">
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    @error('other')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    @error('other.*')
+                                        <div class="text-danger mt-1">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
 
 
                                 <div class="d-flex gap-2 justify-content-end">
@@ -555,6 +593,9 @@
             </div>
         </div> <!-- container -->
     </div>
+
+    {{-- Modal --}}
+    @include('tsp.request-document.modal.delete-file-confirmation')
 @endsection
 
 @section('js')
@@ -672,6 +713,52 @@
                 placeholder: "Select Project Category",
                 width: '100%',
                 allowClear: true
+            });
+
+            // Handle delete file button click
+            $('.delete-file-btn').on('click', function() {
+                const fileId = $(this).data('file-id');
+                const fileName = $(this).data('file-name');
+                $('#file-name-to-delete').text(fileName);
+                const button = $(this);
+
+                // Show the delete confirmation modal
+                $('#delete-file-modal').modal('show');
+                $('#confirm-delete-file').off('click').on('click', function() {
+                    $.ajax({
+                        url: "{{ url('tsp/request-document/delete-file') }}/" + fileId,
+                        type: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            // Remove the file link from the UI
+                            button.closest('div').remove();
+                            $('#delete-file-modal').modal('hide');
+                        },
+                        error: function(xhr) {
+                            console.log(xhr.responseText);
+                        }
+                    });
+                });
+
+                // if (confirm('Are you sure you want to delete this file?')) {
+                //     $.ajax({
+                //         url: "{{ url('tsp/request-document/delete-file') }}/" + fileId,
+                //         type: 'DELETE',
+                //         data: {
+                //             _token: '{{ csrf_token() }}'
+                //         },
+                //         success: function(response) {
+                //             alert(response.message);
+                //             // Remove the file link from the UI
+                //             button.closest('div').remove();
+                //         },
+                //         error: function(xhr) {
+                //             alert('Failed to delete the file.');
+                //         }
+                //     });
+                // }
             });
         })
     </script>

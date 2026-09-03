@@ -61,6 +61,8 @@ class RequestDocumentController extends Controller
         try {
             $user_id = Auth::id();
             $division = Auth::user()->division;
+            $superior = Auth::user()->superior;
+            $is_bod = $division === 'Board Of Directors' && $superior === null;
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
@@ -102,7 +104,7 @@ class RequestDocumentController extends Controller
 
             if ($role === 'Admin Legal TSP') {
                 $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
-            } else if ($division === 'Board Of Directors') {
+            } else if ($is_bod) {
                 $query->where('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
             } else {
                 $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
@@ -350,6 +352,9 @@ class RequestDocumentController extends Controller
 
                 'quotation' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
 
+                'other' => ['nullable', 'array'],
+                'other.*' => ['file', 'mimes:pdf', 'max:10240'],
+
                 'customer_id' => ['nullable'],
 
                 'customer_name' => ['nullable', 'string', 'max:255'],
@@ -405,6 +410,9 @@ class RequestDocumentController extends Controller
                 'draft_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
 
                 'quotation' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+                'other' => ['nullable', 'array'],
+                'other.*' => ['file', 'mimes:pdf', 'max:10240'],
+
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
                 'customer_nib' => ['required', 'string', 'max:255'],
@@ -628,6 +636,38 @@ class RequestDocumentController extends Controller
                 ]);
             }
 
+            if ($request->hasFile('other')) {
+                foreach ($request->file('other') as $file) {
+                    // Ambil nama file tanpa extension
+                    $name = pathinfo(
+                        $file->getClientOriginalName(),
+                        PATHINFO_FILENAME
+                    );
+
+                    // Buat nama file baru
+                    $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+
+                    // Simpan langsung ke public/upload/request_document
+                    $file->move(
+                        public_path('upload/request_document'),
+                        $fileName
+                    );
+
+                    // Path yang disimpan ke database
+                    $otherPath =
+                        'upload/request_document/' . $fileName;
+
+                    // Simpan record ke database
+                    TspRequestDocumentFile::create([
+                        'request_document_id' => $requestDocument->id,
+                        'name' => $fileName,
+                        'document_type' => 'Other',
+                        'file_path' => $otherPath,
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
+
             if ($action === 'draft') {
                 TspRequestDocumentHistory::create([
                     'request_document_id' => $requestDocument->id,
@@ -700,16 +740,21 @@ class RequestDocumentController extends Controller
                 ->where('document_type', 'Quotation')
                 ->first();
 
+            $other = $requestDocument->files
+                ->where('document_type', 'Other')
+                ->all();
+
             return view(
                 'tsp.request-document.edit',
                 compact(
                     'requestDocument',
                     'draftContract',
-                    'quotation'
+                    'quotation',
+                    'other'
                 )
             );
         } catch (\Throwable $e) {
-
+            dd($e);
             return redirect()->route('tsp.request-document')
                 ->with('error', 'Data Request Document tidak ditemukan.');
         }
@@ -786,6 +831,9 @@ class RequestDocumentController extends Controller
 
                 'quotation' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
 
+                'other' => ['nullable', 'array'],
+                'other.*' => ['file', 'mimes:pdf', 'max:10240'],
+
                 'customer_id' => ['nullable'],
 
                 'customer_name' => ['nullable', 'string', 'max:255'],
@@ -836,6 +884,9 @@ class RequestDocumentController extends Controller
                 'draft_contract' => [($requestDocument->status_id == 1 && !$draftContract) ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
 
                 'quotation' => [($requestDocument->status_id == 1 && !$quotation) ? 'required' : 'nullable', 'file', 'mimes:pdf', 'max:10240'],
+
+                'other' => ['nullable', 'array'],
+                'other.*' => ['file', 'mimes:pdf', 'max:10240'],
 
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
@@ -1174,6 +1225,44 @@ class RequestDocumentController extends Controller
                 }
             }
 
+            /* ADD OTHER FILES */
+            if ($request->hasFile('other')) {
+                foreach ($request->file('other') as $file) {
+                    $name = pathinfo(
+                        $file->getClientOriginalName(),
+                        PATHINFO_FILENAME
+                    );
+
+                    $fileName = $name
+                        . '-'
+                        . time()
+                        . '.'
+                        . $file->getClientOriginalExtension();
+
+                    $file->move(
+                        public_path('upload/request_document'),
+                        $fileName
+                    );
+
+                    $filePath =
+                        'upload/request_document/' . $fileName;
+
+                    TspRequestDocumentFile::create([
+                        'request_document_id' =>
+                        $requestDocument->id,
+
+                        'name' => $fileName,
+
+                        'document_type' =>
+                        'Other',
+
+                        'file_path' =>
+                        $filePath,
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
+
 
             /*UPDATE HISTORY*/
 
@@ -1239,6 +1328,37 @@ class RequestDocumentController extends Controller
                     'error',
                     'Terjadi kesalahan saat memperbarui data.'
                 );
+        }
+    }
+
+    /**
+     * Delete a file associated with a request document.
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteFile($id)
+    {
+        try {
+            $file = TspRequestDocumentFile::findOrFail($id);
+
+            // Hapus file dari storage
+            if ($file->file_path && file_exists(public_path($file->file_path))) {
+                unlink(public_path($file->file_path));
+            }
+
+            // Hapus record dari database
+            $file->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil dihapus.',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus file.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 

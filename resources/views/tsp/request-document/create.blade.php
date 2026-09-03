@@ -498,7 +498,27 @@
                                     @enderror
                                 </div>
 
-
+                               <div>
+                                    <label for="other" class="form-label">Other</label>
+                                    <input 
+                                        type="file" 
+                                        class="form-control @error('other') is-invalid @enderror"
+                                        name="other[]" 
+                                        id="other"
+                                        accept=".pdf"
+                                        multiple
+                                    >
+                                    @error('other')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    @error('other.*')
+                                        <div class="text-danger mt-1">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
 
                                 <div class="d-flex gap-2 justify-content-end">
                                     <button type="submit" name="action_type" value="draft" class="btn btn-secondary">
