@@ -13,6 +13,8 @@ use App\Models\Table\TspRequestDocumentFeedback;
 use App\Models\Table\TspRequestDocumentHistory;
 use App\Models\Table\TspRequestDocumentFeedbackFile;
 use App\Models\User;
+use App\Models\Department;
+use App\Models\Table\TspFormLegalReview;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Exception;
@@ -61,8 +63,7 @@ class RequestDocumentController extends Controller
         try {
             $user_id = Auth::id();
             $division = Auth::user()->division;
-            $superior = Auth::user()->superior;
-            $is_bod = $division === 'Board Of Directors' && $superior === null;
+            $is_bod = $division === 'Board Of Directors';
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
@@ -2945,9 +2946,7 @@ class RequestDocumentController extends Controller
 
                 if ($existingFile) {
 
-                    /*
-                    | Hapus file lama jika ada
-                    */
+                    /*Hapus file lama jika ada*/
 
                     if (
                         $existingFile->file_path &&
@@ -3516,6 +3515,849 @@ class RequestDocumentController extends Controller
                 'success' => false,
                 'message' => 'Final Document gagal disubmit.',
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the create form for legal review for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showCreateFormLegalReview($id)
+    {
+        try {
+
+            $requestDocument = TspRequestDocument::with('customer')->findOrFail($id);
+            $department = Department::where('company_id', 16731)->get();
+
+            return view('tsp.request-document.form-legal-review.create', compact('requestDocument', 'department'));
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menampilkan halaman form legal review.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Store the create form for legal review for the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function storeCreateFormLegalReview(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'date' => ['required', 'date'],
+                'pic' => ['required', 'string', 'max:255'],
+                'department' => ['required', 'string', 'max:255'],
+                'party_name' => ['required', 'string', 'max:255'],
+                'document_number' => ['required', 'string', 'max:255'],
+                'document_objective' => ['required', 'string', 'max:255'],
+                'period_time' => ['required', 'string', 'max:255'],
+                'incoterm' => ['required', 'string', 'max:255'],
+                'work_location' => ['required', 'string', 'max:255'],
+                'delivery_location' => ['required', 'string', 'max:255'],
+                'term_of_payment' => ['required', 'string', 'max:255'],
+                'resume' => ['required', 'string'],
+                'legal_note' => ['required', 'string'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*INSERT FORM LEGAL REVIEW*/
+            TspFormLegalReview::create([
+                'request_document_id' => $requestDocument->id,
+                'date' => $validated['date'],
+                'pic' => $validated['pic'],
+                'department' => $validated['department'],
+                'party_name' => $validated['party_name'],
+                'document_number' => $validated['document_number'],
+                'document_objective' => $validated['document_objective'],
+                'period_time' => $validated['period_time'],
+                'incoterm' => $validated['incoterm'],
+                'work_location' => $validated['work_location'],
+                'delivery_location' => $validated['delivery_location'],
+                'term_of_payment' => $validated['term_of_payment'],
+                'resume' => $validated['resume'],
+                'legal_note' => $validated['legal_note'],
+            ]);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 6,
+                'stage_id' => 6,
+                'substage_id' => 4,
+            ]);
+
+
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Create Form Legal Review',
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+
+            ]);
+
+
+            /* SEND EMAIL NOTIFICATION TO USER */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Request Document Form Legal Review Created',
+                'message' => 'Email Pemberitahuan, Form Legal Review telah dibuat dan siap untuk direview',
+
+            );
+
+            $user = User::find($requestDocument->requester_id);
+
+            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+            Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return redirect()
+                ->route('tsp.request-document.tracking', $requestDocument->id)
+                ->with(
+                    'success',
+                    'Form Legal Review berhasil dibuat.'
+                );
+        } catch (ValidationException $e) {
+
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Form Legal Review gagal dibuat.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the request to revision modal for the specified request document by user.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showRequestToRevisionFLRByUser($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.flr.form-request-to-revision-by-user',
+            compact('requestDocument')
+        );
+    }
+
+    /** Request to revision for the specified request document by user.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestToRevisionFLRByUser(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'remark' => ['required', 'string'],
+                'attachment' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 12,
+                'stage_id' => 6,
+                'substage_id' => 6,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            $history = TspRequestDocumentHistory::create([
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Request to Revision FLR by User',
+                'action_by' => Auth::id(),
+                'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
+            ]);
+
+            /*INSERT REMARKS REQUEST TO REVISION*/
+            $feedback = TspRequestDocumentFeedback::create([
+                'request_document_id' => $requestDocument->id,
+                'history_id' => $history->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'remark' => $validated['remark'],
+            ]);
+
+            /*INSERT ATTACHMENT REQUEST TO REVISION */
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('upload/request_document'), $fileName);
+                $filePath = 'upload/request_document/' . $fileName;
+
+                TspRequestDocumentFeedbackFile::create([
+                    'request_document_feedback_id' => $feedback->id,
+                    'name' => $fileName,
+                    'file_path' => $filePath,
+                ]);
+            }
+
+            $data_email = array(
+                'title' => $requestDocument->title,
+                'remark' => $validated['remark'],
+                'subject' => 'Form Legal Review Need Revision',
+                'message' => 'Email Pemberitahuan, ada Form Legal Review yang perlu direvisi',
+            );
+
+            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+
+            // Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return response()->json([
+
+                'success' => true,
+
+                'message' => 'Request to Revision berhasil disubmit.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Request to Revision gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the create form for legal review for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showRevisionFormLegalReview($id)
+    {
+        try {
+
+            $requestDocument = TspRequestDocument::with('customer')->findOrFail($id);
+            $flr = TspFormLegalReview::where('request_document_id', $id)->firstOrFail();
+            $department = Department::where('company_id', 16731)->get();
+
+            return view('tsp.request-document.form-legal-review.revision', compact('requestDocument', 'flr', 'department'));
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menampilkan halaman form legal review.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Store the revision form for legal review for the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     */
+    public function storeRevisionFormLegalReview(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'date' => ['required', 'date'],
+                'pic' => ['required', 'string', 'max:255'],
+                'department' => ['required', 'string', 'max:255'],
+                'party_name' => ['required', 'string', 'max:255'],
+                'document_number' => ['required', 'string', 'max:255'],
+                'document_objective' => ['required', 'string', 'max:255'],
+                'period_time' => ['required', 'string', 'max:255'],
+                'incoterm' => ['required', 'string', 'max:255'],
+                'work_location' => ['required', 'string', 'max:255'],
+                'delivery_location' => ['required', 'string', 'max:255'],
+                'term_of_payment' => ['required', 'string', 'max:255'],
+                'resume' => ['required', 'string'],
+                'legal_note' => ['required', 'string'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*INSERT FORM LEGAL REVIEW*/
+            TspFormLegalReview::where('request_document_id', $requestDocument->id)->update([
+                'date' => $validated['date'],
+                'pic' => $validated['pic'],
+                'department' => $validated['department'],
+                'party_name' => $validated['party_name'],
+                'document_number' => $validated['document_number'],
+                'document_objective' => $validated['document_objective'],
+                'period_time' => $validated['period_time'],
+                'incoterm' => $validated['incoterm'],
+                'work_location' => $validated['work_location'],
+                'delivery_location' => $validated['delivery_location'],
+                'term_of_payment' => $validated['term_of_payment'],
+                'resume' => $validated['resume'],
+                'legal_note' => $validated['legal_note'],
+            ]);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 6,
+                'stage_id' => 6,
+                'substage_id' => 4,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Revision Form Legal Review',
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+
+            ]);
+
+
+            /* SEND EMAIL NOTIFICATION TO USER */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Request Document Form Legal Review Revised',
+                'message' => 'Email Pemberitahuan, Form Legal Review telah direvisi dan siap untuk direview',
+
+            );
+
+            $user = User::find($requestDocument->requester_id);
+
+            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+            Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return redirect()
+                ->route('tsp.request-document.tracking', $requestDocument->id)
+                ->with(
+                    'success',
+                    'Form Legal Review berhasil direvisi.'
+                );
+        } catch (ValidationException $e) {
+
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Form Legal Review gagal direvisi.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the verify confirmation modal for the specified request document by user.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function verifyFLRConfirmation($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.flr.verify-by-user',
+            compact('requestDocument')
+        );
+    }
+
+    /** Verify FLR by User
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyFLRByUser($id)
+    {
+        $db = DB::connection('legatra');
+        try {
+
+            $db->beginTransaction();
+
+            $requestDocument =
+                TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+
+                'status_id' => 8,
+                'stage_id' => 6,
+                'substage_id' => 5,
+            ]);
+
+            /*CARI COMMITTEE YANG BELUM VERIFIKASI*/
+            $committee = TspRequestDocumentCommittees::where('request_document_id', $requestDocument->id)
+                ->where('deleted_at', null)
+                ->where('verification_flr_status', false)
+                ->first();
+
+            /*INSERT HISTORY*/
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Verified Form Legal Review by user',
+                'action_by' => Auth::id(),
+                'assigned_to' => $committee->committee_id,
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+
+            ]);
+
+            /* SEND EMAIL NOTIFICATION TO PIC */
+            $detail_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Form Legal Review Verified by User',
+                'message' => 'Email Pemberitahuan, form legal review telah diverifikasi oleh user dan saat ini sudah siap untuk diverifikasi oleh committee terkait.',
+            );
+
+            $committee = User::find($committee->committee_id);
+
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+            $db->commit();
+
+            return response()->json([
+
+                'success' => true,
+
+                'message' =>
+                'Form Legal Review berhasil diverifikasi oleh user.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memverifikasi Form Legal Review.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the request to revision modal for the specified request document by committee.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showRequestToRevisionFLRByCommittee($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.flr.form-request-to-revision-by-committee',
+            compact('requestDocument')
+        );
+    }
+
+    /** Request to Revision FLR by Committee
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestToRevisionFLRByCommittee(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'remark' => ['required', 'string'],
+                'attachment' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 12,
+                'stage_id' => 6,
+                'substage_id' => 6,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            $history = TspRequestDocumentHistory::create([
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Request to Revision FLR by Committee',
+                'action_by' => Auth::id(),
+                'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
+            ]);
+
+            /*INSERT REMARKS REQUEST TO REVISION*/
+            $feedback = TspRequestDocumentFeedback::create([
+                'request_document_id' => $requestDocument->id,
+                'history_id' => $history->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'remark' => $validated['remark'],
+            ]);
+
+            /*INSERT ATTACHMENT REQUEST TO REVISION */
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $fileName = $name . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('upload/request_document'), $fileName);
+                $filePath = 'upload/request_document/' . $fileName;
+
+                TspRequestDocumentFeedbackFile::create([
+                    'request_document_feedback_id' => $feedback->id,
+                    'name' => $fileName,
+                    'file_path' => $filePath,
+                ]);
+            }
+
+            /*UPDATE COMMITTEE VERIFICATION STATUS*/
+            TspRequestDocumentCommittees::where(
+                'request_document_id',
+                $requestDocument->id
+            )->update([
+                'verification_flr_status' => false,
+            ]);
+
+            /* SEND EMAIL NOTIFICATION TO ADMIN */
+            $data_email = array(
+                'title' => $requestDocument->title,
+                'remark' => $validated['remark'],
+                'subject' => 'Form Legal Review Need Revision',
+                'message' => 'Email Pemberitahuan, ada form legal review yang perlu direvisi',
+            );
+
+            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+
+            // Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return response()->json([
+
+                'success' => true,
+
+                'message' => 'Request to Revision berhasil disubmit.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Request to Revision gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /** Show the verify confirmation modal for the specified request document by committee.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function verifyFLRConfirmationCommittee($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.flr.verify-by-committee',
+            compact('requestDocument')
+        );
+    }
+
+    /** Verify FLR by Committee
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function verifyFLRByCommittee($id)
+    {
+        $db = DB::connection('legatra');
+
+        try {
+
+            $db->beginTransaction();
+
+
+            /*GET REQUEST DOCUMENT*/
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*CARI COMMITTEE YANG SEDANG LOGIN */
+            $currentCommittee = TspRequestDocumentCommittees::where(
+                'request_document_id',
+                $requestDocument->id
+            )
+                ->where('committee_id', Auth::id())
+                ->where('verification_flr_status', false)
+                ->whereNull('deleted_at')
+                ->first();
+
+
+            /*VALIDASI COMMITTEE*/
+            if (!$currentCommittee) {
+
+                throw new \Exception(
+                    'Anda bukan committee yang sedang mendapatkan giliran untuk melakukan verifikasi.'
+                );
+            }
+
+
+            /*UPDATE STATUS VERIFIKASI COMMITTEE SAAT INI*/
+            $currentCommittee->update([
+                'verification_flr_status' => true,
+
+            ]);
+
+
+            /*CEK COMMITTEE YANG MASIH BELUM VERIFIKASI*/
+            $nextCommittee = TspRequestDocumentCommittees::where(
+                'request_document_id',
+                $requestDocument->id
+            )
+                ->where('verification_flr_status', false)
+                ->whereNull('deleted_at')
+                ->orderBy('sequence', 'asc')
+                ->first();
+
+
+            /*JIKA MASIH ADA COMMITTEE BERIKUTNYA*/
+            if ($nextCommittee) {
+
+                /*UPDATE REQUEST DOCUMENT*/
+                $requestDocument->update([
+
+                    'status_id' => 8,
+
+                    'stage_id' => 6,
+
+                    'substage_id' => 5,
+
+                ]);
+
+
+                /*INSERT HISTORY*/
+                TspRequestDocumentHistory::create([
+
+                    'request_document_id' => $requestDocument->id,
+
+                    'stage_id' => $requestDocument->stage_id,
+
+                    'substage_id' => $requestDocument->substage_id,
+
+                    'status_id' => $requestDocument->status_id,
+
+                    'action' => 'Verified by Committee',
+
+                    'action_by' => Auth::id(),
+
+                    'assigned_to' => $nextCommittee->committee_id,
+
+                    'created_by' => Auth::id(),
+
+                    'created_at' => now(),
+
+                ]);
+
+
+                /*GET NEXT COMMITTEE USER*/
+
+                $nextCommitteeUser = User::find(
+                    $nextCommittee->committee_id
+                );
+
+
+                /*SEND EMAIL TO NEXT COMMITTEE*/
+
+                if (
+                    $nextCommitteeUser &&
+                    $nextCommitteeUser->email_sf
+                ) {
+
+                    $detail_email = [
+
+                        'title' => $requestDocument->title,
+
+                        'subject' => 'Form Legal Review Menunggu Verifikasi',
+
+                        'message' =>
+                        'Form Legal Review telah diverifikasi oleh committee sebelumnya dan saat ini menunggu verifikasi Anda.',
+
+                    ];
+
+
+                    Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                }
+
+
+                $db->commit();
+
+
+                return response()->json([
+
+                    'success' => true,
+
+                    'message' =>
+                    'Verifikasi berhasil. Request Document telah diteruskan ke committee berikutnya.',
+
+                ]);
+            } else {
+
+                /* JIKA SEMUA COMMITTEE SUDAH VERIFIKASI 
+                UPDATE REQUEST DOCUMENT*/
+
+                $requestDocument->update([
+                    'status_id' => 14,
+                    'stage_id' => 7,
+                    'substage_id' => null,
+
+                ]);
+
+
+                /*INSERT HISTORY*/
+
+                TspRequestDocumentHistory::create([
+
+                    'request_document_id' => $requestDocument->id,
+
+                    'stage_id' => $requestDocument->stage_id,
+
+                    'substage_id' => null,
+
+                    'status_id' => $requestDocument->status_id,
+
+                    'action' => 'All Committees Verified',
+
+                    'action_by' => Auth::id(),
+
+                    'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
+
+                    'created_by' => Auth::id(),
+
+                    'created_at' => now(),
+
+                ]);
+
+                /* GET ADMIN LEGAL */
+                $adminLegal = getAdminLegalTSP()->first();
+
+
+                /* EMAIL DETAIL */
+                $detail_email = [
+
+                    'title' => $requestDocument->title,
+                    'subject' => 'Form Legal Review Verified by Committee',
+                    'message' => 'Seluruh Committee telah melakukan verifikasi. Form Legal Review telah selesai diverifikasi oleh Committee dan akan dilanjutkan ke proses Under Review BOD.',
+
+                ];
+
+                /* SEND EMAIL TO ADMIN LEGAL */
+
+                if ($adminLegal && $adminLegal->email_sf) {
+                    Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                }
+
+                $db->commit();
+
+                return response()->json([
+
+                    'success' => true,
+                    'message' =>
+                    'Semua Committee telah melakukan verifikasi. Form Legal Review akan dilanjutkan ke tahap Under Review BOD.',
+
+                ]);
+            }
+        } catch (ValidationException $e) {
+
+            if ($db->transactionLevel() > 0) {
+                $db->rollBack();
+            }
+
+            return response()->json([
+
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+
+            ], 422);
+        } catch (\Throwable $e) {
+
+            if ($db->transactionLevel() > 0) {
+                $db->rollBack();
+            }
+
+            return response()->json([
+
+                'success' => false,
+                'message' =>
+                'Gagal memverifikasi Request Document.',
+
+                'error' => $e->getMessage(),
+
             ], 500);
         }
     }

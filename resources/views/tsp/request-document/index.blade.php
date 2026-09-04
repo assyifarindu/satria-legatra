@@ -108,10 +108,14 @@
                                 case 10:
                                     return '<span class="badge bg-primary">Need Revision</span>';
                                 case 11:
-                                    return '<span class="badge bg-primary">Final Check</span>';
+                                    return '<span class="badge bg-primary">Need Revision</span>';
                                 case 12:
-                                    return '<span class="badge bg-primary">Fully Approved</span>';
+                                    return '<span class="badge bg-primary">Need Revision</span>';
                                 case 13:
+                                    return '<span class="badge bg-primary">Final Check</span>';
+                                case 14:
+                                    return '<span class="badge bg-primary">Fully Approved</span>';
+                                case 15:
                                     return '<span class="badge bg-success">Cleared for Delivery</span>';
                                 default:
                                     return '-';
@@ -169,11 +173,11 @@
 
                             return `
                                 ${ (row.status_id == 1 || row.status_id == 2) ? `
-                                                    <a href="${editUrl}"
-                                                        class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
-                                                        title="Edit" tabindex="0" data-plugin="tippy"
-                                                        data-tippy-placement="top"><i class="fas fa-pen"></i></a>
-                                                ` : '' }
+                                                            <a href="${editUrl}"
+                                                                class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                                                title="Edit" tabindex="0" data-plugin="tippy"
+                                                                data-tippy-placement="top"><i class="fas fa-pen"></i></a>
+                                                        ` : '' }
                                 <a href="${viewUrl}"
                                     class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
                                     title="View Detail" tabindex="0" data-plugin="tippy"
@@ -186,18 +190,18 @@
                                     class="mdi mdi-book-clock-outline"></i>
                                 </a>
                                 ${row.status_id == 1 || row.status_id == 2 ? `
-                                                    <a href="javascript:void(0)"
-                                                        class="btn btn-danger btn-xs d-inline waves-effect waves-light {{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'btn_decline' : 'btn_cancel' }}"
-                                                        title="{{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'Decline Request' : 'Cancel Request' }}"
-                                                        tabindex="0"
-                                                        data-plugin="tippy"
-                                                        data-tippy-placement="top"
-                                                        data-id="${row.id}">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-danger btn-xs d-inline waves-effect waves-light {{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'btn_decline' : 'btn_cancel' }}"
+                                                                title="{{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'Decline Request' : 'Cancel Request' }}"
+                                                                tabindex="0"
+                                                                data-plugin="tippy"
+                                                                data-tippy-placement="top"
+                                                                data-id="${row.id}">
 
-                                                        <i class="fas fa-times"></i>
+                                                                <i class="fas fa-times"></i>
 
-                                                    </a>
-                                                ` : ''}                            `;
+                                                            </a>
+                                                        ` : ''}                            `;
                         }
                     },
                 ]

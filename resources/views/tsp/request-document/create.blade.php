@@ -29,32 +29,7 @@
                         <div class="card-body">
                             <h4 class="header-title">Form Create Request Document</h4>
                             <br><br>
-                            {{-- <form id="form-request-document" class="d-flex flex-column gap-2">
-                                @csrf
-                                <div>
-                                    <label for="title" class="fw-bold d-block">Title </label>
-                                    <input type="text" name="title" id="title" value="{{ old('title') }}"
-                                        class="form-control @error('title') is-invalid @enderror">
 
-                                    @error('title')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
-                                <div class="col-12">
-                                    <label for="customer_name" class="fw-bold d-block">Customer Name </label>
-                                    <select name="customer_id" class="form-select"></select>
-                                </div>
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="action" value="draft" class="btn btn-secondary">
-                                        Save as Draft
-                                    </button>
-                                    <button type="submit" name="action" value="submit" class="btn btn-primary">
-                                        Submit
-                                    </button>
-                                </div>
-                            </form> --}}
                             <form id="form-request-document" class="d-flex flex-column gap-2"
                                 action="{{ url('tsp/request-document') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
@@ -498,16 +473,10 @@
                                     @enderror
                                 </div>
 
-                               <div>
+                                <div>
                                     <label for="other" class="form-label">Other</label>
-                                    <input 
-                                        type="file" 
-                                        class="form-control @error('other') is-invalid @enderror"
-                                        name="other[]" 
-                                        id="other"
-                                        accept=".pdf"
-                                        multiple
-                                    >
+                                    <input type="file" class="form-control @error('other') is-invalid @enderror"
+                                        name="other[]" id="other" accept=".pdf" multiple>
                                     @error('other')
                                         <div class="invalid-feedback">
                                             {{ $message }}
@@ -541,48 +510,6 @@
 @section('js')
     <script>
         $(document).ready(function() {
-            // $('#form-request-document').on('submit', function(e) {
-            //     e.preventDefault();
-
-            //     let formData = new FormData(this);
-
-            //     // Deteksi tombol mana yang diklik
-            //     let clickedButton = e.originalEvent.submitter;
-            //     let actionType = $(clickedButton).val(); // Berisi 'draft' atau 'submit'
-
-            //     // Tambahkan status ke dalam FormData yang dikirim ke controller
-            //     formData.append('action_type', actionType);
-
-            //     $.ajax({
-            //         url: "{{ url('tsp/request-document') }}",
-            //         type: "POST",
-            //         data: formData,
-            //         contentType: false,
-            //         processData: false,
-            //         beforeSend: function() {
-            //             // Disable tombol agar tidak tertekan dua kali
-            //             $('button[type="submit"]').prop('disabled', true);
-            //         },
-            //         success: function(response) {
-            //             alert(response.message);
-
-            //             // Reset form & reload DataTable
-            //             $('#form-request-document')[0].reset();
-            //             $('#request-document-table').DataTable().ajax.reload();
-            //         },
-            //         error: function(xhr) {
-            //             if (xhr.status === 422) {
-            //                 console.log(xhr.responseJSON.errors);
-            //             } else {
-            //                 alert('Terjadi kesalahan.');
-            //             }
-            //         },
-            //         complete: function() {
-            //             // Aktifkan kembali tombol
-            //             $('button[type="submit"]').prop('disabled', false);
-            //         }
-            //     });
-            // });
 
             $("select[name='customer_id']").select2({
                 placeholder: "Select a customer",
