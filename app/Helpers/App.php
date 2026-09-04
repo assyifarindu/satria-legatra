@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Vinkla\Hashids\Facades\Hashids;
 use App\Models\Table\Company;
+use App\Models\Table\TspRequestDocumentCommittees;
 use App\Models\UserRoleGroup;
 
 function getTimeAgo($time)
@@ -969,4 +970,20 @@ function getAdminLegalTSP()
         ->select('satria.users.*')->get();
 
     return $adminLegalTSP;
+}
+
+/**
+ * Get the BOD not verified record for a specific committee and request document.
+ *
+ * @param int $id The ID of the request document.
+ * @return TspRequestDocumentCommittees|null The BOD not verified record, or null if not found.
+ */
+function getBODNotVerified($id)
+{
+    $bodNotVerified = TspRequestDocumentCommittees::where('committee_id', Auth::user()->id)
+        ->where('request_document_id', $id)
+        ->where('verification_ld_status', false)
+        ->first();
+
+    return $bodNotVerified;
 }
