@@ -4361,4 +4361,128 @@ class RequestDocumentController extends Controller
             ], 500);
         }
     }
+
+    /** Show the upload final document modal for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showUploadFileBodSigned($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.form-upload-file-bod-signed',
+            compact('requestDocument')
+        );
+    }
+
+    /** Upload final document for the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadFileBodSigned(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'attachment' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'status_id' => 15,
+                'stage_id' => 8,
+                'substage_id' => null,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Upload BOD Signed Document',
+                'action_by' => Auth::id(),
+                'assigned_to' => $requestDocument->requester_id,
+                'created_by' => Auth::id(),
+            ]);
+
+            /*INSERT FILE*/
+            if ($request->hasFile('attachment')) {
+
+                $file = $validated['attachment'];
+
+                $name = pathinfo(
+                    $file->getClientOriginalName(),
+                    PATHINFO_FILENAME
+                );
+
+                $fileName = $name
+                    . '-'
+                    . time()
+                    . '.'
+                    . $file->getClientOriginalExtension();
+
+                $file->move(
+                    public_path('upload/request_document'),
+                    $fileName
+                );
+
+                $filePath = 'upload/request_document/' . $fileName;
+
+                TspRequestDocumentFile::create([
+                    'request_document_id' => $requestDocument->id,
+
+                    'name' => $fileName,
+
+                    'document_type' => 'Signed BOD',
+
+                    'file_path' => $filePath,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            $data_email = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Signed BOD Document Uploaded',
+                'message' => 'Email Pemberitahuan, Signed BOD Document telah diunggah dan siap untuk diproses lebih lanjut.',
+            );
+
+            $user = User::find($requestDocument->requester_id);
+
+            Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+
+            // Alert::success('Data Saved Successfully', 'Success Message');
+            $db->commit();
+            return response()->json([
+
+                'success' => true,
+                'message' => 'Signed BOD Document berhasil diunggah.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Signed BOD Document gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
