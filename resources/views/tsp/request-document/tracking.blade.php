@@ -386,6 +386,26 @@
                                                         </div>
                                                     </div>
                                                 @endif
+
+                                                {{-- button upload document pasal-pasal terkait kontrak by admin --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 10 &&
+                                                        $requestDocument->status_id == 15 &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-document-filing"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-upload me-1"></i>
+
+                                                                Document Filing
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
 
@@ -653,15 +673,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                                            <div class="float-end">
-                                                                                                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                                        title="Download" tabindex="0"
-                                                                                                                                                                                                                                                        data-plugin="tippy"
-                                                                                                                                                                                                                                                        data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                        ` : ''}
+                                                                                                                                                                                                                                                <div class="float-end">
+                                                                                                                                                                                                                                                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                        <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                            title="Download" tabindex="0"
+                                                                                                                                                                                                                                                            data-plugin="tippy"
+                                                                                                                                                                                                                                                            data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                                    </a>
+                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                            ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -3340,5 +3360,203 @@
             });
 
         });
+
+        // KLIK BUTTON UPLOAD DOCUMENT FILING BY ADMIN
+        $(document).on(
+            'click',
+            '.btn-document-filing',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/document-filing') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'document-filing-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal document-filing-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const documentFilingModal = new bootstrap.Modal(modalElement);
+                        documentFilingModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Upload Document Filing.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT UPLOAD DOCUMENT FILING BY ADMIN */
+        $(document).on(
+            'submit',
+            '#document-filing-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#submit-document-filing');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const attachmentInput = $('#attachment');
+
+                /*ERROR ELEMENT*/
+
+                const attachmentError = $('#attachment-error');
+                /*RESET VALIDATION*/
+
+                attachmentInput.removeClass('is-invalid');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/document-filing') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'document-filing-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Upload Document Filing gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i class="fas fa-save me-1"></i>
+
+                                Submit
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
     </script>
 @endsection
