@@ -380,7 +380,7 @@
 
                                                                 <i class="fas fa-check"></i>
 
-                                                                Confirm Document
+                                                                Send to Filing
 
                                                             </a>
                                                         </div>
@@ -673,15 +673,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                                                <div class="float-end">
-                                                                                                                                                                                                                                                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                                        <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                                            title="Download" tabindex="0"
-                                                                                                                                                                                                                                                            data-plugin="tippy"
-                                                                                                                                                                                                                                                            data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                                    </a>
-                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                            ` : ''}
+                                                                                                                                                                                                                                                    <div class="float-end">
+                                                                                                                                                                                                                                                        <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                            <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                                title="Download" tabindex="0"
+                                                                                                                                                                                                                                                                data-plugin="tippy"
+                                                                                                                                                                                                                                                                data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                                        </a>
+                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">

@@ -4400,6 +4400,9 @@ class RequestDocumentController extends Controller
                 'status_id' => 15,
                 'stage_id' => 8,
                 'substage_id' => null,
+                'sign_status' => $requestDocument->sign_status === 'Fully Signed'
+                    ? 'Fully Signed'
+                    : 'Partial Signed',
             ]);
 
             /*INSERT HISTORY*/
@@ -4524,6 +4527,7 @@ class RequestDocumentController extends Controller
                 // 'status_id' => 15, statusnya Final Contract tidak ada jadi smeentara tetap Cleared for Delivery
                 'stage_id' => 9,
                 'substage_id' => null,
+                'sign_status' => "Fully Signed",
             ]);
 
             /*INSERT HISTORY*/
