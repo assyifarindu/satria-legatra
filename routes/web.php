@@ -328,6 +328,29 @@ Route::middleware('auth')->group(function () {
     Route::post('/tsp/request-document/legal-drafting/verify-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyLDByCommittee'])->name('tsp.request-document.legal-drafting.verify-by-committee');
     Route::get('/tsp/request-document/upload-final-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showUploadFinalDocument'])->name('tsp.request-document.legal-drafting.show-upload-final-document');
     Route::post('/tsp/request-document/upload-final-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'uploadFinalDocument'])->name('tsp.request-document.upload-final-document');
+    Route::get('/tsp/request-document/form-legal-review/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showCreateFormLegalReview'])->name('tsp.request-document.show-create-form-legal-review');
+    Route::post('/tsp/request-document/form-legal-review/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeCreateFormLegalReview'])->name('tsp.request-document.store-create-form-legal-review');
+    Route::get('/tsp/request-document/form-legal-review/request-to-revision-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRequestToRevisionFLRByUser'])->name('tsp.request-document.form-legal-review.show-request-to-revision-by-user');
+    Route::post('/tsp/request-document/form-legal-review/request-to-revision-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'requestToRevisionFLRByUser'])->name('tsp.request-document.form-legal-review.request-to-revision-by-user');
+    Route::get('/tsp/request-document/form-legal-review/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRevisionFormLegalReview'])->name('tsp.request-document.form-legal-review.show-revision-form-legal-review');
+    Route::post('/tsp/request-document/form-legal-review/revision/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'storeRevisionFormLegalReview'])->name('tsp.request-document.form-legal-review.store-revision-form-legal-review');
+    Route::get('/tsp/request-document/form-legal-review/verify-confirmation/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyFLRConfirmation'])->name('tsp.request-document.form-legal-review.verify-confirmation');
+    Route::post('/tsp/request-document/form-legal-review/verify-by-user/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyFLRByUser'])->name('tsp.request-document.form-legal-review.verify-flr-by-user');
+    Route::get('/tsp/request-document/form-legal-review/show-request-to-revision-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showRequestToRevisionFLRByCommittee'])->name('tsp.request-document.form-legal-review.show-request-to-revision-by-committee');
+    Route::post('/tsp/request-document/form-legal-review/request-to-revision-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'requestToRevisionFLRByCommittee'])->name('tsp.request-document.form-legal-review.request-to-revision-by-committee');
+    Route::get('/tsp/request-document/form-legal-review/verify-confirmation-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyFLRConfirmationCommittee'])->name('tsp.request-document.form-legal-review.verify-confirmation-committee');
+    Route::post('/tsp/request-document/form-legal-review/verify-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyFLRByCommittee'])->name('tsp.request-document.form-legal-review.verify-by-committee');
+    Route::get('/tsp/request-document/upload-file-bod-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showUploadFileBodSigned'])->name('tsp.request-document.show-upload-file-bod-signed');
+    Route::post('/tsp/request-document/upload-file-bod-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'uploadFileBodSigned'])->name('tsp.request-document.upload-file-bod-signed');
+    Route::get('/tsp/request-document/upload-file-customer-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showUploadFileCustomerSigned'])->name('tsp.request-document.show-upload-file-customer-signed');
+    Route::post('/tsp/request-document/upload-file-customer-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'uploadFileCustomerSigned'])->name('tsp.request-document.upload-file-customer-signed');
+    Route::get('/tsp/request-document/confirm-document-for-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showConfirmDocumentForFiling'])->name('tsp.request-document.show-confirm-document-for-filing');
+    Route::post('/tsp/request-document/confirm-document-for-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'confirmDocumentForFiling'])->name('tsp.request-document.confirm-document-for-filing');
+    Route::get('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDocumentFiling'])->name('tsp.request-document.show-document-filing');
+    Route::post('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'documentFiling'])->name('tsp.request-document.document-filing');
+
+
+
 
 
 

@@ -973,17 +973,26 @@ function getAdminLegalTSP()
 }
 
 /**
- * Get the BOD not verified record for a specific committee and request document.
+ * Get the BOD not verified status for a specific request document and stage.
  *
  * @param int $id The ID of the request document.
- * @return TspRequestDocumentCommittees|null The BOD not verified record, or null if not found.
+ * @param string $stage The stage of verification ('ld' or 'bod').
+ * @return TspRequestDocumentCommittees|null The BOD not verified record, or null if not found or stage is unrecognized.
  */
-function getBODNotVerified($id)
+function getBODNotVerified($id, $stage)
 {
-    $bodNotVerified = TspRequestDocumentCommittees::where('committee_id', Auth::user()->id)
-        ->where('request_document_id', $id)
-        ->where('verification_ld_status', false)
-        ->first();
-
+    if ($stage == 'ld') {
+        $bodNotVerified = TspRequestDocumentCommittees::where('committee_id', Auth::user()->id)
+            ->where('request_document_id', $id)
+            ->where('verification_ld_status', false)
+            ->first();
+    } elseif ($stage == 'flr') {
+        $bodNotVerified = TspRequestDocumentCommittees::where('committee_id', Auth::user()->id)
+            ->where('request_document_id', $id)
+            ->where('verification_flr_status', false)
+            ->first();
+    } else {
+        return null; // Return null if the stage is not recognized
+    }
     return $bodNotVerified;
 }

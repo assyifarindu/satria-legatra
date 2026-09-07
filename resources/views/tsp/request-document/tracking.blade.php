@@ -162,7 +162,7 @@
                                                         ($requestDocument->status_id == 7 || $requestDocument->status_id == 8) &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
                                                         Auth::user()->division === 'Board Of Directors' &&
-                                                        getBODNotVerified($requestDocument->id))
+                                                        getBODNotVerified($requestDocument->id, 'ld'))
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -221,6 +221,186 @@
                                                                 <i class="fas fa-upload me-1"></i>
 
                                                                 Upload Final Document
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button continue to form legal review by admin --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 5 &&
+                                                        $requestDocument->status_id == 13 &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.show-create-form-legal-review', $requestDocument->id) }}"
+                                                                class="btn btn-success">
+                                                                <i class="mdi mdi-file me-1"></i> Continue to Form Legal
+                                                                Review </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button request to revision dan verify form legal review by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 6 &&
+                                                        $requestDocument->substage_id == 4 &&
+                                                        $requestDocument->status_id == 6 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-warning btn-request-revision-flr-by-user"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i>
+
+                                                                Request to Revision
+
+                                                            </a>
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-verify-flr-by-user"
+                                                                title="Verify Request Document" tabindex="0"
+                                                                data-plugin="tippy" data-tippy-placement="top"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-check"></i>
+                                                                Verify
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button revise form legal review by admin --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 6 &&
+                                                        $requestDocument->substage_id == 6 &&
+                                                        $requestDocument->status_id == 12 &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.form-legal-review.show-revision-form-legal-review', $requestDocument->id) }}"
+                                                                class="btn btn-warning">
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button request to revision dan verify form legal review by committee --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 6 &&
+                                                        $requestDocument->substage_id == 5 &&
+                                                        ($requestDocument->status_id == 7 || $requestDocument->status_id == 8) &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division === 'Board Of Directors' &&
+                                                        getBODNotVerified($requestDocument->id, 'flr'))
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-warning btn-request-revision-flr-committee"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i>
+
+                                                                Request to Revision
+
+                                                            </a>
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-verify-flr-by-committee"
+                                                                title="Verify Request Document" tabindex="0"
+                                                                data-plugin="tippy" data-tippy-placement="top"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-check"></i>
+                                                                Verify
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button revise and upload document bertanda tangan BOD form legal review by admin --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 7 &&
+                                                        $requestDocument->status_id == 14 &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="{{ route('tsp.request-document.form-legal-review.show-revision-form-legal-review', $requestDocument->id) }}"
+                                                                class="btn btn-warning">
+                                                                <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-upload-document-signed-bod"
+                                                                data-id="{{ $requestDocument->id }}"
+                                                                title="BOD Signed Document">
+
+                                                                <i class="fas fa-upload me-1"></i>
+
+                                                                Upload Document
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button upload document bertanda tangan Customer by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 8 &&
+                                                        $requestDocument->status_id == 15 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-upload-document-signed-customer"
+                                                                data-id="{{ $requestDocument->id }}"
+                                                                title="Customer Signed Document">
+
+                                                                <i class="fas fa-upload me-1"></i>
+
+                                                                Upload Document
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button confirm document by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 9 &&
+                                                        $requestDocument->status_id == 15 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-confirm-filing"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-check"></i>
+
+                                                                Confirm Document
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button upload document pasal-pasal terkait kontrak by admin --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 10 &&
+                                                        $requestDocument->status_id == 15 &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-document-filing"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-upload me-1"></i>
+
+                                                                Document Filing
 
                                                             </a>
                                                         </div>
@@ -493,15 +673,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                            <div class="float-end">
-                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                        title="Download" tabindex="0"
-                                                                                                                                                                        data-plugin="tippy"
-                                                                                                                                                                        data-tippy-placement="top"></i>
-                                                                                                                                                                </a>
-                                                                                                                                                            </div>
-                                                                                                                                                        ` : ''}
+                                                                                                                                                                                                                                                <div class="float-end">
+                                                                                                                                                                                                                                                    <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                        <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                            title="Download" tabindex="0"
+                                                                                                                                                                                                                                                            data-plugin="tippy"
+                                                                                                                                                                                                                                                            data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                                    </a>
+                                                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                                            ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -1368,7 +1548,7 @@
 
                     button.html(`
                     <i class="fas fa-check me-1"></i>
-                    Yes, Cancel Request
+                    Yes, Verify Request
                 `);
 
                 }
@@ -1725,7 +1905,7 @@
 
                     button.html(`
                     <i class="fas fa-check me-1"></i>
-                    Yes, Cancel Request
+                    Yes, Verify Request
                 `);
 
                 }
@@ -1925,6 +2105,1450 @@
                                 </i>
 
                                 Upload Final Document
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON REQUEST TO REVISION FORM LEGAL REVIEW BY USER
+        $(document).on(
+            'click',
+            '.btn-request-revision-flr-by-user',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/form-legal-review/request-to-revision-by-user') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                            <div class="text-center p-3">
+                                Loading...
+                            </div>
+                        `);
+
+                    },
+
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'request-to-revision-flr-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal request-to-revision-flr-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const revisionModal = new bootstrap.Modal(modalElement);
+                        revisionModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Request to Revision Form Legal Review.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT REQUEST TO REVISION FORM LEGAL REVIEW BY USER */
+        $(document).on(
+            'submit',
+            '#request-to-revision-flr-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-request-revision-flr');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const remarkInput = $('#revision-remark');
+
+                const attachmentInput = $('#revision-attachment');
+
+                /*ERROR ELEMENT*/
+
+                const remarkError = $('#revision-remark-error');
+
+                const attachmentError = $('#revision-attachment-error');
+
+                /*RESET VALIDATION*/
+
+                remarkInput.removeClass('is-invalid');
+
+                attachmentInput.removeClass('is-invalid');
+
+                remarkError.text('');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                    <span
+                        class="spinner-border spinner-border-sm me-1">
+                    </span>
+
+                    Processing...
+                `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/form-legal-review/request-to-revision-by-user') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'request-to-revision-flr-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*REMARK ERROR*/
+
+                            if (errors.remark) {
+                                remarkInput.addClass('is-invalid');
+                                remarkError.text(errors.remark[0]);
+
+                            }
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Request to Revision Form Legal Review gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                            <i
+                                class="mdi mdi-file-edit-outline me-1">
+                            </i>
+
+                            Request to Revision
+
+                        `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON VERIFY FORM LEGAL REVIEW BY USER
+        $(document).on('click', '.btn-verify-flr-by-user', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/form-legal-review') }}/verify-confirmation/" + id;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+
+                beforeSend: function() {
+                    console.log('AJAX STARTED');
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('verify-flr-by-user-modal');
+
+                    if (!modalElement) {
+                        console.error('Element #verify-flr-by-user-modal tidak ditemukan!');
+                        return;
+                    }
+
+                    const verifyFlrByUserModal =
+                        new bootstrap.Modal(modalElement);
+
+                    verifyFlrByUserModal.show();
+                },
+
+                error: function(xhr) {
+
+                    console.error('AJAX ERROR:', xhr);
+
+                    alert('Gagal memuat konfirmasi verifikasi.');
+                }
+            });
+
+        });
+
+        // KLIK BUTTON CONFIRM VERIFY FLR BY USER
+        $(document).on('click', '#confirm-verify-flr', function() {
+
+            const id = $(this).data('id');
+
+            const button = $(this);
+
+            button.prop('disabled', true);
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Processing...
+        `);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document/form-legal-review') }}/verify-by-user/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement = document.getElementById('verify-flr-by-user-modal');
+
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+
+                            /*REDIRECT*/
+
+                            window.location.href =
+                                "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Terjadi kesalahan saat memverifikasi Form Legal Review.'
+                    );
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                    <i class="fas fa-check me-1"></i>
+                    Yes, Verify Form Legal Review
+                `);
+
+                }
+
+            });
+
+        });
+
+        // KLIK BUTTON REQUEST TO REVISION FORM LEGAL REVIEW COMMITTEE
+        $(document).on(
+            'click',
+            '.btn-request-revision-flr-committee',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/form-legal-review/show-request-to-revision-by-committee') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'request-to-revision-flr-committee-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal request-to-revision-flr-committee-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const revisionFLRModal = new bootstrap.Modal(modalElement);
+                        revisionFLRModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Request to Revision Form Legal Review.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT REQUEST TO REVISION COMMITTEE*/
+        $(document).on(
+            'submit',
+            '#request-to-revision-flr-committee-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-request-revision-flr-committee');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const remarkInput = $('#revision-remark');
+
+                const attachmentInput = $('#revision-attachment');
+
+                /*ERROR ELEMENT*/
+
+                const remarkError = $('#revision-remark-error');
+
+                const attachmentError = $('#revision-attachment-error');
+
+                /*RESET VALIDATION*/
+
+                remarkInput.removeClass('is-invalid');
+
+                attachmentInput.removeClass('is-invalid');
+
+                remarkError.text('');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/form-legal-review/request-to-revision-by-committee') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'request-to-revision-flr-committee-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*REMARK ERROR*/
+
+                            if (errors.remark) {
+                                remarkInput.addClass('is-invalid');
+                                remarkError.text(errors.remark[0]);
+
+                            }
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Request to Revision Form Legal Review gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i
+                                    class="mdi mdi-file-edit-outline me-1">
+                                </i>
+
+                                Request to Revision
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON VERIFY BY COMMITTEE
+        $(document).on('click', '.btn-verify-flr-by-committee', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/form-legal-review') }}/verify-confirmation-committee/" + id;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+
+                beforeSend: function() {
+                    console.log('AJAX STARTED');
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('verify-flr-by-committee-modal');
+
+                    if (!modalElement) {
+                        console.error('Element #verify-flr-by-committee-modal tidak ditemukan!');
+                        return;
+                    }
+
+                    const verifyFLRByCommitteeModal =
+                        new bootstrap.Modal(modalElement);
+
+                    verifyFLRByCommitteeModal.show();
+                },
+
+                error: function(xhr) {
+
+                    console.error('AJAX ERROR:', xhr);
+
+                    alert('Gagal memuat konfirmasi verifikasi.');
+                }
+            });
+
+        });
+
+        // KLIK BUTTON CONFIRM VERIFY BY COMMITTEE
+        $(document).on('click', '#confirm-verify-flr-committee', function() {
+
+            const id = $(this).data('id');
+
+            const button = $(this);
+
+            button.prop('disabled', true);
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Processing...
+        `);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document/form-legal-review') }}/verify-by-committee/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement = document.getElementById('verify-flr-by-committee-modal');
+
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+
+                            /*REDIRECT*/
+
+                            window.location.href =
+                                "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Terjadi kesalahan saat memverifikasi Request Document.'
+                    );
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                    <i class="fas fa-check me-1"></i>
+                    Yes, Verify Form Legal Review
+                `);
+
+                }
+
+            });
+
+        });
+
+        // KLIK BUTTON UPLOAD DOCUMENT SIGNED BOD BY ADMIN
+        $(document).on(
+            'click',
+            '.btn-upload-document-signed-bod',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/upload-file-bod-signed') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'upload-file-bod-signed-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal upload-file-bod-signed-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const uploadFileBodSignedModal = new bootstrap.Modal(modalElement);
+                        uploadFileBodSignedModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Upload File BOD Signed.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT UPLOAD DOCUMENT SIGNED BOD BY ADMIN */
+        $(document).on(
+            'submit',
+            '#upload-file-bod-signed-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-upload-file-bod-signed');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const attachmentInput = $('#attachment');
+
+                /*ERROR ELEMENT*/
+
+                const attachmentError = $('#attachment-error');
+                /*RESET VALIDATION*/
+
+                attachmentInput.removeClass('is-invalid');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/upload-file-bod-signed') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'upload-file-bod-signed-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Upload BOD Signed Document gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i class="fas fa-save me-1"></i>
+
+                                Submit
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON UPLOAD DOCUMENT SIGNED CUSTOMER BY USER
+        $(document).on(
+            'click',
+            '.btn-upload-document-signed-customer',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/upload-file-customer-signed') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'upload-file-customer-signed-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal upload-file-customer-signed-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const uploadFileCustomerSignedModal = new bootstrap.Modal(modalElement);
+                        uploadFileCustomerSignedModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Upload File Customer Signed.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT UPLOAD DOCUMENT SIGNED CUSTOMER BY USER */
+        $(document).on(
+            'submit',
+            '#upload-file-customer-signed-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-upload-file-customer-signed');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const attachmentInput = $('#attachment');
+
+                /*ERROR ELEMENT*/
+
+                const attachmentError = $('#attachment-error');
+                /*RESET VALIDATION*/
+
+                attachmentInput.removeClass('is-invalid');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/upload-file-customer-signed') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'upload-file-customer-signed-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Upload Customer Signed Document gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i class="fas fa-save me-1"></i>
+
+                                Submit
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON CONFIRM DOCUMENT FOR FILING BY USER
+        $(document).on('click', '.btn-confirm-filing', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/confirm-document-for-filing') }}/" + id;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+
+                beforeSend: function() {
+                    console.log('AJAX STARTED');
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('confirm-filing-modal');
+
+                    if (!modalElement) {
+                        console.error('Element #confirm-filing-modal tidak ditemukan!');
+                        return;
+                    }
+
+                    const confirmFilingModal =
+                        new bootstrap.Modal(modalElement);
+
+                    confirmFilingModal.show();
+                },
+
+                error: function(xhr) {
+
+                    console.error('AJAX ERROR:', xhr);
+
+                    alert('Gagal memuat konfirmasi pengajuan dokumen untuk filing.');
+                }
+            });
+
+        });
+
+        // KLIK BUTTON CONFIRM DOCUMENT FOR FILING BY USER
+        $(document).on('click', '#confirm-filing', function() {
+
+            const id = $(this).data('id');
+
+            const button = $(this);
+
+            button.prop('disabled', true);
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Processing...
+        `);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document/confirm-document-for-filing') }}/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement = document.getElementById('confirm-filing-modal');
+
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+
+                            /*REDIRECT*/
+
+                            window.location.href =
+                                "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Terjadi kesalahan saat mengajukan filing Request Document.'
+                    );
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                    <i class="fas fa-check me-1"></i>
+                    Yes,Filing Request
+                `);
+
+                }
+
+            });
+
+        });
+
+        // KLIK BUTTON UPLOAD DOCUMENT FILING BY ADMIN
+        $(document).on(
+            'click',
+            '.btn-document-filing',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/document-filing') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'document-filing-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal document-filing-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const documentFilingModal = new bootstrap.Modal(modalElement);
+                        documentFilingModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Upload Document Filing.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT UPLOAD DOCUMENT FILING BY ADMIN */
+        $(document).on(
+            'submit',
+            '#document-filing-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#submit-document-filing');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const attachmentInput = $('#attachment');
+
+                /*ERROR ELEMENT*/
+
+                const attachmentError = $('#attachment-error');
+                /*RESET VALIDATION*/
+
+                attachmentInput.removeClass('is-invalid');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/document-filing') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'document-filing-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Upload Document Filing gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i class="fas fa-save me-1"></i>
+
+                                Submit
 
                             `);
 
