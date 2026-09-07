@@ -4597,4 +4597,113 @@ class RequestDocumentController extends Controller
             ], 500);
         }
     }
+
+
+    /** Show the verify confirmation modal for the specified request document by committee.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showConfirmDocumentForFiling($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.confirmation-for-filing',
+            compact('requestDocument')
+        );
+    }
+
+
+    /** Confirm document for filing for the specified request document.
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function confirmDocumentForFiling($id)
+    {
+        $db = DB::connection('legatra');
+
+        try {
+
+            $db->beginTransaction();
+
+
+            /*GET REQUEST DOCUMENT*/
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                'stage_id' => 10,
+                'substage_id' => null,
+            ]);
+
+
+            /*INSERT HISTORY*/
+            TspRequestDocumentHistory::create([
+
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Confirm Document for Filing',
+                'action_by' => Auth::id(),
+                'assigned_to' => getAdminLegalTSP()->first()->id ?? null,
+                'created_by' => Auth::id(),
+
+            ]);
+
+
+            $detail_email = [
+
+                'title' => $requestDocument->title,
+                'subject' => 'Request Document Confirmed for Filing',
+                'message' => 'Email Pemberitahuan, Request Document telah dikonfirmasi untuk filing dan siap untuk diproses lebih lanjut.',
+
+            ];
+
+
+            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+
+
+
+            $db->commit();
+
+
+            return response()->json([
+
+                'success' => true,
+
+                'message' => 'Request Document berhasil dikonfirmasi untuk filing.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            if ($db->transactionLevel() > 0) {
+                $db->rollBack();
+            }
+
+            return response()->json([
+
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+
+            ], 422);
+        } catch (\Throwable $e) {
+
+            if ($db->transactionLevel() > 0) {
+                $db->rollBack();
+            }
+
+            return response()->json([
+
+                'success' => false,
+                'message' =>
+                'Gagal mengonfirmasi Request Document untuk filing.',
+
+                'error' => $e->getMessage(),
+
+            ], 500);
+        }
+    }
 }

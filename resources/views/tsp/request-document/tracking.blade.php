@@ -375,7 +375,7 @@
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
-                                                                class="btn btn-success btn-confirm-document"
+                                                                class="btn btn-success btn-confirm-filing"
                                                                 data-id="{{ $requestDocument->id }}">
 
                                                                 <i class="fas fa-check"></i>
@@ -653,15 +653,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                                        <div class="float-end">
-                                                                                                                                                                                                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                                    title="Download" tabindex="0"
-                                                                                                                                                                                                                                                    data-plugin="tippy"
-                                                                                                                                                                                                                                                    data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                            </a>
-                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                            <div class="float-end">
+                                                                                                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                        title="Download" tabindex="0"
+                                                                                                                                                                                                                                                        data-plugin="tippy"
+                                                                                                                                                                                                                                                        data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                                </a>
+                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                        ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -3202,5 +3202,143 @@
 
             }
         );
+
+        // KLIK BUTTON CONFIRM DOCUMENT FOR FILING BY USER
+        $(document).on('click', '.btn-confirm-filing', function(e) {
+
+            e.preventDefault();
+
+            const id = $(this).data('id');
+
+            const url =
+                "{{ url('tsp/request-document/confirm-document-for-filing') }}/" + id;
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+
+                beforeSend: function() {
+                    console.log('AJAX STARTED');
+
+                    $('#modal-container').html(`
+                        <div class="text-center p-3">
+                            Loading...
+                        </div>
+                    `);
+                },
+
+                success: function(response) {
+
+                    $('#modal-container').html(response);
+
+                    const modalElement =
+                        document.getElementById('confirm-filing-modal');
+
+                    if (!modalElement) {
+                        console.error('Element #confirm-filing-modal tidak ditemukan!');
+                        return;
+                    }
+
+                    const confirmFilingModal =
+                        new bootstrap.Modal(modalElement);
+
+                    confirmFilingModal.show();
+                },
+
+                error: function(xhr) {
+
+                    console.error('AJAX ERROR:', xhr);
+
+                    alert('Gagal memuat konfirmasi pengajuan dokumen untuk filing.');
+                }
+            });
+
+        });
+
+        // KLIK BUTTON CONFIRM DOCUMENT FOR FILING BY USER
+        $(document).on('click', '#confirm-filing', function() {
+
+            const id = $(this).data('id');
+
+            const button = $(this);
+
+            button.prop('disabled', true);
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            Processing...
+        `);
+
+            $.ajax({
+
+                url: "{{ url('tsp/request-document/confirm-document-for-filing') }}/" + id,
+
+                type: 'POST',
+
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+
+                success: function(response) {
+
+                    if (response.success) {
+
+                        const modalElement = document.getElementById('confirm-filing-modal');
+
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+
+                        modal.hide();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+
+                            /*REDIRECT*/
+
+                            window.location.href =
+                                "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message,
+                            confirmButtonText: 'OK'
+                        });
+
+                    }
+
+                },
+
+                error: function(xhr) {
+
+                    console.error(xhr);
+
+                    alert(
+                        xhr.responseJSON?.message ??
+                        'Terjadi kesalahan saat mengajukan filing Request Document.'
+                    );
+
+                },
+
+                complete: function() {
+
+                    button.prop('disabled', false);
+
+                    button.html(`
+                    <i class="fas fa-check me-1"></i>
+                    Yes,Filing Request
+                `);
+
+                }
+
+            });
+
+        });
     </script>
 @endsection
