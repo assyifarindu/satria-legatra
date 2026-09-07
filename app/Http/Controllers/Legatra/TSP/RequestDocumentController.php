@@ -63,7 +63,8 @@ class RequestDocumentController extends Controller
         try {
             $user_id = Auth::id();
             $division = Auth::user()->division;
-            $is_bod = $division === 'Board Of Directors';
+            $title = Auth::user()->title;
+            $is_bod = strtolower($division) === 'board of directors' && str_contains(strtolower($title), 'director');
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
