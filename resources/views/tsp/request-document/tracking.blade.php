@@ -332,11 +332,55 @@
                                                                 <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
                                                             <a href="javascript:void(0)"
                                                                 class="btn btn-success btn-upload-document-signed-bod"
-                                                                data-id="{{ $requestDocument->id }}">
+                                                                data-id="{{ $requestDocument->id }}"
+                                                                title="BOD Signed Document">
 
                                                                 <i class="fas fa-upload me-1"></i>
 
                                                                 Upload Document
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button upload document bertanda tangan Customer by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 8 &&
+                                                        $requestDocument->status_id == 15 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-upload-document-signed-customer"
+                                                                data-id="{{ $requestDocument->id }}"
+                                                                title="Customer Signed Document">
+
+                                                                <i class="fas fa-upload me-1"></i>
+
+                                                                Upload Document
+
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                {{-- button confirm document by user --}}
+                                                @if (
+                                                    $requestDocument->stage_id == 9 &&
+                                                        $requestDocument->status_id == 15 &&
+                                                        getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
+                                                        Auth::user()->division !== 'Board Of Directors')
+                                                    <div class="col-sm-6">
+                                                        <div class="text-sm-end mt-2 mt-sm-0">
+                                                            <a href="javascript:void(0)"
+                                                                class="btn btn-success btn-confirm-document"
+                                                                data-id="{{ $requestDocument->id }}">
+
+                                                                <i class="fas fa-check"></i>
+
+                                                                Confirm Document
 
                                                             </a>
                                                         </div>
@@ -609,15 +653,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                            <div class="float-end">
-                                                                                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                        title="Download" tabindex="0"
-                                                                                                                                                                                                                                        data-plugin="tippy"
-                                                                                                                                                                                                                                        data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                        ` : ''}
+                                                                                                                                                                                                                                        <div class="float-end">
+                                                                                                                                                                                                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                    title="Download" tabindex="0"
+                                                                                                                                                                                                                                                    data-plugin="tippy"
+                                                                                                                                                                                                                                                    data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                            </a>
+                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                    ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -2940,6 +2984,204 @@
                             title: 'Error',
                             text: xhr.responseJSON?.message ??
                                 'Upload BOD Signed Document gagal disubmit.'
+                        });
+
+                    },
+
+                    complete: function() {
+                        button.prop('disabled', false);
+                        button.html(`
+
+                                <i class="fas fa-save me-1"></i>
+
+                                Submit
+
+                            `);
+
+                    }
+
+                });
+
+            }
+        );
+
+        // KLIK BUTTON UPLOAD DOCUMENT SIGNED CUSTOMER BY USER
+        $(document).on(
+            'click',
+            '.btn-upload-document-signed-customer',
+            function() {
+
+                const id = $(this).data('id');
+                const url =
+                    "{{ url('tsp/request-document/upload-file-customer-signed') }}/" +
+                    id;
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    beforeSend: function() {
+
+                        $('#modal-container').html(`
+                                <div class="text-center p-3">
+                                    Loading...
+                                </div>
+                            `);
+
+                    },
+
+                    success: function(response) {
+                        $('#modal-container').html(response);
+                        const modalElement =
+                            document.getElementById(
+                                'upload-file-customer-signed-modal'
+                            );
+                        if (!modalElement) {
+
+                            console.error(
+                                'Modal upload-file-customer-signed-modal tidak ditemukan.'
+                            );
+
+                            return;
+
+                        }
+
+                        const uploadFileCustomerSignedModal = new bootstrap.Modal(modalElement);
+                        uploadFileCustomerSignedModal.show();
+
+                    },
+
+
+                    error: function(xhr) {
+                        console.error(xhr);
+                        Swal.fire({
+
+                            icon: 'error',
+
+                            title: 'Error',
+
+                            text: xhr.responseJSON?.message ??
+                                'Gagal memuat form Upload File Customer Signed.'
+
+                        });
+
+                    }
+
+                });
+
+            }
+        );
+
+        /*SUBMIT UPLOAD DOCUMENT SIGNED CUSTOMER BY USER */
+        $(document).on(
+            'submit',
+            '#upload-file-customer-signed-form',
+            function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const id = form.data('id');
+                const button = $('#confirm-upload-file-customer-signed');
+
+                /*FORM DATA*/
+                const formData = new FormData(this);
+
+                /*INPUT*/
+
+                const attachmentInput = $('#attachment');
+
+                /*ERROR ELEMENT*/
+
+                const attachmentError = $('#attachment-error');
+                /*RESET VALIDATION*/
+
+                attachmentInput.removeClass('is-invalid');
+
+                attachmentError.text('');
+
+
+                /* LOADING BUTTON */
+
+                button.prop('disabled', true);
+
+                button.html(`
+                        <span
+                            class="spinner-border spinner-border-sm me-1">
+                        </span>
+
+                        Processing...
+                    `);
+
+
+                /* AJAX */
+                $.ajax({
+
+                    url: "{{ url('tsp/request-document/upload-file-customer-signed') }}/" +
+                        id,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            /*HIDE MODAL */
+                            const modalElement = document.getElementById(
+                                'upload-file-customer-signed-modal');
+
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            /*SUCCESS */
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+
+                                /*REDIRECT*/
+
+                                window.location.href =
+                                    "{{ route('tsp.request-document.tracking', $requestDocument->id) }}";
+                            });
+
+                        }
+
+                    },
+                    error: function(xhr) {
+
+                        console.error(xhr);
+                        /*VALIDATION ERROR*/
+
+                        if (xhr.status === 422) {
+
+                            const errors = xhr.responseJSON.errors;
+
+                            /*ATTACHMENT ERROR*/
+
+                            if (errors.attachment) {
+                                attachmentInput.addClass('is-invalid');
+
+                                attachmentError.text(errors.attachment[0]
+
+                                );
+
+                            }
+
+                            return;
+
+                        }
+
+                        /* SYSTEM ERROR*/
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message ??
+                                'Upload Customer Signed Document gagal disubmit.'
                         });
 
                     },

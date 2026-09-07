@@ -342,6 +342,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/tsp/request-document/form-legal-review/verify-by-committee/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'verifyFLRByCommittee'])->name('tsp.request-document.form-legal-review.verify-by-committee');
     Route::get('/tsp/request-document/upload-file-bod-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showUploadFileBodSigned'])->name('tsp.request-document.show-upload-file-bod-signed');
     Route::post('/tsp/request-document/upload-file-bod-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'uploadFileBodSigned'])->name('tsp.request-document.upload-file-bod-signed');
+    Route::get('/tsp/request-document/upload-file-customer-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showUploadFileCustomerSigned'])->name('tsp.request-document.show-upload-file-customer-signed');
+    Route::post('/tsp/request-document/upload-file-customer-signed/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'uploadFileCustomerSigned'])->name('tsp.request-document.upload-file-customer-signed');
 
 
 

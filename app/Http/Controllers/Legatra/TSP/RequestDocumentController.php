@@ -4485,4 +4485,116 @@ class RequestDocumentController extends Controller
             ], 500);
         }
     }
+
+    /** Show the upload final document modal for the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showUploadFileCustomerSigned($id)
+    {
+        $requestDocument = TspRequestDocument::findOrFail($id);
+
+        return view(
+            'tsp.request-document.modal.form-upload-file-customer-signed',
+            compact('requestDocument')
+        );
+    }
+
+    /** Upload final document for the specified request document.
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadFileCustomerSigned(Request $request, $id)
+    {
+        $db = DB::connection('legatra');
+        try {
+            $validated = $request->validate([
+                'attachment' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            ]);
+
+            $db->beginTransaction();
+
+            $requestDocument = TspRequestDocument::findOrFail($id);
+
+            /*UPDATE REQUEST DOCUMENT*/
+
+            $requestDocument->update([
+                // 'status_id' => 15, statusnya Final Contract tidak ada jadi smeentara tetap Cleared for Delivery
+                'stage_id' => 9,
+                'substage_id' => null,
+            ]);
+
+            /*INSERT HISTORY*/
+
+            TspRequestDocumentHistory::create([
+                'request_document_id' => $requestDocument->id,
+                'stage_id' => $requestDocument->stage_id,
+                'substage_id' => $requestDocument->substage_id ?? null,
+                'status_id' => $requestDocument->status_id,
+                'action' => 'Upload Customer Signed Document',
+                'action_by' => Auth::id(),
+                'created_by' => Auth::id(),
+            ]);
+
+            /*INSERT FILE*/
+            if ($request->hasFile('attachment')) {
+
+                $file = $validated['attachment'];
+
+                $name = pathinfo(
+                    $file->getClientOriginalName(),
+                    PATHINFO_FILENAME
+                );
+
+                $fileName = $name
+                    . '-'
+                    . time()
+                    . '.'
+                    . $file->getClientOriginalExtension();
+
+                $file->move(
+                    public_path('upload/request_document'),
+                    $fileName
+                );
+
+                $filePath = 'upload/request_document/' . $fileName;
+
+                TspRequestDocumentFile::create([
+                    'request_document_id' => $requestDocument->id,
+
+                    'name' => $fileName,
+
+                    'document_type' => 'Signed Customer',
+
+                    'file_path' => $filePath,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            $db->commit();
+            return response()->json([
+
+                'success' => true,
+                'message' => 'Signed Customer Document berhasil diunggah.',
+
+            ]);
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+
+            $db->rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Signed Customer Document gagal disubmit.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
