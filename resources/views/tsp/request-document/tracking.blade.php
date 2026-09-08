@@ -84,14 +84,16 @@
                                                 <div id="feedback-list-container"></div>
 
                                                 <div class="d-flex justify-content-end mb-2">
-                                                    <a
-                                                        href="{{ route('tsp.request-document.form-legal-review.generate-pdf', $requestDocument->id) }}"
-                                                        class="btn btn-primary" 
-                                                        target="_blank"
-                                                    >
-                                                        <i class="mdi mdi-file-pdf me-1"></i>
-                                                        Generate PDF Form Legal Review
-                                                    </a>
+                                                    @if ($requestDocument->stage_id == 6)
+                                                        <a
+                                                            href="{{ route('tsp.request-document.form-legal-review.generate-pdf', $requestDocument->id) }}"
+                                                            class="btn btn-primary" 
+                                                            target="_blank"
+                                                        >
+                                                            <i class="mdi mdi-file-pdf me-1"></i>
+                                                            Generate PDF Form Legal Review
+                                                        </a>
+                                                    @endif
                                                 </div>
                                                 <div id="request-document-detail">
 
