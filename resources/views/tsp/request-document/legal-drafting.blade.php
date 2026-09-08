@@ -60,11 +60,7 @@
 
                                 <h4 class="header-title">
 
-                                    {{ $requestDocument->document_number ?? '-' }}
-
-                                    -
-
-                                    {{ $requestDocument->title }}
+                                    {{ $requestDocument->document_number ? $requestDocument->document_number . ' - ' . $requestDocument->title : $requestDocument->title }}
 
                                 </h4>
 
