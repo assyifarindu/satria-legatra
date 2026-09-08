@@ -27,7 +27,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <form id="form-request-document" class="d-flex flex-column gap-2"
+                            <form id="form-legal-review-create" class="d-flex flex-column gap-2"
                                 action="{{ route('tsp.request-document.store-create-form-legal-review', $requestDocument->id) }}"
                                 method="POST" enctype="multipart/form-data">
                                 @csrf
@@ -101,7 +101,6 @@
                                     </div>
                                 </div>
 
-                                
                                 <div class="row">
                                     <div class="col-4">
                                         <label for="pic" class="fw-bold d-block">
@@ -130,9 +129,9 @@
                                         <select name="department" class="form-select @error('department') is-invalid @enderror">
                                             <option value="">Select Department</option>
                                             @foreach ($department as $item)
-                                                <option value="{{ $item->nama }}"
-                                                    {{ old('department') == $item->nama ? 'selected' : '' }}>
-                                                    {{ $item->nama }}
+                                                <option value="{{ $item['name'] }}"
+                                                    {{ old('department') == $item['name'] ? 'selected' : '' }}>
+                                                    {{ $item['name'] }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -309,7 +308,23 @@
                 allowClear: true
             });
 
+            // Disable submit button after form submission to prevent double submission
+            $('#form-legal-review-create').on('submit', function(event) {
+                const form = $(this);
 
+                // Disable semua tombol submit
+                form.find('button[type="submit"]').prop('disabled', true);
+
+                // Button yang diklik
+                const submitter = event.originalEvent.submitter;
+
+                if (submitter) {
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+                }
+            });
         })
     </script>
 @endsection

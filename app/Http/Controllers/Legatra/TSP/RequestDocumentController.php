@@ -3533,8 +3533,15 @@ class RequestDocumentController extends Controller
         try {
 
             $requestDocument = TspRequestDocument::with('customer')->findOrFail($id);
-            $department = Department::where('company_id', 16731)->get();
+            $rawDepartment = Department::where('company_id', 16731)->get();
             $pic = TspRequestDocumentPic::where('request_document_id', $requestDocument->id)->first();
+
+            $department = $rawDepartment->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => preg_replace('/\s+/', ' ', trim($item->nama))
+                ];
+            });
 
             return view('tsp.request-document.form-legal-review.create', compact('requestDocument', 'department', 'pic'));
         } catch (\Throwable $e) {
@@ -3558,10 +3565,7 @@ class RequestDocumentController extends Controller
         try {
             $validated = $request->validate([
                 'date' => ['required', 'date'],
-                'pic' => ['required', 'string', 'max:255'],
                 'department' => ['required', 'string', 'max:255'],
-                'party_name' => ['required', 'string', 'max:255'],
-                'document_number' => ['required', 'string', 'max:255'],
                 'document_objective' => ['required', 'string', 'max:255'],
                 'period_time' => ['required', 'string', 'max:255'],
                 'incoterm' => ['required', 'string', 'max:255'],
@@ -3580,10 +3584,7 @@ class RequestDocumentController extends Controller
             TspFormLegalReview::create([
                 'request_document_id' => $requestDocument->id,
                 'date' => $validated['date'],
-                'pic' => $validated['pic'],
                 'department' => $validated['department'],
-                'party_name' => $validated['party_name'],
-                'document_number' => $validated['document_number'],
                 'document_objective' => $validated['document_objective'],
                 'period_time' => $validated['period_time'],
                 'incoterm' => $validated['incoterm'],
@@ -3781,9 +3782,17 @@ class RequestDocumentController extends Controller
 
             $requestDocument = TspRequestDocument::with('customer')->findOrFail($id);
             $flr = TspFormLegalReview::where('request_document_id', $id)->firstOrFail();
-            $department = Department::where('company_id', 16731)->get();
+            $rawDepartment = Department::where('company_id', 16731)->get();
+            $pic = TspRequestDocumentPic::where('request_document_id', $requestDocument->id)->first();
 
-            return view('tsp.request-document.form-legal-review.revision', compact('requestDocument', 'flr', 'department'));
+            $department = $rawDepartment->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => preg_replace('/\s+/', ' ', trim($item->nama))
+                ];
+            });
+
+            return view('tsp.request-document.form-legal-review.revision', compact('requestDocument', 'flr', 'department', 'pic'));
         } catch (\Throwable $e) {
 
             return response()->json([
@@ -3805,10 +3814,7 @@ class RequestDocumentController extends Controller
         try {
             $validated = $request->validate([
                 'date' => ['required', 'date'],
-                'pic' => ['required', 'string', 'max:255'],
                 'department' => ['required', 'string', 'max:255'],
-                'party_name' => ['required', 'string', 'max:255'],
-                'document_number' => ['required', 'string', 'max:255'],
                 'document_objective' => ['required', 'string', 'max:255'],
                 'period_time' => ['required', 'string', 'max:255'],
                 'incoterm' => ['required', 'string', 'max:255'],
@@ -3826,10 +3832,7 @@ class RequestDocumentController extends Controller
             /*INSERT FORM LEGAL REVIEW*/
             TspFormLegalReview::where('request_document_id', $requestDocument->id)->update([
                 'date' => $validated['date'],
-                'pic' => $validated['pic'],
                 'department' => $validated['department'],
-                'party_name' => $validated['party_name'],
-                'document_number' => $validated['document_number'],
                 'document_objective' => $validated['document_objective'],
                 'period_time' => $validated['period_time'],
                 'incoterm' => $validated['incoterm'],

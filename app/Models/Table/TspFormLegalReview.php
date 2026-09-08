@@ -18,10 +18,7 @@ class TspFormLegalReview extends Model
     protected $fillable = [
         'request_document_id',
         'date',
-        'pic',
         'department',
-        'party_name',
-        'document_number',
         'document_objective',
         'period_time',
         'incoterm',
