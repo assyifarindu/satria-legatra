@@ -64,7 +64,6 @@ class RequestDocumentController extends Controller
             $user_id = Auth::id();
             $division = Auth::user()->division;
             $title = Auth::user()->title;
-            $is_bod = strtolower($division) === 'board of directors' && str_contains(strtolower($title), 'director');
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
@@ -106,10 +105,9 @@ class RequestDocumentController extends Controller
 
             if ($role === 'Admin Legal TSP') {
                 $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
-            } else if ($is_bod) {
-                $query->where('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
             } else {
-                $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id);
+                $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id)
+                    ->orWhere('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
             }
 
             // 4. Filtering Search
@@ -123,7 +121,8 @@ class RequestDocumentController extends Controller
             }
 
             // 5. Hitung total record setelah di-filter
-            $recordsFiltered = $query->count();
+            $recordsFiltered = $query
+                                ->count();
 
             // 6. Ambil data terpaginasi
             $data = $query->orderBy($columnName, $dir)

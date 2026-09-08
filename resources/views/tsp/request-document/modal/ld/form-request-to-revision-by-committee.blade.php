@@ -104,7 +104,7 @@
 
                         <i class="mdi mdi-information-outline me-1"></i>
 
-                        Request Document akan dikembalikan ke Legal Drafting
+                        Request Document akan dikembalikan ke requester
                         untuk dilakukan revisi.
 
                     </div>

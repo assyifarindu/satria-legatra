@@ -60,11 +60,7 @@
 
                                 <h4 class="header-title">
 
-                                    {{ $requestDocument->document_number ?? '-' }}
-
-                                    -
-
-                                    {{ $requestDocument->title }}
+                                    {{ $requestDocument->document_number ? $requestDocument->document_number . ' - ' . $requestDocument->title : $requestDocument->title }}
 
                                 </h4>
 
@@ -574,6 +570,24 @@
 
                 }
             );
+
+            // Disable submit button after form submission to prevent multiple submissions
+            $('#legal-drafting-form').on('submit', function(event) {
+                const form = $(this);
+
+                // Disable semua tombol submit
+                form.find('button[type="submit"]').prop('disabled', true);
+
+                // Button yang diklik
+                const submitter = event.originalEvent.submitter;
+
+                if (submitter) {
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+                }
+            })
         });
     </script>
 @endsection

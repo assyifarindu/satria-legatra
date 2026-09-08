@@ -113,11 +113,12 @@
 
                                                 {{-- button request to revision dan verify by user --}}
                                                 @if (
-                                                    $requestDocument->stage_id == 3 &&
+                                                        $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 1 &&
                                                         $requestDocument->status_id == 6 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division !== 'Board Of Directors')
+                                                        $requestDocument->requester_id === Auth::user()->id
+                                                    )
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -146,6 +147,7 @@
                                                 @if (
                                                     $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 3 &&
+                                                        $requestDocument->status_id == 10 &&
                                                         getRoles(Auth::user()->id) === 'Admin Legal TSP')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
@@ -190,11 +192,12 @@
 
                                                 {{-- button revise legal drafting request document by user --}}
                                                 @if (
-                                                    $requestDocument->stage_id == 3 &&
+                                                        $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 3 &&
                                                         $requestDocument->status_id == 11 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division !== 'Board Of Directors')
+                                                        $requestDocument->requester_id == Auth::user()->id
+                                                    )
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.show-revision', $requestDocument->id) }}"

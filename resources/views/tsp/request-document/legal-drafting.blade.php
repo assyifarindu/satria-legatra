@@ -294,6 +294,23 @@
 @section('js')
     <script>
         $(document).ready(function() {
+            // Disable submit button after form submission to prevent multiple submissions
+            $('#legal-drafting-form').on('submit', function() {
+                const form = $(this);
+
+                // Disable semua tombol submit
+                form.find('button[type="submit"]').prop('disabled', true);
+
+                // Button yang diklik
+                const submitter = event.originalEvent.submitter;
+
+                if (submitter) {
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+                }
+            });
 
             /*INITIALIZE SELECT2*/
 
