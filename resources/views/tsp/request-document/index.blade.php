@@ -172,7 +172,7 @@
                             let viewUrl = "{{ url('tsp/request-document') }}/" + row.id;
 
                             return `
-                                ${ (row.status_id == 1 || row.status_id == 2) ? `
+                                ${ (row.status_id == 1) ? `
                                                             <a href="${editUrl}"
                                                                 class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
                                                                 title="Edit" tabindex="0" data-plugin="tippy"

@@ -786,6 +786,13 @@ class RequestDocumentController extends Controller
             )
             ->first();
 
+        /* Jika status bukan draft (status_id = 1), maka tidak bisa di edit */
+        if ($requestDocument->status_id != 1) {
+            return redirect()
+                ->route('tsp.request-document')
+                ->with('error', 'Request document tidak bisa di edit karena sudah di submit.');
+        }
+
         /*VALIDATION */
 
         if ($action === 'draft') {
