@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-
+use niklasravnsborg\LaravelPdf\Facades\Pdf;
 
 
 class RequestDocumentController extends Controller
@@ -4830,5 +4830,25 @@ class RequestDocumentController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /** Generate PDF for the form legal review of the specified request document.
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function generatePdfFormLegalReview($id)
+    {
+        $data = [
+            'doc_date'      => '25 May 2026',
+            'doc_number'    => '123/LGL/2026',
+            'pic_doc'       => 'Nur Rohman A',
+            'dept'          => 'Legal',
+            'party_name'    => 'PT ABC Indonesia',
+            'doc_title'     => 'Perjanjian Kerjasama Service',
+            'signatories'   => ['David', 'Chrisman Wibowo'],
+        ];
+
+        $pdf = Pdf::loadView('tsp.pdf.form-legal-review', $data);
+        return $pdf->stream('Form_Legal_Review.pdf');
     }
 }

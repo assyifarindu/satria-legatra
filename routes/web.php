@@ -348,7 +348,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/tsp/request-document/confirm-document-for-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'confirmDocumentForFiling'])->name('tsp.request-document.confirm-document-for-filing');
     Route::get('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDocumentFiling'])->name('tsp.request-document.show-document-filing');
     Route::post('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'documentFiling'])->name('tsp.request-document.document-filing');
-
+    Route::get('/tsp/request-document/form-legal-review/{id}/generate-pdf', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'generatePdfFormLegalReview'])->name('tsp.request-document.form-legal-review.generate-pdf');
 
 
 
