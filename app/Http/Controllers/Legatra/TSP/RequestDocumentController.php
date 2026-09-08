@@ -3534,8 +3534,9 @@ class RequestDocumentController extends Controller
 
             $requestDocument = TspRequestDocument::with('customer')->findOrFail($id);
             $department = Department::where('company_id', 16731)->get();
+            $pic = TspRequestDocumentPic::where('request_document_id', $requestDocument->id)->first();
 
-            return view('tsp.request-document.form-legal-review.create', compact('requestDocument', 'department'));
+            return view('tsp.request-document.form-legal-review.create', compact('requestDocument', 'department', 'pic'));
         } catch (\Throwable $e) {
 
             return response()->json([

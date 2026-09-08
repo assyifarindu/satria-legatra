@@ -164,7 +164,6 @@
                                                         $requestDocument->substage_id == 2 &&
                                                         ($requestDocument->status_id == 7 || $requestDocument->status_id == 8) &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division === 'Board Of Directors' &&
                                                         getBODNotVerified($requestDocument->id, 'ld'))
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
@@ -209,10 +208,11 @@
 
                                                 {{-- button revise legal drafting request document by user --}}
                                                 @if (
-                                                    $requestDocument->stage_id == 4 &&
+                                                        $requestDocument->stage_id == 4 &&
                                                         $requestDocument->status_id == 9 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division !== 'Board Of Directors')
+                                                        $requestDocument->requester_id == Auth::user()->id
+                                                    )
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.show-revision', $requestDocument->id) }}"
@@ -298,7 +298,6 @@
                                                         $requestDocument->substage_id == 5 &&
                                                         ($requestDocument->status_id == 7 || $requestDocument->status_id == 8) &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division === 'Board Of Directors' &&
                                                         getBODNotVerified($requestDocument->id, 'flr'))
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
