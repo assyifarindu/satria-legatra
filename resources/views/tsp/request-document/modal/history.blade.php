@@ -25,11 +25,7 @@
 
                     <strong>Request Document:</strong>
 
-                    {{ $requestDocument->document_number ?? '-' }}
-
-                    -
-
-                    {{ $requestDocument->title }}
+                    {{ $requestDocument->document_number ? $requestDocument->document_number . " - " . $requestDocument->title : $requestDocument->title }}
 
                 </div>
 

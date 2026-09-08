@@ -340,212 +340,182 @@
                                             <label for="customer_name" class="fw-bold d-block">
                                                 Customer Name
                                             </label>
-                                            <h4 class="header-title">Form Create Request Document</h4>
-                                            <br><br>
 
-                                            <form id="form-request-document" class="d-flex flex-column gap-2"
-                                                action="{{ url('tsp/request-document') }}" method="POST"
-                                                enctype="multipart/form-data">
-                                                @csrf
+                                            <select name="customer_id"
+                                                class="form-select @error('customer_id') is-invalid @enderror">
+                                                <option value="">Select Customer</option>
+                                            </select>
+                                            <input type="text" name="customer_name" id="customer_name"
+                                                value="{{ old('customer_name') }}"
+                                                class="form-control d-none @error('customer_name') is-invalid @enderror"
+                                                placeholder="Customer Name" readonly>
 
-                                                <div>
-                                                    <label for="title" class="fw-bold d-block">
-                                                        Title
-                                                    </label>
-
-                                                    <input type="text" name="title" id="title"
-                                                        value="{{ old('title') }}"
-                                                        class="form-control @error('title') is-invalid @enderror"
-                                                        placeholder="Title">
-
-                                                    @error('title')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
+                                            @error('customer_id')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
+                                            @enderror
+                                        </div>
 
-                                                <div class="col-12">
-                                                    <label for="customer_name" class="fw-bold d-block">
-                                                        Customer Name
-                                                    </label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="customer_nib" class="fw-bold d-block">
+                                                    Customer NIB
+                                                </label>
 
-                                                    <select name="customer_id"
-                                                        class="form-select @error('customer_id') is-invalid @enderror">
-                                                        <option value="">Select Customer</option>
-                                                    </select>
-                                                    <input type="text" name="customer_name" id="customer_name"
-                                                        value="{{ old('customer_name') }}"
-                                                        class="form-control d-none @error('customer_name') is-invalid @enderror"
-                                                        placeholder="Customer Name" readonly>
+                                                <input type="text" name="customer_nib" id="customer_nib"
+                                                    value="{{ old('customer_nib') }}"
+                                                    class="form-control @error('customer_nib') is-invalid @enderror"
+                                                    placeholder="Customer NIB" readonly>
 
-                                                    @error('customer_id')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label for="customer_nib" class="fw-bold d-block">
-                                                            Customer NIB
-                                                        </label>
-
-                                                        <input type="text" name="customer_nib" id="customer_nib"
-                                                            value="{{ old('customer_nib') }}"
-                                                            class="form-control @error('customer_nib') is-invalid @enderror"
-                                                            placeholder="Customer NIB" readonly>
-
-                                                        @error('customer_nib')
-                                                            <div class="invalid-feedback">
-                                                                {{ $message }}
-                                                            </div>
-                                                        @enderror
+                                                @error('customer_nib')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
+                                                @enderror
+                                            </div>
 
-                                                    <div class="col-md-6">
-                                                        <label for="customer_npwp" class="fw-bold d-block">
-                                                            Customer NPWP
-                                                        </label>
+                                            <div class="col-md-6">
+                                                <label for="customer_npwp" class="fw-bold d-block">
+                                                    Customer NPWP
+                                                </label>
 
-                                                        <input type="text" name="customer_npwp" id="customer_npwp"
-                                                            value="{{ old('customer_npwp') }}"
-                                                            class="form-control @error('customer_npwp') is-invalid @enderror"
-                                                            placeholder="Customer NPWP" readonly>
+                                                <input type="text" name="customer_npwp" id="customer_npwp"
+                                                    value="{{ old('customer_npwp') }}"
+                                                    class="form-control @error('customer_npwp') is-invalid @enderror"
+                                                    placeholder="Customer NPWP" readonly>
 
-                                                        @error('customer_npwp')
-                                                            <div class="invalid-feedback">
-                                                                {{ $message }}
-                                                            </div>
-                                                        @enderror
+                                                @error('customer_npwp')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="customer_address" class="fw-bold d-block">
+                                                Customer Address
+                                            </label>
+
+                                            <input type="text" name="customer_address" id="customer_address"
+                                                value="{{ old('customer_address') }}"
+                                                class="form-control @error('customer_address') is-invalid @enderror"
+                                                placeholder="Customer Address" readonly>
+
+                                            @error('customer_address')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
+                                            @enderror
+                                        </div>
 
-                                                <div>
-                                                    <label for="customer_address" class="fw-bold d-block">
-                                                        Customer Address
-                                                    </label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="customer_postal_code" class="fw-bold d-block">
+                                                    Customer Postal Code
+                                                </label>
 
-                                                    <input type="text" name="customer_address" id="customer_address"
-                                                        value="{{ old('customer_address') }}"
-                                                        class="form-control @error('customer_address') is-invalid @enderror"
-                                                        placeholder="Customer Address" readonly>
+                                                <input type="text" name="customer_postal_code"
+                                                    id="customer_postal_code"
+                                                    value="{{ old('customer_postal_code') }}"
+                                                    class="form-control @error('customer_postal_code') is-invalid @enderror"
+                                                    placeholder="Customer Postal Code" readonly>
 
-                                                    @error('customer_address')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label for="customer_postal_code" class="fw-bold d-block">
-                                                            Customer Postal Code
-                                                        </label>
-
-                                                        <input type="text" name="customer_postal_code"
-                                                            id="customer_postal_code"
-                                                            value="{{ old('customer_postal_code') }}"
-                                                            class="form-control @error('customer_postal_code') is-invalid @enderror"
-                                                            placeholder="Customer Postal Code" readonly>
-
-                                                        @error('customer_postal_code')
-                                                            <div class="invalid-feedback">
-                                                                {{ $message }}
-                                                            </div>
-                                                        @enderror
+                                                @error('customer_postal_code')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
+                                                @enderror
+                                            </div>
 
-                                                    <div class="col-md-6">
-                                                        <label for="customer_email" class="fw-bold d-block">
-                                                            Customer Email
-                                                        </label>
+                                            <div class="col-md-6">
+                                                <label for="customer_email" class="fw-bold d-block">
+                                                    Customer Email
+                                                </label>
 
-                                                        <input type="text" name="customer_email" id="customer_email"
-                                                            value="{{ old('customer_email') }}"
-                                                            class="form-control @error('customer_email') is-invalid @enderror"
-                                                            placeholder="Customer Email" readonly>
+                                                <input type="text" name="customer_email" id="customer_email"
+                                                    value="{{ old('customer_email') }}"
+                                                    class="form-control @error('customer_email') is-invalid @enderror"
+                                                    placeholder="Customer Email" readonly>
 
-                                                        @error('customer_email')
-                                                            <div class="invalid-feedback">
-                                                                {{ $message }}
-                                                            </div>
-                                                        @enderror
+                                                @error('customer_email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="customer_pic_name" class="fw-bold d-block">
+                                                Customer PIC Name
+                                            </label>
+
+                                            <input type="text" name="customer_pic_name" id="customer_pic_name"
+                                                value="{{ old('customer_pic_name') }}"
+                                                class="form-control @error('customer_pic_name') is-invalid @enderror"
+                                                placeholder="Customer PIC Name">
+
+                                            @error('customer_pic_name')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
+                                            @enderror
+                                        </div>
 
-                                                <div>
-                                                    <label for="customer_pic_name" class="fw-bold d-block">
-                                                        Customer PIC Name
-                                                    </label>
+                                        <div>
+                                            <label for="customer_pic_position" class="fw-bold d-block">
+                                                Customer PIC Position
+                                            </label>
 
-                                                    <input type="text" name="customer_pic_name" id="customer_pic_name"
-                                                        value="{{ old('customer_pic_name') }}"
-                                                        class="form-control @error('customer_pic_name') is-invalid @enderror"
-                                                        placeholder="Customer PIC Name">
-
-                                                    @error('customer_pic_name')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
+                                            <input type="text" name="customer_pic_position"
+                                                id="customer_pic_position"
+                                                value="{{ old('customer_pic_position') }}"
+                                                class="form-control @error('customer_pic_position') is-invalid @enderror"
+                                                placeholder="Customer PIC Position">
+                                            @error('customer_pic_position')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
                                                 </div>
+                                            @enderror
+                                        </div>
 
-                                                <div>
-                                                    <label for="customer_pic_position" class="fw-bold d-block">
-                                                        Customer PIC Position
-                                                    </label>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="customer_pic_email" class="fw-bold d-block">
+                                                    Customer PIC Email
+                                                </label>
 
-                                                    <input type="text" name="customer_pic_position"
-                                                        id="customer_pic_position"
-                                                        value="{{ old('customer_pic_position') }}"
-                                                        class="form-control @error('customer_pic_position') is-invalid @enderror"
-                                                        placeholder="Customer PIC Position">
-                                                    @error('customer_pic_position')
-                                                        <div class="invalid-feedback">
-                                                            {{ $message }}
-                                                        </div>
-                                                    @enderror
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <label for="customer_pic_email" class="fw-bold d-block">
-                                                            Customer PIC Email
-                                                        </label>
-
-                                                        <input type="text" name="customer_pic_email"
-                                                            id="customer_pic_email"
-                                                            value="{{ old('customer_pic_email') }}"
-                                                            class="form-control @error('customer_pic_email') is-invalid @enderror"
-                                                            placeholder="Customer PIC Email">
-                                                        @error('customer_pic_email')
-                                                            <div class="invalid-feedback">
-                                                                {{ $message }}
-                                                            </div>
-                                                        @enderror
+                                                <input type="text" name="customer_pic_email"
+                                                    id="customer_pic_email"
+                                                    value="{{ old('customer_pic_email') }}"
+                                                    class="form-control @error('customer_pic_email') is-invalid @enderror"
+                                                    placeholder="Customer PIC Email">
+                                                @error('customer_pic_email')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
+                                                @enderror
+                                            </div>
 
-                                                    <div class="col-md-6">
-                                                        <label for="customer_pic_phone" class="fw-bold d-block">
-                                                            Customer PIC Phone
-                                                        </label>
+                                            <div class="col-md-6">
+                                                <label for="customer_pic_phone" class="fw-bold d-block">
+                                                    Customer PIC Phone
+                                                </label>
 
-                                                        <input type="text" name="customer_pic_phone"
-                                                            id="customer_pic_phone"
-                                                            value="{{ old('customer_pic_phone') }}"
-                                                            class="form-control @error('customer_pic_phone') is-invalid @enderror"
-                                                            placeholder="Customer PIC Phone">
+                                                <input type="text" name="customer_pic_phone"
+                                                    id="customer_pic_phone"
+                                                    value="{{ old('customer_pic_phone') }}"
+                                                    class="form-control @error('customer_pic_phone') is-invalid @enderror"
+                                                    placeholder="Customer PIC Phone">
 
-                                                        @error('customer_pic_phone')
-                                                            <div class="invalid-feedback">
-                                                                {{ $message }}
-                                                            </div>
-                                                        @enderror
+                                                @error('customer_pic_phone')
+                                                    <div class="invalid-feedback">
+                                                        {{ $message }}
                                                     </div>
-                                                </div>
+                                                @enderror
+                                            </div>
                                         </div>
 
                                         <div class="d-flex gap-2 justify-content-end mt-2">
@@ -612,16 +582,23 @@
                                             @enderror
                                         </div>
 
-                                        <div class="d-flex gap-2 justify-content-end">
-                                            <button type="submit" name="action_type" value="draft"
-                                                class="btn btn-secondary">
-                                                Save as Draft
-                                            </button>
-                                            <button type="submit" name="action_type" value="submit"
-                                                class="btn btn-primary">
-                                                Submit
-                                            </button>
-                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2 justify-content-end mt-2">
+                                        <button type="button" class="btn btn-secondary prev-button">Prev</button>
+                                    </div>
+                                </fieldset>
+
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="submit" name="action_type" value="draft"
+                                        class="btn btn-warning">
+                                        Save as Draft
+                                    </button>
+                                    <button type="submit" name="action_type" value="submit"
+                                        class="btn btn-primary">
+                                        Submit
+                                    </button>
+                                </div>
                             </form>
                         </div> <!-- end card body-->
                     </div> <!-- end card -->

@@ -1734,14 +1734,14 @@ class RequestDocumentController extends Controller
 
             ]);
         } catch (ValidationException $e) {
-
+            dd($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed.',
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Throwable $e) {
-
+            dd($e);
             $db->rollBack();
 
             return response()->json([
