@@ -681,6 +681,8 @@
                                     </div>
                                 </fieldset>
 
+                                <input type="hidden" name="action_type" id="action_type">
+
                                 <div class="d-flex gap-2 justify-content-end">
                                     @if ($requestDocument->status_id == 1)
                                         <button type="submit" name="action_type" value="draft"
@@ -708,6 +710,30 @@
 @section('js')
     <script>
         $(document).ready(function() {
+            // Set action type
+            $("button[type='submit']").on('click', function() {
+                const actionType = $(this).val();
+                $("#action_type").val(actionType);
+            });
+
+            // Disable submit button after form submission to prevent double submission
+            $('#form-request-document').on('submit', function(event) {
+                const form = $(this);
+
+                // Disable semua tombol submit
+                form.find('button[type="submit"]').prop('disabled', true);
+
+                // Button yang diklik
+                const submitter = event.originalEvent.submitter;
+
+                if (submitter) {
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+                }
+            });
+            
             $("select[name='customer_id']").select2({
                 placeholder: "Select a customer",
                 width: '100%',

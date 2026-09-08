@@ -477,6 +477,7 @@ CREATE TABLE tsp_request_document_histories (
     action_by BIGINT NOT NULL,
     assigned_to BIGINT NULL,
 
+    created_by BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_request_document_histories_document
