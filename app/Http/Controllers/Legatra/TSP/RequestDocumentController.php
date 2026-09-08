@@ -983,7 +983,7 @@ class RequestDocumentController extends Controller
                 'sign_status' => $validated['sign_status']
                     ?? $requestDocument->sign_status,
 
-                'is_project' => (bool) $validated['is_project']
+                'is_project' => $validated['is_project']
                     ?? $requestDocument->is_project,
 
                 'sow' => $validated['sow']
