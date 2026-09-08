@@ -99,7 +99,7 @@
                                                 {{-- button continue to drafting by admin --}}
                                                 @if (
                                                     ($requestDocument->stage_id == 1 || $requestDocument->stage_id == 2) &&
-                                                    $requestDocument->status_id == 2 &&
+                                                    ($requestDocument->status_id == 2 || $requestDocument->status_id == 5) &&
                                                     getRoles(Auth::user()->id) === 'Admin Legal TSP')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
