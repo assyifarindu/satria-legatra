@@ -295,7 +295,7 @@
     <script>
         $(document).ready(function() {
             // Disable submit button after form submission to prevent multiple submissions
-            $('#legal-drafting-form').on('submit', function() {
+            $('#legal-drafting-form').on('submit', function(event) {
                 const form = $(this);
 
                 // Disable semua tombol submit
