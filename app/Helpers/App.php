@@ -324,12 +324,12 @@ function getDetailEmployee($nrp)
 
         if (env('IS_OUTSIDE_UTPE')) {
             $division = Http::withHeaders([
-                'Authorization' => '39|3UaFeep7tzAATwC4hR84iyiggMdzXP7TGRHBxtM4',
-            ])->get('http://satria-apps.patria.co.id/satria-api-man/public/api/sf-emp-detail/' . $nrp);
+                'Authorization' => env('KEY_LEGATRA'),
+            ])->get(env('ENV_SATRIA') . '/satria-api-man/public/api/sf-emp-detail/' . $nrp);
         } else {
             $division = Http::withHeaders([
-                'Authorization' => '39|3UaFeep7tzAATwC4hR84iyiggMdzXP7TGRHBxtM4',
-            ])->get('http://webportal.patria.co.id/satria-api-man/public/api/sf-emp-detail/' . $nrp);
+                'Authorization' => env('KEY_LEGATRA'),
+            ])->get(env('WEBPORTAL_URL') . '/satria-api-man/public/api/sf-emp-detail/' . $nrp);
         }
 
         return $division['data'];
@@ -343,12 +343,12 @@ function getDepartment()
     try {
         if (env('IS_OUTSIDE_UTPE')) {
             $department = Http::withHeaders([
-                'Authorization' => '39|3UaFeep7tzAATwC4hR84iyiggMdzXP7TGRHBxtM4',
-            ])->get('http://satria-apps.patria.co.id/satria-api-man/public/api/sf-dept-list');
+                'Authorization' => env('KEY_LEGATRA'),
+            ])->get(env('ENV_SATRIA') . '/satria-api-man/public/api/sf-dept-list');
         } else {
             $department = Http::withHeaders([
-                'Authorization' => '39|3UaFeep7tzAATwC4hR84iyiggMdzXP7TGRHBxtM4',
-            ])->get('http://webportal.patria.co.id/satria-api-man/public/api/sf-dept-list');
+                'Authorization' => env('KEY_LEGATRA'),
+            ])->get(env('WEBPORTAL_URL') . '/satria-api-man/public/api/sf-dept-list');
         }
 
         return $department['data'];

@@ -121,7 +121,7 @@ class RequestDocumentController extends Controller
 
             // 5. Hitung total record setelah di-filter
             $recordsFiltered = $query
-                                ->count();
+                ->count();
 
             // 6. Ambil data terpaginasi
             $data = $query->orderBy($columnName, $dir)
@@ -4818,15 +4818,54 @@ class RequestDocumentController extends Controller
      */
     public function generatePdfFormLegalReview($id)
     {
-        $data = [
-            'doc_date'      => '25 May 2026',
-            'doc_number'    => '123/LGL/2026',
-            'pic_doc'       => 'Nur Rohman A',
-            'dept'          => 'Legal',
-            'party_name'    => 'PT ABC Indonesia',
-            'doc_title'     => 'Perjanjian Kerjasama Service',
-            'signatories'   => ['David', 'Chrisman Wibowo'],
-        ];
+        $flr = TspFormLegalReview::leftJoin('tsp_request_documents', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_documents.id')
+            ->leftJoin('tsp_request_document_pics', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_document_pics.request_document_id')
+            ->leftJoin('tsp_request_document_customers', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_document_customers.request_document_id')
+            ->select(
+                'tsp_form_legal_reviews.*',
+                'tsp_request_documents.title as title',
+                'tsp_request_documents.document_number as document_number',
+                'tsp_request_document_pics.name as pic_name',
+                'tsp_request_document_customers.name as customer_name',
+            )
+            ->where('tsp_form_legal_reviews.request_document_id', $id)->firstOrFail();
+
+        $committees = TspRequestDocumentCommittees::leftJoin(
+            'satria.users as user',
+            'tsp_request_document_committees.committee_id',
+            '=',
+            'user.id'
+        )
+            ->select(
+                'tsp_request_document_committees.id',
+                'tsp_request_document_committees.committee_id',
+                'tsp_request_document_committees.sequence',
+                'user.name as committee_name',
+                'user.title as committee_title'
+            )
+            ->where(
+                'tsp_request_document_committees.request_document_id',
+                $id
+            )
+            ->whereNull(
+                'tsp_request_document_committees.deleted_at'
+            )
+            ->orderBy(
+                'tsp_request_document_committees.sequence'
+            )
+            ->get();
+        // $data = [
+        //     'doc_date'      => '25 May 2026',
+        //     'doc_number'    => '123/LGL/2026',
+        //     'pic_doc'       => 'Nur Rohman A',
+        //     'dept'          => 'Legal',
+        //     'party_name'    => 'PT ABC Indonesia',
+        //     'doc_title'     => 'Perjanjian Kerjasama Service',
+        //     'signatories'   => ['David', 'Chrisman Wibowo'],
+        // ];
+
+        $data = ['flr' => $flr, 'committees' => $committees];
+
 
         $pdf = Pdf::loadView('tsp.pdf.form-legal-review', $data);
         return $pdf->stream('Form_Legal_Review.pdf');
