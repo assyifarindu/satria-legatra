@@ -85,11 +85,8 @@
 
                                                 <div class="d-flex justify-content-end mb-2">
                                                     @if ($requestDocument->stage_id == 6)
-                                                        <a
-                                                            href="{{ route('tsp.request-document.form-legal-review.generate-pdf', $requestDocument->id) }}"
-                                                            class="btn btn-primary" 
-                                                            target="_blank"
-                                                        >
+                                                        <a href="{{ route('tsp.request-document.form-legal-review.generate-pdf', $requestDocument->id) }}"
+                                                            class="btn btn-primary" target="_blank">
                                                             <i class="mdi mdi-file-pdf me-1"></i>
                                                             Generate PDF Form Legal Review
                                                         </a>
@@ -111,8 +108,8 @@
                                                 {{-- button continue to drafting by admin --}}
                                                 @if (
                                                     ($requestDocument->stage_id == 1 || $requestDocument->stage_id == 2) &&
-                                                    ($requestDocument->status_id == 2 || $requestDocument->status_id == 5) &&
-                                                    getRoles(Auth::user()->id) === 'Admin Legal TSP')
+                                                        ($requestDocument->status_id == 2 || $requestDocument->status_id == 5) &&
+                                                        getRoles(Auth::user()->id) === 'Admin Legal TSP')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.legal-drafting', $requestDocument->id) }}"
@@ -125,12 +122,11 @@
 
                                                 {{-- button request to revision dan verify by user --}}
                                                 @if (
-                                                        $requestDocument->stage_id == 3 &&
+                                                    $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 1 &&
                                                         $requestDocument->status_id == 6 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        $requestDocument->requester_id === Auth::user()->id
-                                                    )
+                                                        $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -203,12 +199,11 @@
 
                                                 {{-- button revise legal drafting request document by user --}}
                                                 @if (
-                                                        $requestDocument->stage_id == 3 &&
+                                                    $requestDocument->stage_id == 3 &&
                                                         $requestDocument->substage_id == 3 &&
                                                         $requestDocument->status_id == 11 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        $requestDocument->requester_id == Auth::user()->id
-                                                    )
+                                                        $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.show-revision', $requestDocument->id) }}"
@@ -220,11 +215,10 @@
 
                                                 {{-- button revise legal drafting request document by user --}}
                                                 @if (
-                                                        $requestDocument->stage_id == 4 &&
+                                                    $requestDocument->stage_id == 4 &&
                                                         $requestDocument->status_id == 9 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        $requestDocument->requester_id == Auth::user()->id
-                                                    )
+                                                        $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="{{ route('tsp.request-document.show-revision', $requestDocument->id) }}"
@@ -260,12 +254,11 @@
 
                                                 {{-- button request to revision dan verify form legal review by user --}}
                                                 @if (
-                                                        $requestDocument->stage_id == 6 &&
+                                                    $requestDocument->stage_id == 6 &&
                                                         $requestDocument->substage_id == 4 &&
                                                         $requestDocument->status_id == 6 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        $requestDocument->requester_id == Auth::user()->id
-                                                    )
+                                                        $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -691,15 +684,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                                                    <div class="float-end">
-                                                                                                                                                                                                                                                        <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                                            <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                                                title="Download" tabindex="0"
-                                                                                                                                                                                                                                                                data-plugin="tippy"
-                                                                                                                                                                                                                                                                data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                                        </a>
-                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                ` : ''}
+                                                                                                                                                                                                                                                        <div class="float-end">
+                                                                                                                                                                                                                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                                    title="Download" tabindex="0"
+                                                                                                                                                                                                                                                                    data-plugin="tippy"
+                                                                                                                                                                                                                                                                    data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                                            </a>
+                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                    ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
