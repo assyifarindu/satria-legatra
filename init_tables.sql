@@ -280,12 +280,13 @@ CREATE TABLE tsp_request_document_files (
     name VARCHAR(255) NOT NULL,
 
     document_type ENUM(
-        'Quotation',
         'Draft Contract',
+        'Quotation',
+        'Other',
         'Final Contract',
         'Signed BOD',
         'Signed Customer',
-        'Other'
+        'Contract Clauses'
     ) NOT NULL,
 
     file_path TEXT NOT NULL,
