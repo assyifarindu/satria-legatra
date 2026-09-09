@@ -388,12 +388,12 @@ class RequestDocumentController extends Controller
 
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
-                'customer_nib' => ['required', 'string', 'max:255'],
-                'customer_npwp' => ['required', 'string', 'max:255'],
-                'customer_address' => ['required', 'string', 'max:255'],
-                'customer_postal_code' => ['required', 'string', 'max:10'],
+                'customer_nib' => ['nullable', 'string', 'max:255'],
+                'customer_npwp' => ['nullable', 'string', 'max:255'],
+                'customer_address' => ['nullable', 'string', 'max:255'],
+                'customer_postal_code' => ['nullable', 'string', 'max:10'],
 
-                'customer_email' => ['required', 'email', 'max:255'],
+                'customer_email' => ['nullable', 'email', 'max:255'],
                 'customer_pic_name' => ['required', 'string', 'max:255'],
                 'customer_pic_position' => ['required', 'string', 'max:255'],
 
@@ -870,12 +870,12 @@ class RequestDocumentController extends Controller
 
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
-                'customer_nib' => ['required', 'string', 'max:255'],
-                'customer_npwp' => ['required', 'string', 'max:255'],
-                'customer_address' => ['required', 'string', 'max:255'],
-                'customer_postal_code' => ['required', 'string', 'max:10'],
+                'customer_nib' => ['nullable', 'string', 'max:255'],
+                'customer_npwp' => ['nullable', 'string', 'max:255'],
+                'customer_address' => ['nullable', 'string', 'max:255'],
+                'customer_postal_code' => ['nullable', 'string', 'max:10'],
 
-                'customer_email' => ['required', 'email', 'max:255'],
+                'customer_email' => ['nullable', 'email', 'max:255'],
                 'customer_pic_name' => ['required', 'string', 'max:255'],
                 'customer_pic_position' => ['required', 'string', 'max:255'],
 
@@ -2707,12 +2707,12 @@ class RequestDocumentController extends Controller
 
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
-                'customer_nib' => ['required', 'string', 'max:255'],
-                'customer_npwp' => ['required', 'string', 'max:255'],
-                'customer_address' => ['required', 'string', 'max:255'],
-                'customer_postal_code' => ['required', 'string', 'max:10'],
+                'customer_nib' => ['nullable', 'string', 'max:255'],
+                'customer_npwp' => ['nullable', 'string', 'max:255'],
+                'customer_address' => ['nullable', 'string', 'max:255'],
+                'customer_postal_code' => ['nullable', 'string', 'max:10'],
 
-                'customer_email' => ['required', 'email', 'max:255'],
+                'customer_email' => ['nullable', 'email', 'max:255'],
                 'customer_pic_name' => ['required', 'string', 'max:255'],
                 'customer_pic_position' => ['required', 'string', 'max:255'],
 

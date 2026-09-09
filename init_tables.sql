@@ -220,12 +220,12 @@ CREATE TABLE tsp_request_document_customers (
     request_document_id BIGINT NOT NULL,
 
     name VARCHAR(100) NOT NULL,
-    nib VARCHAR(100) NOT NULL,
-    npwp VARCHAR(100) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    postal_code VARCHAR(10) NOT NULL,
-    customer_group VARCHAR(100) NOT NULL,
-    email VARCHAR(50) NOT NULL,
+    nib VARCHAR(100) NULL,
+    npwp VARCHAR(100) NULL,
+    address VARCHAR(255) NULL,
+    postal_code VARCHAR(10) NULL,
+    customer_group VARCHAR(100) NULL,
+    email VARCHAR(50) NULL,
 
     created_by BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

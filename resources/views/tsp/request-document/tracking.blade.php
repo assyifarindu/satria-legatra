@@ -988,10 +988,7 @@
                                             Customer NIB :
                                         </span>
 
-                                        ${data.customer
-                                            ? data.customer.nib
-                                            : '-'
-                                        }
+                                        ${data.customer.nib ?? '-'}
                                     </p>
 
                                     <p class="mb-2 ps-3 pt-1">
@@ -999,10 +996,7 @@
                                             Customer NPWP :
                                         </span>
 
-                                        ${data.customer
-                                            ? data.customer.npwp
-                                            : '-'
-                                        }
+                                        ${data.customer.npwp ?? '-'}
                                     </p>
 
                                     <p class="mb-2 ps-3 pt-1">
