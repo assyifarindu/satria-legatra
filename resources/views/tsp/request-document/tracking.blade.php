@@ -362,10 +362,11 @@
 
                                                 {{-- button upload document bertanda tangan Customer by user --}}
                                                 @if (
-                                                    $requestDocument->stage_id == 8 &&
+                                                        $requestDocument->stage_id == 8 &&
                                                         $requestDocument->status_id == 15 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division !== 'Board Of Directors')
+                                                        $requestDocument->requester_id == Auth::user()->id
+                                                    )
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -384,10 +385,11 @@
 
                                                 {{-- button confirm document by user --}}
                                                 @if (
-                                                    $requestDocument->stage_id == 9 &&
+                                                        $requestDocument->stage_id == 9 &&
                                                         $requestDocument->status_id == 15 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        Auth::user()->division !== 'Board Of Directors')
+                                                        $requestDocument->requester_id == Auth::user()->id
+                                                    )
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"

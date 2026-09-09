@@ -3867,6 +3867,14 @@ class RequestDocumentController extends Controller
 
             ]);
 
+            /*UPDATE COMMITTEE VERIFICATION STATUS*/
+            TspRequestDocumentCommittees::where(
+                'request_document_id',
+                $requestDocument->id
+            )->update([
+                'verification_flr_status' => false,
+            ]);
+
 
             /* SEND EMAIL NOTIFICATION TO USER */
             $detail_email = array(
