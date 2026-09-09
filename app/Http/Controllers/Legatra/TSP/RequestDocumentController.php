@@ -24,6 +24,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use Illuminate\Support\Facades\Http;
 
 
 class RequestDocumentController extends Controller
@@ -62,8 +63,6 @@ class RequestDocumentController extends Controller
     {
         try {
             $user_id = Auth::id();
-            $division = Auth::user()->division;
-            $title = Auth::user()->title;
             $role = getRoles($user_id);
             $start = $request->input('start', 0);
             $draw = $request->input('draw', 1);
@@ -183,35 +182,23 @@ class RequestDocumentController extends Controller
     {
         try {
             $q = $request->input('q', '');
-            $customers = [
-                [
-                    "id" => 1,
-                    "name" => "Customer A",
-                    "nib" => "1234567890",
-                    "npwp" => "12.345.678.9-012.345",
-                    "address" => "Address A",
-                    "postal_code" => "12345",
-                    "email" => "customerA@example.com"
-                ],
-                [
-                    "id" => 2,
-                    "name" => "Customer B",
-                    "nib" => "0987654321",
-                    "npwp" => "98.765.432.1-098.765",
-                    "address" => "Address B",
-                    "postal_code" => "54321",
-                    "email" => "customerB@example.com"
-                ],
-                [
-                    "id" => 3,
-                    "name" => "Customer C",
-                    "nib" => "1122334455",
-                    "npwp" => "11.223.344.5-112.233",
-                    "address" => "Address C",
-                    "postal_code" => "67890",
-                    "email" => "customerC@example.com"
-                ]
-            ];
+
+            // Login TSP
+            $triatra_base_url = env('TRIATRA_BASE_URL_API');
+            $nrp = env('TRIATRA_LOGIN_NRP');
+            $source = env('TRIATRA_LOGIN_SOURCE');
+            $login = Http::post($triatra_base_url . '/api1/auth/ext-login', [
+                'nrp' => $nrp,
+                'source' => $source
+            ]);
+            $access_token = $login->json()['values']['accessToken'] ?? null;
+
+            // Get customers
+            $getCustomers = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $access_token,
+                'Site' => 'external'
+            ])->get($triatra_base_url . '/api2/tsp/customers');
+            $customers = $getCustomers->json()['data'] ?? [];
 
             $customers = collect($customers)->filter(function ($customer) use ($q) {
                 if (empty($q)) {
@@ -242,37 +229,22 @@ class RequestDocumentController extends Controller
     public function getCustomerById($id)
     {
         try {
-            $customers = [
-                [
-                    "id" => 1,
-                    "name" => "Customer A",
-                    "nib" => "1234567890",
-                    "npwp" => "12.345.678.9-012.345",
-                    "address" => "Address A",
-                    "postal_code" => "12345",
-                    "email" => "customerA@example.com"
-                ],
-                [
-                    "id" => 2,
-                    "name" => "Customer B",
-                    "nib" => "0987654321",
-                    "npwp" => "98.765.432.1-098.765",
-                    "address" => "Address B",
-                    "postal_code" => "54321",
-                    "email" => "customerB@example.com"
-                ],
-                [
-                    "id" => 3,
-                    "name" => "Customer C",
-                    "nib" => "1122334455",
-                    "npwp" => "11.223.344.5-112.233",
-                    "address" => "Address C",
-                    "postal_code" => "67890",
-                    "email" => "customerC@example.com"
-                ]
-            ];
+            // Login TSP
+            $triatra_base_url = env('TRIATRA_BASE_URL_API');
+            $nrp = env('TRIATRA_LOGIN_NRP');
+            $source = env('TRIATRA_LOGIN_SOURCE');
+            $login = Http::post($triatra_base_url . '/api1/auth/ext-login', [
+                'nrp' => $nrp,
+                'source' => $source
+            ]);
+            $access_token = $login->json()['values']['accessToken'] ?? null;
 
-            $customer = collect($customers)->firstWhere('id', (int)$id);
+            // Get customer by ID
+            $getCustomer = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $access_token,
+                'Site' => 'external'
+            ])->get($triatra_base_url . '/api2/tsp/customers/' . $id);
+            $customer = $getCustomer->json()['data'] ?? null;
 
             if ($customer) {
                 return response()->json([

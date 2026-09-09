@@ -643,6 +643,7 @@
                 ajax: {
                     url: "{{ url('tsp/customers') }}",
                     dataType: 'json',
+                    delay: 500,
                     data: function(params) {
                         return {
                             q: params.term // search term
