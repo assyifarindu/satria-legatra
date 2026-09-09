@@ -891,7 +891,7 @@
                                         <span class="fw-semibold me-2">
                                             Potential Amount :
                                         </span>
-                                        ${data.potential_amount ?? '-'}
+                                        ${data.potential_amount ? `${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(data.potential_amount)}` : '-'}
                                     </p>
 
                                     <p class="mb-2 ps-3 pt-1">
