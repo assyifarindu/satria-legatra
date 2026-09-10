@@ -16,10 +16,10 @@
             color: #222;
         }
 
-        .header {
+        /* .header {
             width: 100%;
             margin-bottom: 12px;
-        }
+        } */
 
         .logo {
             text-align: left;
@@ -236,9 +236,9 @@
             width: 35%;
         }
 
-        /*APPROVEL SECTION*/
+        /* APPROVAL SECTION */
         .approval-section {
-            margin-top: 25px;
+            margin-top: 250px;
             width: 100%;
         }
 
@@ -276,9 +276,21 @@
         }
 
         /* AREA TANDA TANGAN */
-        .signature-space {
-            height: 130px;
-            line-height: 130px;
+        .signature-space-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .signature-space-table td {
+            border: none !important;
+            height: 50px;
+            padding: 0;
+            margin: 0;
+            font-size: 1px;
+            line-height: 1px;
         }
 
         /* GARIS TANDA TANGAN */
@@ -286,7 +298,7 @@
             border-top: 1px solid #333;
             width: 100%;
             height: 1px;
-            margin-bottom: 3px;
+            margin: 0 0 3px 0;
         }
 
         .approval-name {
@@ -298,76 +310,49 @@
             margin-top: 65px;
             font-size: 9px;
             line-height: 1.2;
+            margin-left: 30px;
+            margin-right: 30px;
         }
 
         /*  FOOTER */
 
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+        /* @page {
+            margin-top: 15px;
+            margin-right: 15px;
+            margin-bottom: 45px;
+            margin-left: 15px;
 
-            height: 35px;
+            footer: page-footer;
+        } */
+        @page {
+            margin-top: 100px;
+            margin-right: 15px;
+            margin-bottom: 45px;
+            margin-left: 15px;
 
-            font-size: 8px;
-            font-weight: bold;
-        }
-
-        /* KIRI */
-
-        .footer-left {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-        }
-
-        .confidential {
-            color: #d9534f;
-            font-style: italic;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        .page-total {
-            margin-top: 3px;
-            color: #777;
-        }
-
-        /* KANAN */
-
-        .footer-right {
-            position: absolute;
-            right: 0;
-            bottom: 12px;
-
-            color: #777;
-        }
-
-        /* NOMOR HALAMAN */
-
-        .page-number::after {
-            content: counter(page);
-        }
-
-        .page-total-number::after {
-            content: counter(pages);
+            header: legal-review-header;
+            footer: page-footer;
         }
     </style>
 </head>
 
 <body>
-    <div class="header">
+    <htmlpageheader name="legal-review-header">
 
-        <div class="logo">
+        <table width="100%" style="border: none; border-collapse: collapse;">
+            <tr>
+                <td width="25%" style="border: none; vertical-align: middle; text-align: left;">
+                    <img src="{{ public_path('assets/images/tsp-logo.png') }}" style="width: 100px;">
+                </td>
 
-            {{-- Sesuaikan path logo --}}
-            <img src="{{ asset('assets/images/tsp-logo.png') }}" alt="PT Triatra Sinergia Pratama">
-        </div>
-        <div class="title">FORM<br>LEGAL REVIEW<br><small>PT TRIATRA SINERGIA PRATAMA</small></div>
+                <td width="25%" style="border: none;">
+                    &nbsp;
+                </td>
+            </tr>
+        </table>
 
-
-    </div>
+    </htmlpageheader>
+    <div class="title">FORM<br>LEGAL REVIEW<br><small>PT TRIATRA SINERGIA PRATAMA</small></div>
 
     <div class="section-title">
         A. &nbsp; Data dan Informasi Dokumen
@@ -935,22 +920,21 @@
                     <td class="approval-column">
 
                         <div class="approval-position">
-
-                            {{ $committee->committee_title ?? 'Committee' }}
-
+                            {{ $committee->committee_department ?? 'Committee' }}
                         </div>
 
-                        <div class="signature-space">
-                            &nbsp;
-                        </div>
+                        {{-- AREA TANDA TANGAN --}}
+                        <table class="signature-space-table">
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </table>
 
-                        <div class="signature-line">
-                        </div>
+                        {{-- GARIS TANDA TANGAN --}}
+                        <div class="signature-line"></div>
 
                         <div class="approval-name">
-
                             {{ $committee->committee_name }}
-
                         </div>
 
                     </td>
@@ -981,23 +965,49 @@
 
     </div>
 
-    <div class="footer">
+    <htmlpagefooter name="page-footer">
+        <table width="100%"
+            style="
+            border: none;
+            border-collapse: collapse;
+            font-size: 8px;
+            background: transparent;
+        ">
+            <tr>
+                <td width="70%"
+                    style="
+                    text-align: left;
+                    padding-top: 5px;
+                    border: none;
+                    background: transparent;
+                ">
+                    <span
+                        style="
+                        color: #d9534f;
+                        font-weight: bold;
+                        font-style: italic;
+                    ">
+                        DOKUMEN BERSIFAT RAHASIA
+                    </span>
+                    <br>
+                    <span style="color: #777;">
+                        dari {PAGENO}
+                    </span>
+                </td>
 
-        <div class="footer-left">
-            <div class="confidential">
-                DOKUMEN BERSIFAT RAHASIA
-            </div>
-
-            <div class="page-total">
-                dari <span class="page-total-number"></span>
-            </div>
-        </div>
-
-        <div class="footer-right">
-            Halaman&nbsp;&nbsp; <span class="page-number"></span>
-        </div>
-
-    </div>
+                <td width="30%"
+                    style="
+                    text-align: right;
+                    padding-top: 5px;
+                    color: #777;
+                    border: none;
+                    background: transparent;
+                ">
+                    Halaman&nbsp;&nbsp; {PAGENO}
+                </td>
+            </tr>
+        </table>
+    </htmlpagefooter>
 
 </body>
 

@@ -4841,7 +4841,7 @@ class RequestDocumentController extends Controller
                 'tsp_request_document_committees.committee_id',
                 'tsp_request_document_committees.sequence',
                 'user.name as committee_name',
-                'user.title as committee_title'
+                'user.department as committee_department'
             )
             ->where(
                 'tsp_request_document_committees.request_document_id',
