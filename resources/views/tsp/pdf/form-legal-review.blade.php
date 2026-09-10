@@ -352,6 +352,7 @@
         </table>
 
     </htmlpageheader>
+
     <div class="title">FORM<br>LEGAL REVIEW<br><small>PT TRIATRA SINERGIA PRATAMA</small></div>
 
     <div class="section-title">
@@ -990,9 +991,9 @@
                         DOKUMEN BERSIFAT RAHASIA
                     </span>
                     <br>
-                    <span style="color: #777;">
+                    {{-- <span style="color: #777;">
                         dari {PAGENO}
-                    </span>
+                    </span> --}}
                 </td>
 
                 <td width="30%"
@@ -1003,7 +1004,7 @@
                     border: none;
                     background: transparent;
                 ">
-                    Halaman&nbsp;&nbsp; {PAGENO}
+                    Halaman&nbsp;&nbsp; {PAGENO} dari {nbpg}
                 </td>
             </tr>
         </table>

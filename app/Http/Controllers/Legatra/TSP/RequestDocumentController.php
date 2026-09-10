@@ -4865,9 +4865,30 @@ class RequestDocumentController extends Controller
         // ];
 
         $data = ['flr' => $flr, 'committees' => $committees];
+        $config = [
+            'instanceConfigurator' => function ($mpdf) {
+
+                $mpdf->SetWatermarkImage(
+                    public_path('assets/images/tsp-logo.png'),
+                    0.20,              // opacity
+                    [90, 40],          // width, height (mm)
+                    'P'                 // posisi
+                );
+
+                $mpdf->showWatermarkImage = true;
+                $mpdf->watermarkImgBehind = true;
+            }
+        ];
 
 
-        $pdf = Pdf::loadView('tsp.pdf.form-legal-review', $data);
+
+        $pdf = PDF::loadView(
+            'tsp.pdf.form-legal-review',
+            $data,
+            [],
+            $config
+        );
+
         return $pdf->stream('Form_Legal_Review.pdf');
     }
 }
