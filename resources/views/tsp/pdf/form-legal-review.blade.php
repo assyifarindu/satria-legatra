@@ -816,11 +816,11 @@
                 </td>
 
                 <td>
-                    -
+                    {{ $flr->resume ?? '-' }}
                 </td>
 
                 <td>
-                    -
+                    {{ $flr->legal_note ?? '-' }}
                 </td>
 
                 <td>
