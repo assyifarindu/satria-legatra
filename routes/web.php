@@ -298,9 +298,13 @@ Route::middleware('auth')->group(function () {
 
     // TSP
     Route::get('/tsp/dashboard', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'index'])->name('tsp.dashboard');
+    Route::get('/tsp/customers', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomers'])->name('tsp.customers');
+    Route::get('/tsp/customers/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomerById'])->name('tsp.customers.by-id');
     Route::get('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'index'])->name('tsp.request-document');
     Route::get('/tsp/request-document/data', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getRequestDocuments'])->name('tsp.request-document.data');
     Route::get('/tsp/request-document/create', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showCreate'])->name('tsp.request-document.create');
+    Route::post('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'store'])->name('tsp.request-document.store');
+    Route::delete('/tsp/request-document/delete-file/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'deleteFile'])->name('tsp.request-document.delete-file');
     Route::get('/tsp/request-document/edit/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showEdit'])->name('tsp.request-document.showEdit');
     Route::put('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'edit'])->name('tsp.request-document.edit');
     Route::get('/tsp/request-document/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDetail'])->name('tsp.request-document.showDetail');
@@ -349,23 +353,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDocumentFiling'])->name('tsp.request-document.show-document-filing');
     Route::post('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'documentFiling'])->name('tsp.request-document.document-filing');
     Route::get('/tsp/request-document/form-legal-review/{id}/generate-pdf', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'generatePdfFormLegalReview'])->name('tsp.request-document.form-legal-review.generate-pdf');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    Route::get('/tsp/customers', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomers'])->name('tsp.customers');
-    Route::get('/tsp/customers/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomerById'])->name('tsp.customers.by-id');
-    Route::post('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'store'])->name('tsp.request-document.store');
-    Route::delete('/tsp/request-document/delete-file/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'deleteFile'])->name('tsp.request-document.delete-file');
 });
