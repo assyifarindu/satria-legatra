@@ -154,8 +154,6 @@
                                     </div>
                                 @endif
 
-
-
                                 <hr>
 
                                 {{-- COMMITTEE --}}

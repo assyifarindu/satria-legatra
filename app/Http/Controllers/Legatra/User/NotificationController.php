@@ -18,24 +18,30 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        try{
+        try {
+
+            $user = Auth::user();
 
             $data = [
                 'notification' => Notification::where('user_id', Auth::user()->id)->orderBy('created_at', 'desc')->get()
             ];
 
-            return view('main.notification.index')->with('data', $data); 
+            if ($user->companyid == '16731') {
+                return view('tsp.notification.index')->with('data', $data);
+            } else {
 
-        } catch (Exception $e) {    
+                return view('main.notification.index')->with('data', $data);
+            }
+        } catch (Exception $e) {
             $this->ErrorLog($e);
             $this->ErrorLogLegatra($e);
             return redirect()->back()->with('error', 'Error Request, Exception Error ');
-        } 
+        }
     }
 
     public function readAll()
     {
-        try{
+        try {
 
             $notification = Notification::where('user_id', Auth::user()->id)->where('is_clicked', false)->get();
             foreach ($notification as $key => $value) {
@@ -45,11 +51,11 @@ class NotificationController extends Controller
             Alert::success('Data Saved Successfully', 'Success Message');
 
             return redirect()->route('notification.index');
-        } catch (Exception $e) {    
+        } catch (Exception $e) {
             $this->ErrorLog($e);
             $this->ErrorLogLegatra($e);
             return redirect()->back()->with('error', 'Error Request, Exception Error ');
-        } 
+        }
     }
 
     /**

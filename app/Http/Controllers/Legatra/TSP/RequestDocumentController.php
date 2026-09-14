@@ -14,6 +14,7 @@ use App\Models\Table\TspRequestDocumentHistory;
 use App\Models\Table\TspRequestDocumentFeedbackFile;
 use App\Models\User;
 use App\Models\Department;
+use App\Models\Division;
 use App\Models\Table\TspFormLegalReview;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
@@ -25,6 +26,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use Illuminate\Support\Facades\Http;
+use Vinkla\Hashids\Facades\Hashids;
 
 
 class RequestDocumentController extends Controller
@@ -672,6 +674,7 @@ class RequestDocumentController extends Controller
                 );
 
                 Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'New Request Document', $requestDocument->id);
             }
 
 
@@ -1281,9 +1284,10 @@ class RequestDocumentController extends Controller
                     'title' => $requestDocument->title,
                 );
 
-                //harusnya diberi kondisi jika status request document sebelum di update adalah draft maka baru kirim email,tapi jika sudah submit maka tidak  kirim email lagi ketika submit di edit
+                // jika status request document sebelum di update adalah draft maka baru kirim email,tapi jika sudah submit maka tidak  kirim email lagi ketika submit di edit
                 if ($previousStatusId == 1) {
-                    Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\SubmitRequestDocument($detail_email));
+                    Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'New Request Document', $requestDocument->id);
                 }
             }
 
@@ -1700,6 +1704,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
 
             Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification($user->id, 'tsp.request-document.tracking', 'Request Document Declined', $requestDocument->id);
 
             $db->commit();
 
@@ -1734,6 +1739,9 @@ class RequestDocumentController extends Controller
      */
     public function showTracking($id)
     {
+        $decodedId = Hashids::decode($id);
+        $id = !empty($decodedId) ? $decodedId[0] : $id;
+
         $requestDocument = TspRequestDocument::leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
             ->leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
             ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
@@ -1744,6 +1752,26 @@ class RequestDocumentController extends Controller
                 'satria_legatra.tsp_request_substages.substage as substage_name'
             )
             ->findOrFail($id);
+
+        clickedNotification(Auth::user()->id, $id, 'New Request Document');
+        clickedNotification(Auth::user()->id, $id, 'Request Document Declined');
+        clickedNotification(Auth::user()->id, $id, 'Legal Drafting Completed');
+        clickedNotification(Auth::user()->id, $id, 'Request to Revision Legal Drafting');
+        clickedNotification(Auth::user()->id, $id, 'Revision Legal Drafting Completed');
+        clickedNotification(Auth::user()->id, $id, 'Request Document Verified by User');
+        clickedNotification(Auth::user()->id, $id, 'Request to Revision Legal Drafting by Committee');
+        clickedNotification(Auth::user()->id, $id, 'Request to Revision Legal Drafting After Committee Review');
+        clickedNotification(Auth::user()->id, $id, 'Request Document Waiting for Verification');
+        clickedNotification(Auth::user()->id, $id, 'Request Document Verified by Committee');
+        clickedNotification(Auth::user()->id, $id, 'Final Document Uploaded');
+        clickedNotification(Auth::user()->id, $id, 'Form Legal Review Created');
+        clickedNotification(Auth::user()->id, $id, 'Form Legal Review Need Revision');
+        clickedNotification(Auth::user()->id, $id, 'Form Legal Review Revised');
+        clickedNotification(Auth::user()->id, $id, 'Form Legal Review Waiting for Verification');
+        clickedNotification(Auth::user()->id, $id, 'Form Legal Review Need Revision');
+        clickedNotification(Auth::user()->id, $id, 'Form Legal Review Verified by Committee');
+        clickedNotification(Auth::user()->id, $id, 'Signed BOD Document Uploaded');
+        clickedNotification(Auth::user()->id, $id, 'Request Document Confirmed for Filing');
 
         return view('tsp.request-document.tracking', compact('requestDocument'));
     }
@@ -1760,19 +1788,70 @@ class RequestDocumentController extends Controller
             $db->beginTransaction();
 
             $requestDocument = TspRequestDocument::findOrFail($id);
-            $committee = User::where(function ($query) {
-                $query->where(function ($q) {
-                    $q->where('companyid', 16731)
-                        ->where(function ($qq) {
-                            $qq->where('title', 'like', '%Dept Head%')
-                                ->orWhere('title', 'like', '%Div Head%')
-                                ->orWhere('title', 'like', '%Func Head%')
-                                ->orWhere('division', 'Board of Directors');
-                        });
-                });
-            })
-                ->orderBy('name')
+            // $committee = User::where(function ($query) {
+            //     $query->where(function ($q) {
+            //         $q->where('companyid', 16731)
+            //             ->where(function ($qq) {
+            //                 $qq->where('title', 'like', '%Dept Head%')
+            //                     ->orWhere('title', 'like', '%Div Head%')
+            //                     ->orWhere('title', 'like', '%Func Head%')
+            //                     ->orWhere('division', 'Board of Directors');
+            //             });
+            //     });
+            // })
+            //     ->orderBy('name')
+            //     ->get();
+
+            $departments = Department::query()
+                ->leftJoin(
+                    'satria.users as depthead',
+                    function ($join) {
+                        $join->whereRaw(
+                            'mst_dept.depthead_name COLLATE utf8mb4_unicode_ci LIKE CONCAT(depthead.name, "%")'
+                        );
+                    }
+                )
+                ->leftJoin(
+                    'satria.users as divhead',
+                    function ($join) {
+                        $join->whereRaw(
+                            'mst_dept.divhead_name COLLATE utf8mb4_unicode_ci LIKE CONCAT(divhead.name, "%")'
+                        );
+                    }
+                )
+                ->where('mst_dept.company_id', 16731)
+                ->select(
+                    'depthead.id as depthead_id',
+                    'mst_dept.depthead_name as depthead_name',
+                    'depthead.title as depthead_title',
+                    'divhead.id as divhead_id',
+                    'mst_dept.divhead_name as divhead_name',
+                    'divhead.title as divhead_title'
+                )
+                ->distinct()
                 ->get();
+
+            $committee = $departments
+                ->flatMap(function ($item) {
+                    return [
+                        [
+                            'id' => $item->depthead_id,
+                            'name' => $item->depthead_name,
+                            'title' => $item->depthead_title,
+                        ],
+                        [
+                            'id' => $item->divhead_id,
+                            'name' => $item->divhead_name,
+                            'title' => $item->divhead_title,
+                        ],
+                    ];
+                })
+                ->filter(function ($item) {
+                    return !empty($item['id']);
+                })
+                ->unique('id')
+                ->sortBy('name')
+                ->values();
 
             /*UPDATE REQUEST DOCUMENT*/
 
@@ -1955,6 +2034,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
 
             Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification($user->id, 'tsp.request-document.tracking', 'Legal Drafting Completed', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -2064,6 +2144,7 @@ class RequestDocumentController extends Controller
             );
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -2298,6 +2379,7 @@ class RequestDocumentController extends Controller
             $committee = User::find($committee->committee_id);
 
             Mail::to($afterCommitteReview ? $committee->email_sf : $user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification($afterCommitteReview ? $committee->id : $user->id, 'tsp.request-document.tracking', 'Revision Legal Drafting Completed', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -2309,11 +2391,9 @@ class RequestDocumentController extends Controller
                 );
         } catch (ValidationException $e) {
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Throwable $e) {
 
             $db->rollBack();
@@ -2391,10 +2471,19 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, request document telah diverifikasi oleh user dan saat ini sudah siap untuk diverifikasi oleh committee terkait.',
             );
 
+            $detail_email_committee = array(
+                'title' => $requestDocument->title,
+                'subject' => 'Request Document Waiting for Verification',
+                'message' => 'Email Pemberitahuan, request document telah diverifikasi oleh user dan saat ini sudah siap untuk diverifikasi oleh committee terkait.',
+            );
+
+
             $committee = User::find($committee->committee_id);
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
-            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request Document Verified by User', $requestDocument->id);
+            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email_committee));
+            addNotification($committee->id, 'tsp.request-document.tracking', 'Request Document Waiting for Verification', $requestDocument->id);
 
             $db->commit();
 
@@ -2519,6 +2608,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
 
             Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            addNotification($user->id, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting by Committee', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -3074,6 +3164,7 @@ class RequestDocumentController extends Controller
             );
 
             Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting After Committee Review', $requestDocument->id);
 
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -3231,6 +3322,7 @@ class RequestDocumentController extends Controller
 
 
                     Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    addNotification($nextCommitteeUser->id, 'tsp.request-document.tracking', 'Request Document Waiting for Verification', $requestDocument->id);
                 }
 
 
@@ -3304,13 +3396,14 @@ class RequestDocumentController extends Controller
                 if ($requester && $requester->email_sf) {
                     Mail::to($requester->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
-
+                addNotification($requester->id, 'tsp.request-document.tracking', 'Request Document Verified by Committee', $requestDocument->id);
 
                 /* SEND EMAIL TO ADMIN LEGAL */
 
                 if ($adminLegal && $adminLegal->email_sf) {
                     Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
+                addNotification($adminLegal->id, 'tsp.request-document.tracking', 'Request Document Verified by Committee', $requestDocument->id);
 
                 $db->commit();
 
@@ -3468,6 +3561,7 @@ class RequestDocumentController extends Controller
             );
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Final Document Uploaded', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -3605,6 +3699,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
 
             Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification($user->id, 'tsp.request-document.tracking', 'Form Legal Review Created', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -3715,6 +3810,7 @@ class RequestDocumentController extends Controller
             );
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Form Legal Review Need Revision', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -3859,6 +3955,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
 
             Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification($user->id, 'tsp.request-document.tracking', 'Form Legal Review Revised', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -3952,8 +4049,8 @@ class RequestDocumentController extends Controller
 
             $committee = User::find($committee->committee_id);
 
-            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            addNotification($committee->id, 'tsp.request-document.tracking', 'Form Legal Review Waiting for Verification', $requestDocument->id);
 
             $db->commit();
 
@@ -4077,6 +4174,7 @@ class RequestDocumentController extends Controller
             );
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Form Legal Review Need Revision', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -4240,6 +4338,7 @@ class RequestDocumentController extends Controller
 
 
                     Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    addNotification($nextCommitteeUser->id, 'tsp.request-document.tracking', 'Form Legal Review Waiting for Verification', $requestDocument->id);
                 }
 
 
@@ -4308,6 +4407,7 @@ class RequestDocumentController extends Controller
 
                 if ($adminLegal && $adminLegal->email_sf) {
                     Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    addNotification($adminLegal->id, 'tsp.request-document.tracking', 'Form Legal Review Verified by Committee', $requestDocument->id);
                 }
 
                 $db->commit();
@@ -4450,6 +4550,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
 
             Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            addNotification($user->id ?? null, 'tsp.request-document.tracking', 'Signed BOD Document Uploaded', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
             $db->commit();
@@ -4656,8 +4757,7 @@ class RequestDocumentController extends Controller
 
 
             Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
-
-
+            addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request Document Confirmed for Filing', $requestDocument->id);
 
             $db->commit();
 
@@ -4854,15 +4954,6 @@ class RequestDocumentController extends Controller
                 'tsp_request_document_committees.sequence'
             )
             ->get();
-        // $data = [
-        //     'doc_date'      => '25 May 2026',
-        //     'doc_number'    => '123/LGL/2026',
-        //     'pic_doc'       => 'Nur Rohman A',
-        //     'dept'          => 'Legal',
-        //     'party_name'    => 'PT ABC Indonesia',
-        //     'doc_title'     => 'Perjanjian Kerjasama Service',
-        //     'signatories'   => ['David', 'Chrisman Wibowo'],
-        // ];
 
         $data = ['flr' => $flr, 'committees' => $committees];
         $config = [

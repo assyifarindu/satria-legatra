@@ -202,14 +202,10 @@
                                                             </option>
 
                                                             @foreach ($committee as $item)
-                                                                <option value="{{ $item->id }}"
-                                                                    {{ $selectedCommittee == $item->id ? 'selected' : '' }}>
+                                                                <option value="{{ $item['id'] }}"
+                                                                    {{ $selectedCommittee == $item['id'] ? 'selected' : '' }}>
 
-                                                                    {{ $item->name }}
-
-                                                                    @if ($item->title)
-                                                                        - {{ $item->title }}
-                                                                    @endif
+                                                                    {{ $item['name'] }}
 
                                                                 </option>
                                                             @endforeach
@@ -359,17 +355,12 @@
                                 </option>
 
                                 @foreach ($committee as $item)
+                                    <option value="{{ $item['id'] }}"
+                                        {{ $selectedCommittee == $item['id'] ? 'selected' : '' }}>
 
-                                    <option value="{{ $item->id }}">
-
-                                        {{ $item->name }}
-
-                                        @if ($item->title)
-                                            - {{ $item->title }}
-                                        @endif
+                                        {{ $item['name'] }}
 
                                     </option>
-
                                 @endforeach
 
                             </select>
