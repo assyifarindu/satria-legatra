@@ -97,8 +97,8 @@ class TspRequestDocument extends Model
         return $this->hasMany(TspRequestDocumentHistory::class, 'request_document_id');
     }
 
-    // public function formLegalReview()
-    // {
-    //     return $this->hasOne(TspFormLegalReview::class, 'request_document_id');
-    // }
+    public function formLegalReview()
+    {
+        return $this->hasOne(TspFormLegalReview::class, 'request_document_id');
+    }
 }

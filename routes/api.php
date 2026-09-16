@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Legatra\TSP\RequestDocumentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,3 +14,13 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::get(
+    '/tsp/request-document/sla-notification',
+    [RequestDocumentController::class, 'slaNotification']
+);
+
+Route::get(
+    '/tsp/request-document/expiration-notification',
+    [RequestDocumentController::class, 'expirationNotification']
+);

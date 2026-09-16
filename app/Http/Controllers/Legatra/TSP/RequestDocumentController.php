@@ -27,6 +27,9 @@ use Illuminate\Validation\ValidationException;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
 use Illuminate\Support\Facades\Http;
 use Vinkla\Hashids\Facades\Hashids;
+use Illuminate\Support\Carbon;
+use App\Models\Table\Notification;
+use Illuminate\Support\Facades\Log;
 
 
 class RequestDocumentController extends Controller
@@ -36,15 +39,15 @@ class RequestDocumentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (Auth::user()->role_id != NULL) {
-                // return redirect('/')->with('error', 'Access denied!');
-            }
-            return $next($request);
-        });
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware(function ($request, $next) {
+    //         if (Auth::user()->role_id != NULL) {
+    //             // return redirect('/')->with('error', 'Access denied!');
+    //         }
+    //         return $next($request);
+    //     });
+    // }
 
     /**
      * Display a listing of the resource.
@@ -4981,5 +4984,293 @@ class RequestDocumentController extends Controller
         );
 
         return $pdf->stream('Form_Legal_Review.pdf');
+    }
+
+    public function slaNotification()
+    {
+        try {
+
+            Log::info('=== SLA NOTIFICATION START ===', [
+                'time' => Carbon::now()->format('Y-m-d H:i:s')
+            ]);
+
+            $now = Carbon::now();
+
+            $requestDocuments = TspRequestDocument::with([
+                'stage',
+                'histories'
+            ])
+                ->whereNotNull('stage_id')
+                ->whereNotIn('status_id', [1, 3, 4])
+                ->where('stage_id', '!=', 11)
+                ->get();
+
+            // dd($requestDocuments);
+
+            $totalSent = 0;
+
+            foreach ($requestDocuments as $requestDocument) {
+
+                /*Ambil assignment terakhir berdasarkan stage yang sedang berjalan*/
+                $assignment = $requestDocument->histories
+                    ->where('stage_id', $requestDocument->stage_id)
+                    ->sortByDesc('created_at')
+                    ->first();
+
+                if (!$assignment) {
+                    continue;
+                }
+
+                /*Waktu assignment*/
+                $assignmentTime = Carbon::parse($assignment->created_at);
+
+                /*Selisih waktu sekarang dengan waktu assignment*/
+                $diffHours = $assignmentTime->diffInHours($now);
+
+                /*SLA stage*/
+                $slaHours = (int) ($requestDocument->stage->sla_hours ?? 0);
+
+                if ($slaHours <= 0) {
+                    continue;
+                }
+
+                /*Belum melewati SLA*/
+                if ($diffHours < $slaHours) {
+                    continue;
+                }
+
+                /*Berapa jam sudah melewati SLA*/
+                $overdueHours = $diffHours - $slaHours;
+
+                /*Notification setiap 24 jam*/
+                if ($overdueHours % 24 !== 0) {
+                    continue;
+                }
+
+                /*User yang sedang di-assign*/
+                $assignedUserId = $assignment->assigned_to;
+
+                if (!$assignedUserId) {
+                    continue;
+                }
+
+                $user = User::find($assignedUserId);
+
+                if (!$user) {
+                    continue;
+                }
+
+                // dd($requestDocument);
+
+                /*Cek apakah hari ini sudah pernah dikirim notification untuk request document tersebut.*/
+                $notificationExists = Notification::where('user_id', $user->id)
+                    ->where('id_feature', $requestDocument->id)
+                    ->where('feature', 'SLA Request Document')
+                    ->whereDate('created_at', $now->toDateString())
+                    ->exists();
+
+                if ($notificationExists) {
+                    continue;
+                }
+
+                /*IN APP NOTIFICATION*/
+
+                addNotification($user->id, 'tsp.request-document.tracking', 'SLA Request Document', $requestDocument->id);
+
+
+                /*EMAIL*/
+
+                if ($user->email_sf) {
+
+                    $detail_email = [
+                        'title' => $requestDocument->title,
+                        'subject' => 'SLA Request Document Notification',
+                        'message' =>
+                        'Email Pemberitahuan, Request Document telah melewati SLA dan perlu segera ditindaklanjuti.',
+                    ];
+
+                    Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                }
+
+                $totalSent++;
+            }
+
+            Log::info('=== SLA NOTIFICATION END ===', [
+                'time' => Carbon::now()->format('Y-m-d H:i:s'),
+                'total_sent' => $totalSent
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification SLA berhasil diproses.',
+                'total_sent' => $totalSent,
+            ]);
+        } catch (\Exception $e) {
+
+            Log::error('SLA Notification Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            // dd($e->getMessage());
+
+
+            $this->ErrorLog($e);
+            $this->ErrorLogLegatra($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses notification SLA.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function expirationNotification()
+    {
+        try {
+
+            Log::info('=== EXPIRATION NOTIFICATION START ===', [
+                'time' => Carbon::now()->format('Y-m-d H:i:s')
+            ]);
+
+            $today = Carbon::today();
+
+            /*Request document yang sudah aktif*/
+            $requestDocuments = TspRequestDocument::with([
+                'customer',
+                'formLegalReview'
+            ])
+                ->where('stage_id', 11)
+                ->get();
+            // dd($requestDocuments);
+
+            $totalSent = 0;
+
+            foreach ($requestDocuments as $requestDocument) {
+
+                /*Tanggal kontrak berakhir*/
+                $endDate = Carbon::parse(
+                    $requestDocument->formLegalReview->date
+                )->startOfDay();
+
+                /*Sisa hari kontrak*/
+                $remainingDays = $today->diffInDays($endDate, false);
+
+                /*Hanya mulai H-60*/
+                if (
+                    $remainingDays > 60 ||
+                    $remainingDays < 0
+                ) {
+                    continue;
+                }
+
+                /*Notification:
+                    * H-60
+                    * H-53
+                    * H-46
+                    * H-39
+                */
+                if (
+                    $remainingDays !== 60 &&
+                    (60 - $remainingDays) % 7 !== 0
+                ) {
+                    continue;
+                }
+
+
+                $customer = $requestDocument->customer;
+
+                if (!$customer) {
+                    continue;
+                }
+
+                /*Email customer*/
+                $customerEmail = $customer->email ?? null;
+
+                /*User customer untuk in-app notification*/
+                //customer tidak mempunyai user_id, jadi tidak bisa dikirim in-app notification
+
+                // $customerUserId = $customer->user_id ?? null;
+
+                /*IN APP NOTIFICATION*/
+
+                // if ($customerUserId) {
+
+                //     $notificationExists = Notification::where(
+                //         'user_id',
+                //         $customerUserId
+                //     )
+                //     ->where(
+                //         'id_feature',
+                //         $requestDocument->id
+                //     )
+                //     ->where(
+                //         'feature',
+                //         'Contract Expiration'
+                //     )
+                //     ->whereDate(
+                //         'created_at',
+                //         $today->toDateString()
+                //     )
+                //     ->exists();
+
+                //     if (!$notificationExists) {
+
+                //         addNotification(
+                //             $customerUserId,
+                //             route(
+                //                 'tsp.request-document.tracking',
+                //                 $requestDocument->id
+                //             ),
+                //             'Contract Expiration',
+                //             $requestDocument->id
+                //         );
+                //     }
+                // }
+
+                /*EMAIL*/
+
+                if ($customerEmail) {
+
+                    $detail_email = [
+                        'title' => $requestDocument->title,
+                        'subject' => 'Contract Expiration Notification',
+                        'message' => 'Email Pemberitahuan, Kontrak akan berakhir dalam ' . $remainingDays . ' hari dan perlu segera ditindaklanjuti.',
+                    ];
+
+                    Mail::to($customerEmail)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                }
+
+                $totalSent++;
+            }
+
+            Log::info('=== EXPIRATION NOTIFICATION END ===', [
+                'time' => Carbon::now()->format('Y-m-d H:i:s'),
+                'total_sent' => $totalSent
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification kadaluarsa berhasil diproses.',
+                'total_sent' => $totalSent,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Expiration Notification Error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            $this->ErrorLog($e);
+            $this->ErrorLogLegatra($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses notification kadaluarsa.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

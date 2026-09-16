@@ -492,7 +492,7 @@ function addNotification($user_id, $url, $feature, $id_feature)
         'url' => $url,
         'feature' => $feature,
         'id_feature' => $id_feature,
-        'created_by' => Auth::user()->id
+        'created_by' => $user_id
     );
 
     Notification::create($data);
