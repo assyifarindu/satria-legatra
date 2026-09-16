@@ -39,15 +39,15 @@ class RequestDocumentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    // public function __construct()
-    // {
-    //     $this->middleware(function ($request, $next) {
-    //         if (Auth::user()->role_id != NULL) {
-    //             // return redirect('/')->with('error', 'Access denied!');
-    //         }
-    //         return $next($request);
-    //     });
-    // }
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (Auth::user()->role_id != NULL) {
+                // return redirect('/')->with('error', 'Access denied!');
+            }
+            return $next($request);
+        });
+    }
 
     /**
      * Display a listing of the resource.
