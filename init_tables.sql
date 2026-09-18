@@ -316,6 +316,12 @@ CREATE TABLE tsp_request_document_file_downloads (
     download_by BIGINT NOT NULL,
     download_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
     CONSTRAINT fk_request_document_file_downloads_file
         FOREIGN KEY (request_document_file_id)
         REFERENCES tsp_request_document_files(id)
@@ -366,6 +372,12 @@ CREATE TABLE tsp_request_document_feedbacks (
 
     remark TEXT NOT NULL,
 
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
     CONSTRAINT fk_request_document_feedbacks_document
         FOREIGN KEY (request_document_id)
         REFERENCES tsp_request_documents(id)
@@ -404,6 +416,12 @@ CREATE TABLE tsp_request_document_feedback_files (
     name VARCHAR(255) NOT NULL,
     file_path TEXT NOT NULL,
 
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
     CONSTRAINT fk_request_document_feedback_files_feedback
         FOREIGN KEY (request_document_feedback_id)
         REFERENCES tsp_request_document_feedbacks(id)
@@ -423,6 +441,12 @@ CREATE TABLE tsp_request_document_feedback_file_downloads (
 
     download_by BIGINT NOT NULL,
     download_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
 
     CONSTRAINT fk_request_document_feedback_files_download_feedback
         FOREIGN KEY (request_document_feedback_file_id)
@@ -444,7 +468,8 @@ CREATE TABLE tsp_form_legal_reviews (
     date DATE NOT NULL,
     department VARCHAR(255) NOT NULL,
     document_objective VARCHAR(255) NOT NULL,
-    period_time VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
     incoterm VARCHAR(255) NOT NULL,
     work_location VARCHAR(255) NOT NULL,
     delivery_location VARCHAR(255) NOT NULL,
@@ -452,6 +477,22 @@ CREATE TABLE tsp_form_legal_reviews (
 
     resume TEXT NOT NULL,
     legal_note TEXT NOT NULL,
+    validation_required_by VARCHAR(255) NULL,
+
+    investment TEXT NULL,
+    manpower_provision TEXT NULL,
+    sanction TEXT NULL,
+    penalty TEXT NULL,
+    insurance TEXT NULL,
+    sla TEXT NULL,
+    
+    version TEXT NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
 
     CONSTRAINT fk_form_legal_reviews_document
         FOREIGN KEY (request_document_id)
@@ -479,6 +520,9 @@ CREATE TABLE tsp_request_document_histories (
 
     created_by BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
 
     CONSTRAINT fk_request_document_histories_document
         FOREIGN KEY (request_document_id)
@@ -517,7 +561,13 @@ CREATE TABLE tsp_audit_trails (
     entity_id BIGINT NOT NULL,
 
     old_value TEXT NULL,
-    new_value TEXT NOT NULL
+    new_value TEXT NOT NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
 );
 
 
