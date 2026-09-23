@@ -815,14 +815,13 @@
                 // RENDER FILES
 
                 if (data.files && data.files.length > 0) {
-
                     data.files.forEach(function(file) {
 
                         filesHtml += `
                             <div class="border p-3 mb-3 rounded">
 
                                 <div class="float-end">
-                                    <a href="{{ url('/') }}/${file.file_path}"
+                                    <a href="{{ url('/tsp/download-file') }}/${file.id}"
                                         target="_blank">
 
                                         <i class="mdi mdi-file-download-outline text-muted font-20"
