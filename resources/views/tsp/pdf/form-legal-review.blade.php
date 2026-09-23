@@ -293,17 +293,36 @@
             line-height: 1px;
         }
 
-        /* GARIS TANDA TANGAN */
-        .signature-line {
-            border-top: 1px solid #333;
-            width: 100%;
-            height: 1px;
-            margin: 0 0 3px 0;
+        /* CONTAINER GARIS + NAMA */
+        .signature-name-wrapper {
+            display: inline-block;
+            text-align: center;
         }
 
+        /* GARIS TANDA TANGAN */
+        .signature-line-table {
+            border-collapse: collapse;
+            border: none;
+            margin: 0 auto 2px auto;
+            padding: 0;
+        }
+
+        .signature-line-table td {
+            border: none;
+            border-top: 1px solid #333;
+            height: 1px;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* NAMA + GARIS */
         .approval-name {
+            display: inline;
             font-size: 10px;
             text-align: center;
+            white-space: nowrap;
+            border-top: 1px solid #333;
+            padding-top: 2px;
         }
 
         .approval-note {
@@ -372,7 +391,7 @@
             </td>
 
             <td class="value">
-                {{ $flr->date ?? '' }}
+                {{ formatDate($flr->updated_at ?? ($flr->created_at ?? '')) }}
             </td>
         </tr>
 
@@ -478,7 +497,7 @@
             </td>
 
             <td class="value">
-                {{ $flr->period_time ?? '' }}
+                {{ formatOnlyDate($flr->start_date ?? '') }} HINGGA {{ formatOnlyDate($flr->end_date ?? '') }}
             </td>
         </tr>
 
@@ -825,7 +844,7 @@
                 </td>
 
                 <td>
-                    SUS-FIN-PIN
+                    {{ $flr->validation_required_by ?? '-' }}
                 </td>
             </tr>
 
@@ -845,7 +864,7 @@
                             <td class="info-code">a.</td>
                             <td class="info-content">
                                 <div class="info-name">Investasi</div>
-                                <div class="info-status">Tersedia/ Tidak tersedia</div>
+                                <div class="info-status">{{ $flr->investment ?? '-' }}</div>
                             </td>
                         </tr>
 
@@ -853,7 +872,7 @@
                             <td class="info-code">b.</td>
                             <td class="info-content">
                                 <div class="info-name">Penyediaan Manpower</div>
-                                <div class="info-status">Tersedia/ Tidak tersedia</div>
+                                <div class="info-status">{{ $flr->manpower_provision ?? '-' }}</div>
                             </td>
                         </tr>
 
@@ -861,7 +880,7 @@
                             <td class="info-code">c.</td>
                             <td class="info-content">
                                 <div class="info-name">Sanksi</div>
-                                <div class="info-status">Tersedia/ Tidak tersedia</div>
+                                <div class="info-status">{{ $flr->sanction ?? '-' }}</div>
                             </td>
                         </tr>
 
@@ -869,7 +888,7 @@
                             <td class="info-code">d.</td>
                             <td class="info-content">
                                 <div class="info-name">Denda</div>
-                                <div class="info-status">Tersedia/ Tidak tersedia</div>
+                                <div class="info-status">{{ $flr->penalty ?? '-' }}</div>
                             </td>
                         </tr>
 
@@ -877,7 +896,7 @@
                             <td class="info-code">e.</td>
                             <td class="info-content">
                                 <div class="info-name">Asuransi</div>
-                                <div class="info-status">Tersedia/ Tidak tersedia</div>
+                                <div class="info-status">{{ $flr->insurance ?? '-' }}</div>
                             </td>
                         </tr>
 
@@ -885,7 +904,7 @@
                             <td class="info-code">f.</td>
                             <td class="info-content">
                                 <div class="info-name">SLA</div>
-                                <div class="info-status">Tersedia/ Tidak tersedia</div>
+                                <div class="info-status">{{ $flr->sla ?? '-' }}</div>
                             </td>
                         </tr>
 
@@ -905,7 +924,7 @@
     <div class="approval-section">
 
         <div class="approval-date">
-            Jakarta, {{ \Carbon\Carbon::now()->format('d M Y') }}
+            Jakarta, {{ formatDate($flr->updated_at ?? ($flr->created_at ?? '')) }}
         </div>
 
         <div class="approval-title">
@@ -914,12 +933,11 @@
 
 
         <table class="approval-table">
-
             <tr>
-
                 @foreach ($committees as $committee)
                     <td class="approval-column">
 
+                        {{-- POSITION --}}
                         <div class="approval-position">
                             {{ $committee->committee_department ?? 'Committee' }}
                         </div>
@@ -931,18 +949,16 @@
                             </tr>
                         </table>
 
-                        {{-- GARIS TANDA TANGAN --}}
-                        <div class="signature-line"></div>
-
-                        <div class="approval-name">
-                            {{ $committee->committee_name }}
+                        {{-- GARIS + NAMA --}}
+                        <div style="text-align: center;">
+                            <span class="approval-name">
+                                {{ $committee->committee_name }}
+                            </span>
                         </div>
 
                     </td>
                 @endforeach
-
             </tr>
-
         </table>
 
         <div class="approval-note">

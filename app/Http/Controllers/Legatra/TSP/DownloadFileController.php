@@ -45,7 +45,7 @@ class DownloadFileController extends Controller
 
             // 1. Tentukan path skrip Python dan file output sementara
             $scriptPath = storage_path('app/scripts/add_timestamp.py');
-            $outputPath = storage_path('app/temp/'. $file->name);
+            $outputPath = storage_path('app/temp/' . $file->name);
 
             // Path ke python.exe di dalam venv (Sesuaikan dengan OS Anda)
             // Untuk Windows (XAMPP / Local):
@@ -57,11 +57,11 @@ class DownloadFileController extends Controller
             }
 
             // 2. Jalankan skrip Python dengan escapeshellarg untuk keamanan
-            $pythonCommand = escapeshellarg($pythonExe) . " " . 
-                             escapeshellarg($scriptPath) . " " . 
-                             escapeshellarg($file->file_path) . " " . 
-                             escapeshellarg($outputPath) . " " . 
-                             escapeshellarg($timestampText);
+            $pythonCommand = escapeshellarg($pythonExe) . " " .
+                escapeshellarg($scriptPath) . " " .
+                escapeshellarg($file->file_path) . " " .
+                escapeshellarg($outputPath) . " " .
+                escapeshellarg($timestampText);
             $output = [];
             $resultCode = 0;
             exec($pythonCommand . " 2>&1", $output, $resultCode);
@@ -85,8 +85,7 @@ class DownloadFileController extends Controller
             return response()->download($outputPath, $file->file_name, [
                 'Content-Type' => 'application/pdf',
             ])->deleteFileAfterSend(true);
-
-        } catch( \Exception $e) {
+        } catch (\Exception $e) {
             dd($e);
             return redirect()->route('tsp.request-document')->with('error', 'Failed to download file. Please try again.');
         }

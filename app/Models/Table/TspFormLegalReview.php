@@ -20,13 +20,26 @@ class TspFormLegalReview extends Model
         'date',
         'department',
         'document_objective',
-        'period_time',
+        'start_date',
+        'end_date',
         'incoterm',
         'work_location',
         'delivery_location',
         'term_of_payment',
         'resume',
-        'legal_note'
+        'legal_note',
+        'validation_required_by',
+        'investment',
+        'manpower_provision',
+        'sanction',
+        'penalty',
+        'insurance',
+        'sla',
+        'version',
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
     ];
 
     public function requestDocument()

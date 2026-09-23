@@ -71,13 +71,13 @@ class RequestDocumentController extends Controller
     {
         try {
             $user = User::where('id', Auth::user()->id)->first();
-            
+
             $company_id = $user->companyid;
             // dd($company_name);
             $company = Company::where('company_id', $company_id)->first();
-            
+
             $data = array(
-                'pic' => Pic::where('company_id',$company->id)->where('name','!=', 'DIAN LESTARI ASTUTY')->get(),
+                'pic' => Pic::where('company_id', $company->id)->where('name', '!=', 'DIAN LESTARI ASTUTY')->get(),
                 // 'pic' => Pic::all(),
                 // 'department' => getDepartment($company_name),
                 'department' => Department::where('company_id', $company_id)->where('department_code_sap', '!=', 'null')->get(),
@@ -136,7 +136,7 @@ class RequestDocumentController extends Controller
                     'note' => $request->note,
                 );
 
-               
+
 
                 $insert = RequestDocument::create($data);
 
@@ -148,7 +148,7 @@ class RequestDocumentController extends Controller
                     'step_name' => 'Request Document'
                 );
 
-                
+
 
                 RequestDocumentActivity::create($dataActivity);
 
@@ -242,7 +242,7 @@ class RequestDocumentController extends Controller
 
             // $atasan = $this->get_atasan(Auth::user()->personal_number);
 
-            $user = User:: where('id', Auth::user()->id)->first();
+            $user = User::where('id', Auth::user()->id)->first();
             $dept = Department::where('id', $user->dept)->first();
             $atasan = $dept->depthead_nrp;
 
@@ -363,7 +363,7 @@ class RequestDocumentController extends Controller
             $user = User::where('id', Auth::user()->id)->first();
             // $company_name = $user->company_name;
             // $company = Company::where('name', $company_name)->first();
-            
+
             $company_id = $user->companyid;
             // dd($company_name);
             $company = Company::where('company_id', $company_id)->first();
@@ -864,84 +864,132 @@ class RequestDocumentController extends Controller
             $start_date = $year . "-01-01";
             $end_date = $year . "-12-31";
 
-            $get_seq_temp = Document::whereBetween('created_at', [$start_date, $end_date])->where('category', 1)->where('status', 1)->count();
+            $get_seq_temp = Document::whereBetween('created_at', [$start_date, $end_date])->where('category', 1)->where('status', 1)
+                ->where('company', $document->company)
+                ->count();
             $get_sequence = $get_seq_temp + 1;
 
-            if ($get_sequence < 100) {
-                if ($get_sequence == 0) {
-                    $sequence = '001';
-                } else {
-                    if ($get_sequence < 10) {
-                        $sequence = '00' . $get_sequence;
+            // Pembuatan nomor kontrak versi lama
+            // if ($get_sequence < 100) {
+            //     if ($get_sequence == 0) {
+            //         $sequence = '001';
+            //     } else {
+            //         if ($get_sequence < 10) {
+            //             $sequence = '00' . $get_sequence;
+            //         } else {
+            //             $sequence = '0' . $get_sequence;
+            //         }
+            //     }
+            // } else {
+            //     $sequence = $get_sequence;
+            // // }
+
+            // $company = Company::where('name', $document->company)->first();
+            // $title = Title::findOrFail($document->title_id);
+
+            // if ($document->document_type == 'Surat') {
+
+            //     if ($document->letter_type == 'Surat Keluar') {
+            //         $jenis_surat = 'Let';
+
+            //         $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $sequence . '/' . $month . '/' . $representative_year;
+            //     }
+            //     if ($document->letter_type == 'Surat Kuasa') {
+            //         $jenis_surat = 'SK';
+
+            //         $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $sequence . '/' . $month . '/' . $representative_year;
+            //     }
+            // } else {
+            //     $jenis_surat = 'Agg';
+
+            //     $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $sequence . '/' . $month . '/' . $representative_year;
+            // }
+
+            // $check = GenerateNumber::where('document_number', $contract_number)->first();
+
+            // if ($check) {
+            //     $new_sequence = $sequence + 1;
+
+            //     if ($new_sequence < 100) {
+            //         if ($new_sequence == 0) {
+            //             $seq = '001';
+            //         } else {
+            //             if ($new_sequence < 10) {
+            //                 $seq = '00' . $new_sequence;
+            //             } else {
+            //                 $seq = '0' . $new_sequence;
+            //             }
+            //         }
+            //     } else {
+            //         $seq = $new_sequence;
+            //     }
+
+            //     if ($document->document_type == 'Surat') {
+
+            //         if ($document->letter_type == 'Surat Keluar') {
+            //             $jenis_surat = 'Let';
+
+            //             $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $seq . '/' . $month . '/' . $representative_year;
+            //         }
+            //         if ($document->letter_type == 'Surat Kuasa') {
+            //             $jenis_surat = 'SK';
+
+            //             $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $seq . '/' . $month . '/' . $representative_year;
+            //         }
+            //     } else {
+            //         $jenis_surat = 'Agg';
+
+            //         $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $seq . '/' . $month . '/' . $representative_year;
+            //     }
+            // }
+
+            // Pembuatan nomor kontrak versi baru
+            // Cek dan increment jika nomor sudah ada
+            do {
+                // Format sequence sesuai aturan
+                if ($get_sequence < 100) {
+                    if ($get_sequence == 0) {
+                        $sequence = '001';
                     } else {
-                        $sequence = '0' . $get_sequence;
-                    }
-                }
-            } else {
-                $sequence = $get_sequence;
-            }
-
-            $company = Company::where('name', $document->company)->first();
-            $title = Title::findOrFail($document->title_id);
-
-            if ($document->document_type == 'Surat') {
-
-                if ($document->letter_type == 'Surat Keluar') {
-                    $jenis_surat = 'Let';
-
-                    $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $sequence . '/' . $month . '/' . $representative_year;
-                }
-                if ($document->letter_type == 'Surat Kuasa') {
-                    $jenis_surat = 'SK';
-
-                    $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $sequence . '/' . $month . '/' . $representative_year;
-                }
-            } else {
-                $jenis_surat = 'Agg';
-
-                $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $sequence . '/' . $month . '/' . $representative_year;
-            }
-
-            $check = GenerateNumber::where('document_number', $contract_number)->first();
-
-            if ($check) {
-                $new_sequence = $sequence + 1;
-
-                if ($new_sequence < 100) {
-                    if ($new_sequence == 0) {
-                        $seq = '001';
-                    } else {
-                        if ($new_sequence < 10) {
-                            $seq = '00' . $new_sequence;
+                        if ($get_sequence < 10) {
+                            $sequence = '00' . $get_sequence;
                         } else {
-                            $seq = '0' . $new_sequence;
+                            $sequence = '0' . $get_sequence;
                         }
                     }
                 } else {
-                    $seq = $new_sequence;
+                    $sequence = $get_sequence;
                 }
 
-                if ($document->document_type == 'Surat') {
+                $company = Company::where('name', $document->company)->first();
+                $title = Title::findOrFail($document->title_id);
 
+
+                // Bentuk nomor kontrak sementara (sesuai aturanmu)
+                if ($document->document_type == 'Surat') {
                     if ($document->letter_type == 'Surat Keluar') {
                         $jenis_surat = 'Let';
-
-                        $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $seq . '/' . $month . '/' . $representative_year;
-                    }
-                    if ($document->letter_type == 'Surat Kuasa') {
+                    } elseif ($document->letter_type == 'Surat Kuasa') {
                         $jenis_surat = 'SK';
-
-                        $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $seq . '/' . $month . '/' . $representative_year;
                     }
+                    $temp_contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $title->code . '/' . $sequence . '/' . $month . '/' . $representative_year;
                 } else {
                     $jenis_surat = 'Agg';
-
-                    $contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $seq . '/' . $month . '/' . $representative_year;
+                    $temp_contract_number = $jenis_surat . '/' . $company->short_name . '-CL/' . $sequence . '/' . $month . '/' . $representative_year;
                 }
-            }
 
+                // Cek apakah sudah ada di DB pada tahun yang sama
+                $exists = Document::whereYear('updated_at', $year)
+                    ->where('company', $document->company)
+                    ->where('contract_number', $temp_contract_number)
+                    ->exists();
 
-            $document->contract_number = $contract_number;
+                if ($exists) {
+                    $get_sequence++; // Naikkan nomor dan cek lagi
+                }
+            } while ($exists);
+
+            $document->contract_number = $temp_contract_number;
             $document->status = 1;
             $document->update();
 

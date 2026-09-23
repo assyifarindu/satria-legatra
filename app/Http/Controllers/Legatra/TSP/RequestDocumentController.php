@@ -39,15 +39,15 @@ class RequestDocumentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (Auth::user()->role_id != NULL) {
-                // return redirect('/')->with('error', 'Access denied!');
-            }
-            return $next($request);
-        });
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware(function ($request, $next) {
+    //         if (Auth::user()->role_id != NULL) {
+    //             // return redirect('/')->with('error', 'Access denied!');
+    //         }
+    //         return $next($request);
+    //     });
+    // }
 
     /**
      * Display a listing of the resource.
@@ -1285,6 +1285,9 @@ class RequestDocumentController extends Controller
                 /* SEND EMAIL NOTIFICATION TO ADMIN */
                 $detail_email = array(
                     'title' => $requestDocument->title,
+                    'subject' => 'Request Document',
+                    'message' => 'Email Pemberitahuan, ada request document baru yang perlu ditindaklanjuti.',
+
                 );
 
                 // jika status request document sebelum di update adalah draft maka baru kirim email,tapi jika sudah submit maka tidak  kirim email lagi ketika submit di edit
@@ -3602,6 +3605,7 @@ class RequestDocumentController extends Controller
         try {
 
             $requestDocument = TspRequestDocument::with('customer')->findOrFail($id);
+            $flr = TspFormLegalReview::where('request_document_id', $id)->first();
             $rawDepartment = Department::where('company_id', 16731)->get();
             $pic = TspRequestDocumentPic::where('request_document_id', $requestDocument->id)->first();
 
@@ -3612,7 +3616,13 @@ class RequestDocumentController extends Controller
                 ];
             });
 
-            return view('tsp.request-document.form-legal-review.create', compact('requestDocument', 'department', 'pic'));
+            $viewData = compact('requestDocument', 'department', 'pic');
+
+            if ($flr) {
+                $viewData['flr'] = $flr;
+            }
+
+            return view('tsp.request-document.form-legal-review.create', $viewData);
         } catch (\Throwable $e) {
 
             return response()->json([
@@ -3636,18 +3646,27 @@ class RequestDocumentController extends Controller
                 'date' => ['required', 'date'],
                 'department' => ['required', 'string', 'max:255'],
                 'document_objective' => ['required', 'string', 'max:255'],
-                'period_time' => ['required', 'string', 'max:255'],
+                'start_date' => ['required', 'string', 'max:255'],
+                'end_date' => ['required', 'string', 'max:255'],
                 'incoterm' => ['required', 'string', 'max:255'],
                 'work_location' => ['required', 'string', 'max:255'],
                 'delivery_location' => ['required', 'string', 'max:255'],
                 'term_of_payment' => ['required', 'string', 'max:255'],
                 'resume' => ['required', 'string'],
                 'legal_note' => ['required', 'string'],
+                'validation_required_by' => ['required', 'string', 'max:255'],
+                'investment' => ['required', 'string'],
+                'manpower_provision' => ['required', 'string'],
+                'sanction' => ['required', 'string'],
+                'penalty' => ['required', 'string'],
+                'insurance' => ['required', 'string'],
+                'sla' => ['required', 'string'],
             ]);
 
             $db->beginTransaction();
 
             $requestDocument = TspRequestDocument::findOrFail($id);
+            $flr = TspFormLegalReview::where('request_document_id', $requestDocument->id)->first();
 
             /*INSERT FORM LEGAL REVIEW*/
             TspFormLegalReview::create([
@@ -3655,13 +3674,24 @@ class RequestDocumentController extends Controller
                 'date' => $validated['date'],
                 'department' => $validated['department'],
                 'document_objective' => $validated['document_objective'],
-                'period_time' => $validated['period_time'],
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
                 'incoterm' => $validated['incoterm'],
                 'work_location' => $validated['work_location'],
                 'delivery_location' => $validated['delivery_location'],
                 'term_of_payment' => $validated['term_of_payment'],
                 'resume' => $validated['resume'],
                 'legal_note' => $validated['legal_note'],
+                'validation_required_by' => $validated['validation_required_by'],
+                'investment' => $validated['investment'],
+                'manpower_provision' => $validated['manpower_provision'],
+                'sanction' => $validated['sanction'],
+                'penalty' => $validated['penalty'],
+                'insurance' => $validated['insurance'],
+                'sla' => $validated['sla'],
+                'version' => (!empty($flr) && !empty($flr->version) && is_numeric($flr->version))
+                    ? number_format(((float) $flr->version) + 0.1, 1, '.', '')
+                    : '1.0',
             ]);
 
             /*UPDATE REQUEST DOCUMENT*/
@@ -3713,6 +3743,7 @@ class RequestDocumentController extends Controller
                     'Form Legal Review berhasil dibuat.'
                 );
         } catch (ValidationException $e) {
+            dd($e->errors());
 
             return back()
                 ->withErrors($e->errors())
@@ -3894,11 +3925,20 @@ class RequestDocumentController extends Controller
                 'term_of_payment' => ['required', 'string', 'max:255'],
                 'resume' => ['required', 'string'],
                 'legal_note' => ['required', 'string'],
+                'validation_required_by' => ['required', 'string', 'max:255'],
+                'investment' => ['required', 'string'],
+                'manpower_provision' => ['required', 'string'],
+                'sanction' => ['required', 'string'],
+                'penalty' => ['required', 'string'],
+                'insurance' => ['required', 'string'],
+                'sla' => ['required', 'string'],
+                'version' => ['required', 'string'],
             ]);
 
             $db->beginTransaction();
 
             $requestDocument = TspRequestDocument::findOrFail($id);
+            $flr = TspFormLegalReview::where('request_document_id', $requestDocument->id)->first();
 
             /*INSERT FORM LEGAL REVIEW*/
             TspFormLegalReview::where('request_document_id', $requestDocument->id)->update([
@@ -3912,6 +3952,16 @@ class RequestDocumentController extends Controller
                 'term_of_payment' => $validated['term_of_payment'],
                 'resume' => $validated['resume'],
                 'legal_note' => $validated['legal_note'],
+                'validation_required_by' => $validated['validation_required_by'],
+                'investment' => $validated['investment'],
+                'manpower_provision' => $validated['manpower_provision'],
+                'sanction' => $validated['sanction'],
+                'penalty' => $validated['penalty'],
+                'insurance' => $validated['insurance'],
+                'sla' => $validated['sla'],
+                'version' => (!empty($flr) && !empty($flr->version) && is_numeric($flr->version))
+                    ? number_format(((float) $flr->version) + 0.1, 1, '.', '')
+                    : '1.0',
             ]);
 
             /*UPDATE REQUEST DOCUMENT*/
@@ -5026,6 +5076,7 @@ class RequestDocumentController extends Controller
 
                 /*Selisih waktu sekarang dengan waktu assignment*/
                 $diffHours = $assignmentTime->diffInHours($now);
+                // dd($diffHours);
 
                 /*SLA stage*/
                 $slaHours = (int) ($requestDocument->stage->sla_hours ?? 0);
@@ -5063,15 +5114,15 @@ class RequestDocumentController extends Controller
                 // dd($requestDocument);
 
                 /*Cek apakah hari ini sudah pernah dikirim notification untuk request document tersebut.*/
-                $notificationExists = Notification::where('user_id', $user->id)
-                    ->where('id_feature', $requestDocument->id)
-                    ->where('feature', 'SLA Request Document')
-                    ->whereDate('created_at', $now->toDateString())
-                    ->exists();
+                // $notificationExists = Notification::where('user_id', $user->id)
+                //     ->where('id_feature', $requestDocument->id)
+                //     ->where('feature', 'SLA Request Document')
+                //     ->whereDate('created_at', $now->toDateString())
+                //     ->exists();
 
-                if ($notificationExists) {
-                    continue;
-                }
+                // if ($notificationExists) {
+                //     continue;
+                // }
 
                 /*IN APP NOTIFICATION*/
 
