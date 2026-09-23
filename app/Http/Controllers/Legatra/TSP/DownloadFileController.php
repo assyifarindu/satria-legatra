@@ -45,7 +45,7 @@ class DownloadFileController extends Controller
 
             // 1. Tentukan path skrip Python dan file output sementara
             $scriptPath = storage_path('app/scripts/add_timestamp.py');
-            $outputPath = storage_path('app/temp/output_' . time() . '.pdf');
+            $outputPath = storage_path('app/temp/'. $file->name);
 
             // Path ke python.exe di dalam venv (Sesuaikan dengan OS Anda)
             // Untuk Windows (XAMPP / Local):
