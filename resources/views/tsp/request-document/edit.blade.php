@@ -593,7 +593,7 @@
                                             @if ($draftContract)
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">Existing Document:</small>
-                                                    <a href="{{ url('/') }}/{{ $draftContract->file_path }}"
+                                                    <a href="{{ url('/tsp/download-request-document-file') }}/{{ $draftContract->id }}"
                                                         target="_blank" rel="noopener">
                                                         {{ $draftContract->name ?? basename($draftContract->file_path) }}
                                                     </a>
@@ -621,7 +621,7 @@
                                             @if ($quotation)
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">Existing Document:</small>
-                                                    <a href="{{ url('/') }}/{{ $quotation->file_path }}" target="_blank"
+                                                    <a href="{{ url('/tsp/download-request-document-file') }}/{{ $quotation->id }}" target="_blank"
                                                         rel="noopener">
                                                         {{ $quotation->name ?? basename($quotation->file_path) }}
                                                     </a>
@@ -649,7 +649,7 @@
                                                     <small class="text-muted d-block">Existing Document:</small>
                                                     @foreach ($other as $file)
                                                         <div class="d-flex align-items-center gap-1 mb-1">
-                                                            <a href="{{ url('/') }}/{{ $file->file_path }}" target="_blank"
+                                                            <a href="{{ url('/tsp/download-request-document-file') }}/{{ $file->id }}" target="_blank"
                                                             rel="noopener">
                                                                 {{ $file->name ?? basename($file->file_path) }}
                                                             </a><br>

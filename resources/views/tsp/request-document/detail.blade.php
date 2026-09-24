@@ -446,7 +446,7 @@
                             <div class="border p-3 mb-3 rounded">
 
                                 <div class="float-end">
-                                    <a href="{{ url('/') }}/${file.file_path}"
+                                    <a href="{{ url('/tsp/download-request-document-file') }}/${file.id}"
                                         target="_blank">
 
                                         <i class="mdi mdi-file-download-outline text-muted font-20"
@@ -460,7 +460,7 @@
 
                                     <label class="form-check-label font-16 fw-bold">
 
-                                        <a href="{{ url('/') }}/${file.file_path}"
+                                        <a href="{{ url('/tsp/download-request-document-file') }}/${file.id}"
                                             target="_blank">
 
                                             <i class="mdi mdi-file-document"></i>

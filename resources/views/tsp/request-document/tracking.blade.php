@@ -675,22 +675,22 @@
                                 }) :
                                 '-');
 
-                        const fileUrl = feedback.file_path ?
-                            `{{ url('/') }}/${String(feedback.file_path).replace(/^\/+/, '')}` :
+                        const fileUrl = feedback.id ?
+                            `{{ url('/tsp/download-feedback-file') }}/${feedback.id}` :
                             null;
 
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                                                            <div class="float-end">
-                                                                                                                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                                                        title="Download" tabindex="0"
-                                                                                                                                                                                                                                                                        data-plugin="tippy"
-                                                                                                                                                                                                                                                                        data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                                                </a>
-                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                        ` : ''}
+                                                    <div class="float-end">
+                                                        <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                            <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                title="Download" tabindex="0"
+                                                                data-plugin="tippy"
+                                                                data-tippy-placement="top"></i>
+                                                        </a>
+                                                    </div>
+                                                ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
@@ -819,7 +819,7 @@
                             <div class="border p-3 mb-3 rounded">
 
                                 <div class="float-end">
-                                    <a href="{{ url('/tsp/download-file') }}/${file.id}"
+                                    <a href="{{ url('/tsp/download-request-document-file') }}/${file.id}"
                                         target="_blank">
 
                                         <i class="mdi mdi-file-download-outline text-muted font-20"
@@ -833,7 +833,7 @@
 
                                     <label class="form-check-label font-16 fw-bold">
 
-                                        <a href="{{ url('/') }}/${file.file_path}"
+                                        <a href="{{ url('/tsp/download-request-document-file') }}/${file.id}"
                                             target="_blank">
 
                                             <i class="mdi mdi-file-document"></i>

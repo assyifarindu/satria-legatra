@@ -140,8 +140,8 @@
                                             </div>
 
 
-                                            <a href="{{ url($draftContract->file_path) }}" target="_blank"
-                                                class="btn btn-sm btn-light">
+                                            <a href="{{ url('/tsp/download-request-document-file') }}/{{ $draftContract->id }}"
+                                                target="_blank" class="btn btn-sm btn-light">
 
                                                 <i class="mdi mdi-download"></i>
 

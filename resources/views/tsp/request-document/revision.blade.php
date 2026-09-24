@@ -39,17 +39,13 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <form 
-                                id="form-request-document" 
-                                class="d-flex flex-column gap-2"
+                            <form id="form-request-document" class="d-flex flex-column gap-2"
                                 action="{{ route('tsp.request-document.store-revision', $requestDocument->id) }}"
-                                method="POST" 
-                                enctype="multipart/form-data"
-                            >
+                                method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @method('PUT')
 
-                                
+
                                 <h4 class="header-title mb-3">Form Revision Request Document</h4>
 
                                 <div class="d-flex justify-content-center align-items-center mb-2">
@@ -94,7 +90,8 @@
 
                                             <input type="text" name="title" id="title"
                                                 value="{{ old('title', $requestDocument->title) }}"
-                                                class="form-control @error('title') is-invalid @enderror" placeholder="Title">
+                                                class="form-control @error('title') is-invalid @enderror"
+                                                placeholder="Title">
 
                                             @error('title')
                                                 <div class="invalid-feedback">
@@ -435,7 +432,8 @@
                                                     Customer Postal Code
                                                 </label>
 
-                                                <input type="text" name="customer_postal_code" id="customer_postal_code"
+                                                <input type="text" name="customer_postal_code"
+                                                    id="customer_postal_code"
                                                     value="{{ old('customer_postal_code', $requestDocument->customer->postal_code ?? '') }}"
                                                     class="form-control @error('customer_postal_code') is-invalid @enderror"
                                                     placeholder="Customer Postal Code" readonly>
@@ -553,8 +551,10 @@
                                     <legend class="fs-5">Attachment</legend>
 
                                     <div class="d-flex flex-column gap-2">
-                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2" role="alert">
-                                            Untuk attachment Draft Contract, file harus diawali dengan prefix (Draf_Contract_).
+                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
+                                            role="alert">
+                                            Untuk attachment Draft Contract, file harus diawali dengan prefix
+                                            (Draf_Contract_).
                                         </div>
 
                                         <div>
@@ -567,7 +567,7 @@
                                             @if ($draftContract)
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">Existing Document:</small>
-                                                    <a href="{{ url('/') }}/{{ $draftContract->file_path }}"
+                                                    <a href="{{ url('/tsp/download-request-document-file') }}/{{ $draftContract->id }}"
                                                         target="_blank" rel="noopener">
                                                         {{ $draftContract->name ?? basename($draftContract->file_path) }}
                                                     </a>
@@ -581,13 +581,15 @@
                                             @enderror
                                         </div>
 
-                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2" role="alert">
+                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
+                                            role="alert">
                                             Untuk attachment Quotation, file harus diawali dengan prefix (Quotation_).
                                         </div>
 
                                         <div>
                                             <label for="quotation" class="form-label">Quotation</label>
-                                            <input type="file" class="form-control @error('quotation') is-invalid @enderror "
+                                            <input type="file"
+                                                class="form-control @error('quotation') is-invalid @enderror "
                                                 name="quotation" id="quotation" accept=".pdf"
                                                 value="{{ old('quotation', $requestDocument->quotation) }}"
                                                 placeholder="Quotation">
@@ -595,8 +597,8 @@
                                             @if ($quotation)
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">Existing Document:</small>
-                                                    <a href="{{ url('/') }}/{{ $quotation->file_path }}" target="_blank"
-                                                        rel="noopener">
+                                                    <a href="{{ url('/tsp/download-request-document-file') }}/{{ $quotation->id }}"
+                                                        target="_blank" rel="noopener">
                                                         {{ $quotation->name ?? basename($quotation->file_path) }}
                                                     </a>
                                                 </div>
