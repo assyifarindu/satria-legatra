@@ -836,11 +836,11 @@
                 </td>
 
                 <td>
-                    {{ $flr->resume ?? '-' }}
+                    {!! nl2br(e($flr->resume ?? '-')) !!}
                 </td>
 
                 <td>
-                    {{ $flr->legal_note ?? '-' }}
+                    {!! nl2br(e($flr->legal_note ?? '-')) !!}
                 </td>
 
                 <td>
@@ -864,7 +864,7 @@
                             <td class="info-code">a.</td>
                             <td class="info-content">
                                 <div class="info-name">Investasi</div>
-                                <div class="info-status">{{ $flr->investment ?? '-' }}</div>
+                                <div class="info-status">{!! nl2br(e($flr->investment ?? '-')) !!}</div>
                             </td>
                         </tr>
 
@@ -872,7 +872,7 @@
                             <td class="info-code">b.</td>
                             <td class="info-content">
                                 <div class="info-name">Penyediaan Manpower</div>
-                                <div class="info-status">{{ $flr->manpower_provision ?? '-' }}</div>
+                                <div class="info-status">{!! nl2br(e($flr->manpower_provision ?? '-')) !!}</div>
                             </td>
                         </tr>
 
@@ -880,7 +880,7 @@
                             <td class="info-code">c.</td>
                             <td class="info-content">
                                 <div class="info-name">Sanksi</div>
-                                <div class="info-status">{{ $flr->sanction ?? '-' }}</div>
+                                <div class="info-status">{!! nl2br(e($flr->sanction ?? '-')) !!}</div>
                             </td>
                         </tr>
 
@@ -888,7 +888,7 @@
                             <td class="info-code">d.</td>
                             <td class="info-content">
                                 <div class="info-name">Denda</div>
-                                <div class="info-status">{{ $flr->penalty ?? '-' }}</div>
+                                <div class="info-status">{!! nl2br(e($flr->penalty ?? '-')) !!}</div>
                             </td>
                         </tr>
 
@@ -896,7 +896,7 @@
                             <td class="info-code">e.</td>
                             <td class="info-content">
                                 <div class="info-name">Asuransi</div>
-                                <div class="info-status">{{ $flr->insurance ?? '-' }}</div>
+                                <div class="info-status">{!! nl2br(e($flr->insurance ?? '-')) !!}</div>
                             </td>
                         </tr>
 
@@ -904,7 +904,7 @@
                             <td class="info-code">f.</td>
                             <td class="info-content">
                                 <div class="info-name">SLA</div>
-                                <div class="info-status">{{ $flr->sla ?? '-' }}</div>
+                                <div class="info-status">{!! nl2br(e($flr->sla ?? '-')) !!}</div>
                             </td>
                         </tr>
 

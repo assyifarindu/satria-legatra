@@ -137,7 +137,7 @@
 
                                             <textarea name="document_objective" id="document_objective"
                                                 value="{{ $flr->document_objective ?? old('document_objective') }}"
-                                                class="form-control @error('document_objective') is-invalid @enderror" placeholder="Document Objective">{{ old('document_objective') }}</textarea>
+                                                class="form-control @error('document_objective') is-invalid @enderror" placeholder="Document Objective">{{ $flr->document_objective ?? old('document_objective') }}</textarea>
 
                                             @error('document_objective')
                                                 <div class="invalid-feedback">

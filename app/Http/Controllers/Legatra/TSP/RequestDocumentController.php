@@ -3489,22 +3489,25 @@ class RequestDocumentController extends Controller
             $db->beginTransaction();
 
             $requestDocument = TspRequestDocument::findOrFail($id);
+            $documentNumber = null;
+            $documentNumber = $requestDocument->document_number;
 
             /*UPDATE REQUEST DOCUMENT*/
+            if (!$documentNumber) {
+                $documentNumber = (function () {
+                    $prefix = 'Lgl/Agreement/TRIATRA/';
 
-            $documentNumber = (function () {
-                $prefix = 'Lgl/Agreement/TRIATRA/';
+                    $lastNo = TspRequestDocument::whereNotNull('document_number')
+                        ->where('document_number', 'like', $prefix . '%')
+                        ->lockForUpdate()
+                        ->selectRaw("MAX(CAST(SUBSTRING_INDEX(document_number, '/', -1) AS UNSIGNED)) as last_no")
+                        ->value('last_no');
 
-                $lastNo = TspRequestDocument::whereNotNull('document_number')
-                    ->where('document_number', 'like', $prefix . '%')
-                    ->lockForUpdate()
-                    ->selectRaw("MAX(CAST(SUBSTRING_INDEX(document_number, '/', -1) AS UNSIGNED)) as last_no")
-                    ->value('last_no');
+                    $nextNo = ((int) $lastNo) + 1;
 
-                $nextNo = ((int) $lastNo) + 1;
-
-                return $prefix . $nextNo;
-            })();
+                    return $prefix . $nextNo;
+                })();
+            }
 
             $requestDocument->update([
                 'status_id' => 13,
@@ -3655,12 +3658,12 @@ class RequestDocumentController extends Controller
                 'resume' => ['required', 'string'],
                 'legal_note' => ['required', 'string'],
                 'validation_required_by' => ['required', 'string', 'max:255'],
-                'investment' => ['required', 'string'],
-                'manpower_provision' => ['required', 'string'],
-                'sanction' => ['required', 'string'],
-                'penalty' => ['required', 'string'],
-                'insurance' => ['required', 'string'],
-                'sla' => ['required', 'string'],
+                'investment' => ['nullable'],
+                'manpower_provision' => ['nullable'],
+                'sanction' => ['nullable'],
+                'penalty' => ['nullable'],
+                'insurance' => ['nullable'],
+                'sla' => ['nullable'],
             ]);
 
             $db->beginTransaction();
@@ -3669,30 +3672,33 @@ class RequestDocumentController extends Controller
             $flr = TspFormLegalReview::where('request_document_id', $requestDocument->id)->first();
 
             /*INSERT FORM LEGAL REVIEW*/
-            TspFormLegalReview::create([
-                'request_document_id' => $requestDocument->id,
-                'date' => $validated['date'],
-                'department' => $validated['department'],
-                'document_objective' => $validated['document_objective'],
-                'start_date' => $validated['start_date'],
-                'end_date' => $validated['end_date'],
-                'incoterm' => $validated['incoterm'],
-                'work_location' => $validated['work_location'],
-                'delivery_location' => $validated['delivery_location'],
-                'term_of_payment' => $validated['term_of_payment'],
-                'resume' => $validated['resume'],
-                'legal_note' => $validated['legal_note'],
-                'validation_required_by' => $validated['validation_required_by'],
-                'investment' => $validated['investment'],
-                'manpower_provision' => $validated['manpower_provision'],
-                'sanction' => $validated['sanction'],
-                'penalty' => $validated['penalty'],
-                'insurance' => $validated['insurance'],
-                'sla' => $validated['sla'],
-                'version' => (!empty($flr) && !empty($flr->version) && is_numeric($flr->version))
-                    ? number_format(((float) $flr->version) + 0.1, 1, '.', '')
-                    : '1.0',
-            ]);
+            TspFormLegalReview::updateOrCreate(
+                ['request_document_id' => $requestDocument->id],
+                [
+                    'request_document_id' => $requestDocument->id,
+                    'date' => $validated['date'],
+                    'department' => $validated['department'],
+                    'document_objective' => $validated['document_objective'],
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                    'incoterm' => $validated['incoterm'],
+                    'work_location' => $validated['work_location'],
+                    'delivery_location' => $validated['delivery_location'],
+                    'term_of_payment' => $validated['term_of_payment'],
+                    'resume' => $validated['resume'],
+                    'legal_note' => $validated['legal_note'],
+                    'validation_required_by' => $validated['validation_required_by'],
+                    'investment' => $validated['investment'] ?? 'Tersedia/Tidak Tersedia',
+                    'manpower_provision' => $validated['manpower_provision'] ?? 'Tersedia/Tidak Tersedia',
+                    'sanction' => $validated['sanction'] ?? 'Tersedia/Tidak Tersedia',
+                    'penalty' => $validated['penalty'] ?? 'Tersedia/Tidak Tersedia',
+                    'insurance' => $validated['insurance'] ?? 'Tersedia/Tidak Tersedia',
+                    'sla' => $validated['sla'] ?? 'Tersedia/Tidak Tersedia',
+                    'version' => (!empty($flr) && !empty($flr->version) && is_numeric($flr->version))
+                        ? number_format(((float) $flr->version) + 0.1, 1, '.', '')
+                        : '1.0',
+                ]
+            );
 
             /*UPDATE REQUEST DOCUMENT*/
 
@@ -3926,13 +3932,13 @@ class RequestDocumentController extends Controller
                 'resume' => ['required', 'string'],
                 'legal_note' => ['required', 'string'],
                 'validation_required_by' => ['required', 'string', 'max:255'],
-                'investment' => ['required', 'string'],
-                'manpower_provision' => ['required', 'string'],
-                'sanction' => ['required', 'string'],
-                'penalty' => ['required', 'string'],
-                'insurance' => ['required', 'string'],
-                'sla' => ['required', 'string'],
-                'version' => ['required', 'string'],
+                'investment' => ['nullable'],
+                'manpower_provision' => ['nullable'],
+                'sanction' => ['nullable'],
+                'penalty' => ['nullable'],
+                'insurance' => ['nullable'],
+                'sla' => ['nullable'],
+                'version' => ['nullable'],
             ]);
 
             $db->beginTransaction();
@@ -3953,12 +3959,12 @@ class RequestDocumentController extends Controller
                 'resume' => $validated['resume'],
                 'legal_note' => $validated['legal_note'],
                 'validation_required_by' => $validated['validation_required_by'],
-                'investment' => $validated['investment'],
-                'manpower_provision' => $validated['manpower_provision'],
-                'sanction' => $validated['sanction'],
-                'penalty' => $validated['penalty'],
-                'insurance' => $validated['insurance'],
-                'sla' => $validated['sla'],
+                'investment' => $validated['investment'] ?? 'Tersedia/Tidak Tersedia',
+                'manpower_provision' => $validated['manpower_provision'] ?? 'Tersedia/Tidak Tersedia',
+                'sanction' => $validated['sanction'] ?? 'Tersedia/Tidak Tersedia',
+                'penalty' => $validated['penalty'] ?? 'Tersedia/Tidak Tersedia',
+                'insurance' => $validated['insurance'] ?? 'Tersedia/Tidak Tersedia',
+                'sla' => $validated['sla'] ?? 'Tersedia/Tidak Tersedia',
                 'version' => (!empty($flr) && !empty($flr->version) && is_numeric($flr->version))
                     ? number_format(((float) $flr->version) + 0.1, 1, '.', '')
                     : '1.0',

@@ -291,7 +291,7 @@
                                                         getRoles(Auth::user()->id) === 'Admin Legal TSP')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
-                                                            <a href="{{ route('tsp.request-document.form-legal-review.show-revision-form-legal-review', $requestDocument->id) }}"
+                                                            <a href="{{ route('tsp.request-document.legal-drafting.show-revision', $requestDocument->id) }}"
                                                                 class="btn btn-warning">
                                                                 <i class="mdi mdi-file-edit-outline me-1"></i> Revise</a>
                                                         </div>
@@ -355,11 +355,10 @@
 
                                                 {{-- button upload document bertanda tangan Customer by user --}}
                                                 @if (
-                                                        $requestDocument->stage_id == 8 &&
+                                                    $requestDocument->stage_id == 8 &&
                                                         $requestDocument->status_id == 15 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        $requestDocument->requester_id == Auth::user()->id
-                                                    )
+                                                        $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -378,11 +377,10 @@
 
                                                 {{-- button confirm document by user --}}
                                                 @if (
-                                                        $requestDocument->stage_id == 9 &&
+                                                    $requestDocument->stage_id == 9 &&
                                                         $requestDocument->status_id == 15 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
-                                                        $requestDocument->requester_id == Auth::user()->id
-                                                    )
+                                                        $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
                                                             <a href="javascript:void(0)"
@@ -684,15 +682,15 @@
                         html += `
                             <div class="border p-3 mb-3 rounded">
                                 ${fileUrl ? `
-                                                                                                                                                                                                                                                        <div class="float-end">
-                                                                                                                                                                                                                                                            <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                                                                                                                                                                                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                                                                                                                                                                                                                    title="Download" tabindex="0"
-                                                                                                                                                                                                                                                                    data-plugin="tippy"
-                                                                                                                                                                                                                                                                    data-tippy-placement="top"></i>
-                                                                                                                                                                                                                                                            </a>
-                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                    ` : ''}
+                                                                                                                                                                                                                                                            <div class="float-end">
+                                                                                                                                                                                                                                                                <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
+                                                                                                                                                                                                                                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                                                                                                                                                                        title="Download" tabindex="0"
+                                                                                                                                                                                                                                                                        data-plugin="tippy"
+                                                                                                                                                                                                                                                                        data-tippy-placement="top"></i>
+                                                                                                                                                                                                                                                                </a>
+                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                        ` : ''}
 
                                 <div class="form-check">
                                     <label class="form-check-label font-16 fw-bold">
