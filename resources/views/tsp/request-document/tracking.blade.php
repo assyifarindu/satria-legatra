@@ -675,29 +675,50 @@
                                 }) :
                                 '-');
 
-                        const fileUrl = feedback.id ?
-                            `{{ url('/tsp/download-feedback-file') }}/${feedback.id}` :
+                        const fileUrl = feedback.file_id ?
+                            `{{ url('/tsp/download-feedback-file') }}/${feedback.file_id}` :
                             null;
 
                         html += `
-                            <div class="border p-3 mb-3 rounded">
-                                ${fileUrl ? `
-                                                    <div class="float-end">
-                                                        <a href="${fileUrl}" target="_blank" rel="noopener noreferrer">
-                                                            <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                title="Download" tabindex="0"
-                                                                data-plugin="tippy"
-                                                                data-tippy-placement="top"></i>
-                                                        </a>
-                                                    </div>
-                                                ` : ''}
+                           <div class="border p-3 mb-3 rounded">
+                                <div class="row align-items-start">
 
-                                <div class="form-check">
-                                    <label class="form-check-label font-16 fw-bold">
-                                        Feedback dari <b>${feedback.action_by_name ?? '-'}</b> - ${feedbackDate}
-                                    </label>
+                                    <!-- Feedback -->
+                                    <div class="${fileUrl ? 'col-md-8' : 'col-12'}">
+                                        <div class="form-check">
+                                            <label class="form-check-label font-16 fw-bold">
+                                                Feedback dari <b>${feedback.action_by_name ?? '-'}</b> - ${feedbackDate}
+                                            </label>
+                                        </div>
+
+                                        <p class="mb-0 ps-3 pt-1">
+                                            ${feedback.remark ?? '-'}.
+                                        </p>
+                                    </div>
+
+                                    <!-- Attachment -->
+                                    ${fileUrl ? `
+                                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                <a href="${fileUrl}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="text-decoration-none">
+
+                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                    title="Download"
+                                                    tabindex="0"
+                                                    data-plugin="tippy"
+                                                    data-tippy-placement="top">
+                                                    </i>
+                                                </a>
+
+                                                <div class="small text-muted mt-1 text-break">
+                                                    ${feedback.file_name ?? '-'}
+                                                </div>
+                                            </div>
+                                        ` : ''}
+
                                 </div>
-                                <p class="mb-0 ps-3 pt-1">${feedback.remark ?? '-'}.</p>
                             </div>
                         `;
                     });

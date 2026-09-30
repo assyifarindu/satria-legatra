@@ -40,7 +40,7 @@
                     <div class="card">
                         <div class="card-body">
                             <form id="form-request-document" action="{{ url('tsp/request-document') }}" method="POST"
-                                enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                                enctype="multipart/form-data" class="d-flex flex-column gap-2" novalidate>
                                 @csrf
                                 <h4 class="header-title mb-3">Form Create Request Document</h4>
 
@@ -86,7 +86,7 @@
 
                                             <input type="text" name="title" id="title" value="{{ old('title') }}"
                                                 class="form-control @error('title') is-invalid @enderror"
-                                                placeholder="Title">
+                                                placeholder="Title" data-label="Title" required>
 
                                             @error('title')
                                                 <div class="invalid-feedback">
@@ -101,7 +101,8 @@
                                             </label>
 
                                             <select name="contract_type"
-                                                class="form-select @error('contract_type') is-invalid @enderror">
+                                                class="form-select @error('contract_type') is-invalid @enderror"
+                                                data-label="Contract Type" required>
                                                 <option value="">Select Contract Type</option>
                                                 <option value="Part"
                                                     {{ old('contract_type') == 'Part' ? 'selected' : '' }}>Part
@@ -136,6 +137,7 @@
                                                     value="{{ old('potential_amount') ? number_format((int) old('potential_amount'), 0, ',', '.') : '' }}"
                                                     class="form-control @error('potential_amount') is-invalid @enderror"
                                                     placeholder="Potential Amount" inputmode="numeric"
+                                                    data-label="Potential Amount" required
                                                     oninput="
                                                         this.value = this.value.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
                                                         document.getElementById('potential_amount').value = this.value.replace(/\./g,'');
@@ -158,7 +160,8 @@
                                             </label>
 
                                             <select name="sign_status"
-                                                class="form-select @error('sign_status') is-invalid @enderror">
+                                                class="form-select @error('sign_status') is-invalid @enderror"
+                                                data-label="Sign Status" required>
                                                 <option value="">Select Sign Status</option>
                                                 <option value="Not Signed"
                                                     {{ old('sign_status') == 'Not Signed' ? 'selected' : '' }}>Not Signed
@@ -186,7 +189,8 @@
                                             </label>
 
                                             <select name="is_project"
-                                                class="form-select @error('is_project') is-invalid @enderror">
+                                                class="form-select @error('is_project') is-invalid @enderror"
+                                                data-label="Project Category" required>
                                                 <option value="">Select Project Category</option>
                                                 <option value="1" {{ old('is_project') == '1' ? 'selected' : '' }}>
                                                     Project</option>
@@ -208,7 +212,7 @@
                                             </label>
 
                                             <textarea name="sow" id="sow" value="{{ old('sow') }}"
-                                                class="form-control @error('sow') is-invalid @enderror" placeholder="SOW">{{ old('sow') }}</textarea>
+                                                class="form-control @error('sow') is-invalid @enderror" placeholder="SOW" data-label="SOW" required>{{ old('sow') }}</textarea>
 
                                             @error('sow')
                                                 <div class="invalid-feedback">
@@ -223,7 +227,8 @@
                                             </label>
 
                                             <textarea name="transaction_procedure" id="transaction_procedure" value="{{ old('transaction_procedure') }}"
-                                                class="form-control @error('transaction_procedure') is-invalid @enderror" placeholder="Transaction Procedure">{{ old('transaction_procedure') }}</textarea>
+                                                class="form-control @error('transaction_procedure') is-invalid @enderror" placeholder="Transaction Procedure"
+                                                data-label="Transaction Procedure" required>{{ old('transaction_procedure') }}</textarea>
 
                                             @error('transaction_procedure')
                                                 <div class="invalid-feedback">
@@ -238,7 +243,7 @@
                                             </label>
 
                                             <textarea name="kpi" id="kpi" value="{{ old('kpi') }}"
-                                                class="form-control @error('kpi') is-invalid @enderror" placeholder="KPI">{{ old('kpi') }}</textarea>
+                                                class="form-control @error('kpi') is-invalid @enderror" placeholder="KPI" data-label="KPI" required>{{ old('kpi') }}</textarea>
 
                                             @error('kpi')
                                                 <div class="invalid-feedback">
@@ -265,7 +270,7 @@
                                             <input type="text" name="pic_name" id="pic_name"
                                                 value="{{ old('pic_name') }}"
                                                 class="form-control @error('pic_name') is-invalid @enderror"
-                                                placeholder="PIC Name">
+                                                placeholder="PIC Name" data-label="PIC Name" required>
 
                                             @error('pic_name')
                                                 <div class="invalid-feedback">
@@ -282,7 +287,7 @@
                                             <input type="text" name="pic_position" id="pic_position"
                                                 value="{{ old('pic_position') }}"
                                                 class="form-control @error('pic_position') is-invalid @enderror"
-                                                placeholder="PIC Position">
+                                                placeholder="PIC Position" data-label="PIC Position" required>
                                             @error('pic_position')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -299,7 +304,7 @@
                                                 <input type="text" name="pic_email" id="pic_email"
                                                     value="{{ old('pic_email') }}"
                                                     class="form-control @error('pic_email') is-invalid @enderror"
-                                                    placeholder="PIC Email">
+                                                    placeholder="PIC Email" data-label="PIC Email" required>
                                                 @error('pic_email')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -315,7 +320,7 @@
                                                 <input type="text" name="pic_phone" id="pic_phone"
                                                     value="{{ old('pic_phone') }}"
                                                     class="form-control @error('pic_phone') is-invalid @enderror"
-                                                    placeholder="PIC Phone">
+                                                    placeholder="PIC Phone" data-label="PIC Phone" required>
 
                                                 @error('pic_phone')
                                                     <div class="invalid-feedback">
@@ -341,8 +346,9 @@
                                                 Customer Name
                                             </label>
 
-                                            <select name="customer_id"
-                                                class="form-select @error('customer_id') is-invalid @enderror">
+                                            <select name="customer_id" id="customer_id"
+                                                class="form-select @error('customer_id') is-invalid @enderror"
+                                                data-label="Customer Name" required>
                                                 <option value="">Select Customer</option>
                                             </select>
                                             <input type="text" name="customer_name" id="customer_name"
@@ -366,7 +372,7 @@
                                                 <input type="text" name="customer_nib" id="customer_nib"
                                                     value="{{ old('customer_nib') }}"
                                                     class="form-control @error('customer_nib') is-invalid @enderror"
-                                                    placeholder="Customer NIB" readonly>
+                                                    placeholder="Customer NIB" data-label="Customer NIB" required>
 
                                                 @error('customer_nib')
                                                     <div class="invalid-feedback">
@@ -383,7 +389,7 @@
                                                 <input type="text" name="customer_npwp" id="customer_npwp"
                                                     value="{{ old('customer_npwp') }}"
                                                     class="form-control @error('customer_npwp') is-invalid @enderror"
-                                                    placeholder="Customer NPWP" readonly>
+                                                    placeholder="Customer NPWP" data-label="Customer NPWP" required>
 
                                                 @error('customer_npwp')
                                                     <div class="invalid-feedback">
@@ -401,7 +407,7 @@
                                             <input type="text" name="customer_address" id="customer_address"
                                                 value="{{ old('customer_address') }}"
                                                 class="form-control @error('customer_address') is-invalid @enderror"
-                                                placeholder="Customer Address" readonly>
+                                                placeholder="Customer Address" data-label="Customer Address" required>
 
                                             @error('customer_address')
                                                 <div class="invalid-feedback">
@@ -417,10 +423,10 @@
                                                 </label>
 
                                                 <input type="text" name="customer_postal_code"
-                                                    id="customer_postal_code"
-                                                    value="{{ old('customer_postal_code') }}"
+                                                    id="customer_postal_code" value="{{ old('customer_postal_code') }}"
                                                     class="form-control @error('customer_postal_code') is-invalid @enderror"
-                                                    placeholder="Customer Postal Code" readonly>
+                                                    placeholder="Customer Postal Code" data-label="Customer Postal Code"
+                                                    required>
 
                                                 @error('customer_postal_code')
                                                     <div class="invalid-feedback">
@@ -437,7 +443,7 @@
                                                 <input type="text" name="customer_email" id="customer_email"
                                                     value="{{ old('customer_email') }}"
                                                     class="form-control @error('customer_email') is-invalid @enderror"
-                                                    placeholder="Customer Email" readonly>
+                                                    placeholder="Customer Email" data-label="Customer Email" required>
 
                                                 @error('customer_email')
                                                     <div class="invalid-feedback">
@@ -455,7 +461,7 @@
                                             <input type="text" name="customer_pic_name" id="customer_pic_name"
                                                 value="{{ old('customer_pic_name') }}"
                                                 class="form-control @error('customer_pic_name') is-invalid @enderror"
-                                                placeholder="Customer PIC Name">
+                                                placeholder="Customer PIC Name" data-label="Customer PIC Name" required>
 
                                             @error('customer_pic_name')
                                                 <div class="invalid-feedback">
@@ -469,11 +475,11 @@
                                                 Customer PIC Position
                                             </label>
 
-                                            <input type="text" name="customer_pic_position"
-                                                id="customer_pic_position"
+                                            <input type="text" name="customer_pic_position" id="customer_pic_position"
                                                 value="{{ old('customer_pic_position') }}"
                                                 class="form-control @error('customer_pic_position') is-invalid @enderror"
-                                                placeholder="Customer PIC Position">
+                                                placeholder="Customer PIC Position" data-label="Customer PIC Position"
+                                                required>
                                             @error('customer_pic_position')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -487,11 +493,11 @@
                                                     Customer PIC Email
                                                 </label>
 
-                                                <input type="text" name="customer_pic_email"
-                                                    id="customer_pic_email"
+                                                <input type="text" name="customer_pic_email" id="customer_pic_email"
                                                     value="{{ old('customer_pic_email') }}"
                                                     class="form-control @error('customer_pic_email') is-invalid @enderror"
-                                                    placeholder="Customer PIC Email">
+                                                    placeholder="Customer PIC Email" data-label="Customer PIC Email"
+                                                    required>
                                                 @error('customer_pic_email')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -504,11 +510,11 @@
                                                     Customer PIC Phone
                                                 </label>
 
-                                                <input type="text" name="customer_pic_phone"
-                                                    id="customer_pic_phone"
+                                                <input type="text" name="customer_pic_phone" id="customer_pic_phone"
                                                     value="{{ old('customer_pic_phone') }}"
                                                     class="form-control @error('customer_pic_phone') is-invalid @enderror"
-                                                    placeholder="Customer PIC Phone">
+                                                    placeholder="Customer PIC Phone" data-label="Customer PIC Phone"
+                                                    required>
 
                                                 @error('customer_pic_phone')
                                                     <div class="invalid-feedback">
@@ -528,6 +534,7 @@
                                     <legend class="fs-5">Attachment</legend>
 
                                     <div class="d-flex flex-column gap-2">
+
                                         <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
                                             role="alert">
                                             Untuk attachment Draft Contract, file harus diawali dengan prefix
@@ -535,46 +542,62 @@
                                         </div>
 
                                         <div>
-                                            <label for="draft_contract" class="form-label">Draft Contract</label>
+                                            <label for="draft_contract" class="form-label">
+                                                Draft Contract <span class="text-danger">*</span>
+                                            </label>
+
                                             <input type="file"
-                                                class="form-control @error('draft_contract') is-invalid @enderror "
+                                                class="form-control @error('draft_contract') is-invalid @enderror"
                                                 name="draft_contract" id="draft_contract" accept=".pdf"
-                                                value="{{ old('draft_contract') }}" placeholder="Draft Contract">
+                                                data-label="Draft Contract" required>
+
                                             @error('draft_contract')
-                                                <div class="invalid-feedback">
+                                                <div class="invalid-feedback d-block">
                                                     {{ $message }}
                                                 </div>
                                             @enderror
                                         </div>
+
 
                                         <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
                                             role="alert">
-                                            Untuk attachment Quotation, file harus diawali dengan prefix (Quotation_).
+                                            Untuk attachment Quotation, file harus diawali dengan prefix
+                                            (Quotation_).
                                         </div>
 
                                         <div>
-                                            <label for="quotation" class="form-label">Quotation</label>
+                                            <label for="quotation" class="form-label">
+                                                Quotation <span class="text-danger">*</span>
+                                            </label>
+
                                             <input type="file"
-                                                class="form-control @error('quotation') is-invalid @enderror "
-                                                name="quotation" id="quotation" accept=".pdf"
-                                                value="{{ old('quotation') }}" placeholder="Quotation">
+                                                class="form-control @error('quotation') is-invalid @enderror"
+                                                name="quotation" id="quotation" accept=".pdf" data-label="Quotation"
+                                                required>
+
                                             @error('quotation')
-                                                <div class="invalid-feedback">
+                                                <div class="invalid-feedback d-block">
                                                     {{ $message }}
                                                 </div>
                                             @enderror
                                         </div>
 
+
                                         <div>
-                                            <label for="other" class="form-label">Other</label>
+                                            <label for="other" class="form-label">
+                                                Other
+                                            </label>
+
                                             <input type="file"
                                                 class="form-control @error('other') is-invalid @enderror" name="other[]"
                                                 id="other" accept=".pdf" multiple>
+
                                             @error('other')
-                                                <div class="invalid-feedback">
+                                                <div class="text-danger mt-1">
                                                     {{ $message }}
                                                 </div>
                                             @enderror
+
                                             @error('other.*')
                                                 <div class="text-danger mt-1">
                                                     {{ $message }}
@@ -583,7 +606,7 @@
                                         </div>
 
                                     </div>
-                                    
+
                                     <div class="d-flex gap-2 justify-content-end mt-2">
                                         <button type="button" class="btn btn-secondary prev-button">Prev</button>
                                     </div>
@@ -592,12 +615,10 @@
                                 <input type="hidden" name="action_type" id="action_type">
 
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="action_type" value="draft"
-                                        class="btn btn-warning">
+                                    <button type="submit" name="action_type" value="draft" class="btn btn-warning">
                                         Save as Draft
                                     </button>
-                                    <button type="submit" name="action_type" value="submit"
-                                        class="btn btn-primary">
+                                    <button type="submit" name="action_type" value="submit" class="btn btn-primary">
                                         Submit
                                     </button>
                                 </div>
@@ -620,22 +641,22 @@
             });
 
             // Disable submit button after form submission to prevent double submission
-            $('#form-request-document').on('submit', function(event) {
-                const form = $(this);
+            // $('#form-request-document').on('submit', function(event) {
+            //     const form = $(this);
 
-                // Disable semua tombol submit
-                form.find('button[type="submit"]').prop('disabled', true);
+            //     // Disable semua tombol submit
+            //     form.find('button[type="submit"]').prop('disabled', true);
 
-                // Button yang diklik
-                const submitter = event.originalEvent.submitter;
+            //     // Button yang diklik
+            //     const submitter = event.originalEvent.submitter;
 
-                if (submitter) {
-                    $(submitter).html(`
-                        <span class="spinner-border spinner-border-sm me-1"></span>
-                        Processing...
-                    `);
-                }
-            });
+            //     if (submitter) {
+            //         $(submitter).html(`
+        //             <span class="spinner-border spinner-border-sm me-1"></span>
+        //             Processing...
+        //         `);
+            //     }
+            // });
 
             $("select[name='customer_id']").select2({
                 placeholder: "Select a customer",
@@ -662,6 +683,43 @@
                 }
             });
 
+            // Restore customer setelah validation error
+            @if (old('customer_id'))
+
+                $.ajax({
+                    url: "{{ url('tsp/customers') }}/{{ old('customer_id') }}",
+                    type: 'GET',
+
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            const customer = response.data;
+
+                            // Tambahkan option ke Select2
+                            const option = new Option(
+                                customer.name,
+                                customer.id,
+                                true,
+                                true
+                            );
+
+                            $("select[name='customer_id']")
+                                .append(option)
+                                .trigger('change');
+
+                            // Restore customer data
+                            $("#customer_name").val(customer.name ?? "");
+                            $("#customer_nib").val(customer.nib ?? "");
+                            $("#customer_npwp").val(customer.npwp ?? "");
+                            $("#customer_address").val(customer.address ?? "");
+                            $("#customer_postal_code").val(customer.postal_code ?? "");
+                            $("#customer_email").val(customer.email ?? "");
+                        }
+                    }
+                });
+            @endif
+
             $("select[name='customer_id']").on('select2:select', function(e) {
                 var selectedCustomerId = e.params.data.id;
                 $.ajax({
@@ -682,6 +740,7 @@
                     error: function(xhr) {
                         alert('Terjadi kesalahan saat mengambil data customer.');
                         // Kosongkan form jika terjadi error
+                        $("#customer_name").val("");
                         $("#customer_nib").val("");
                         $("#customer_npwp").val("");
                         $("#customer_address").val("");
@@ -748,6 +807,235 @@
                         'btn-primary');
                     $(this).addClass('active').removeClass('btn-secondary').addClass('btn-primary');
                 }
+            });
+
+            function showError(input, message) {
+                const $input = $(input);
+
+                $input.addClass('is-invalid');
+
+                let $error;
+
+                // SELECT2
+                if ($input.hasClass('select2-hidden-accessible')) {
+
+                    const $select2 = $input.next('.select2-container');
+
+                    $select2.find('.select2-selection')
+                        .addClass('is-invalid');
+
+                    $error = $select2.next('.client-error');
+
+                    if (!$error.length) {
+                        $error = $('<div class="invalid-feedback d-block client-error"></div>');
+                        $select2.after($error);
+                    }
+
+                } else {
+
+                    // INPUT / TEXTAREA / SELECT BIASA
+                    $error = $input.siblings('.client-error');
+
+                    if (!$error.length) {
+                        $error = $('<div class="invalid-feedback d-block client-error"></div>');
+                        $input.after($error);
+                    }
+                }
+
+                $error.text(message).show();
+            }
+
+            function clearError(input) {
+                const $input = $(input);
+
+                $input.removeClass('is-invalid');
+
+                $input.siblings('.client-error')
+                    .text('')
+                    .hide();
+            }
+
+
+            $('#form-request-document').on('submit', function(event) {
+
+                const form = this;
+                const $form = $(this);
+                const submitter = event.originalEvent?.submitter;
+
+
+                // SAVE AS DRAFT
+                if (submitter?.value === 'draft') {
+
+                    $form.find('button[type="submit"]').prop('disabled', true);
+
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+
+                    return true;
+                }
+
+
+                // HANYA SUBMIT YANG DIVALIDASI
+                if (submitter?.value !== 'submit') {
+                    return true;
+                }
+
+
+                // VALIDASI FIELD WAJIB
+                let valid = true;
+
+                $form.find('[required]').each(function() {
+
+                    const $field = $(this);
+
+                    // Input / Select / Textarea
+                    const value = $field.val();
+
+                    if (!value || value.toString().trim() === '') {
+
+                        showError(
+                            this,
+                            `${$field.data('label') || $field.attr('name')} is required.`
+                        );
+
+                        valid = false;
+
+                    } else {
+
+                        clearError(this);
+                    }
+                });
+
+
+                // STOP JIKA ADA FIELD KOSONG
+                if (!valid) {
+
+                    event.preventDefault();
+
+                    const firstError = $form.find('.is-invalid').first();
+
+                    if (firstError.length) {
+
+                        firstError[0].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                        firstError.focus();
+                    }
+
+                    return false;
+                }
+
+
+                // VALIDASI ATTACHMENT
+                const files = [{
+                        id: '#draft_contract',
+                        label: 'Draft Contract',
+                        prefix: 'Draft_Contract_'
+                    },
+                    {
+                        id: '#quotation',
+                        label: 'Quotation',
+                        prefix: 'Quotation_'
+                    }
+                ];
+
+
+                let attachmentValid = true;
+
+
+                for (const config of files) {
+
+                    const input = $(config.id)[0];
+                    const file = input?.files?.[0];
+
+
+                    // File tidak ada
+                    if (!file) {
+
+                        showError(
+                            input,
+                            `${config.label} is required.`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    // Nama file
+                    if (!file.name.startsWith(config.prefix)) {
+
+                        showError(
+                            input,
+                            `File name ${config.label} must start with "${config.prefix}".`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    // PDF
+                    if (file.type !== 'application/pdf') {
+
+                        showError(
+                            input,
+                            `${config.label} must be a PDF file.`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    // Max 10 MB
+                    if (file.size > 10 * 1024 * 1024) {
+
+                        showError(
+                            input,
+                            `${config.label} must be at most 10 MB.`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    clearError(input);
+                }
+
+
+                // STOP JIKA ATTACHMENT INVALID
+                if (!attachmentValid) {
+
+                    event.preventDefault();
+
+                    const firstError = $form.find('.is-invalid').first();
+
+                    if (firstError.length) {
+
+                        firstError[0].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+
+                    return false;
+                }
+
+
+                // SEMUA VALID
+                $form.find('button[type="submit"]').prop('disabled', true);
+
+                $(submitter).html(`
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Processing...
+                `);
+
             });
         })
     </script>

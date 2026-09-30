@@ -39,13 +39,9 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <form 
-                                id="form-request-document" 
-                                class="d-flex flex-column gap-2"
-                                action="{{ route('tsp.request-document.edit', $requestDocument->id) }}" 
-                                method="POST"
-                                enctype="multipart/form-data"
-                            >
+                            <form id="form-request-document" class="d-flex flex-column gap-2"
+                                action="{{ route('tsp.request-document.edit', $requestDocument->id) }}" method="POST"
+                                enctype="multipart/form-data" novalidate>
                                 @csrf
                                 @method('PUT')
 
@@ -53,42 +49,30 @@
 
                                 <div class="d-flex justify-content-center align-items-center mb-2">
                                     <div class="position-relative pe-2 d-flex flex-column align-items-center">
-                                        <button 
-                                            type="button" 
+                                        <button type="button"
                                             class="btn rounded-circle d-flex align-items-center justify-content-center btn-primary step-button active"
-                                            style="z-index: 1;"
-                                            data-step="1"
-                                        >1</button>
+                                            style="z-index: 1;" data-step="1">1</button>
                                         <p>Step 1</p>
                                         <div class="step-line"></div>
                                     </div>
                                     <div class="position-relative px-2 d-flex flex-column align-items-center">
-                                        <button 
-                                            type="button" 
-                                            class="btn rounded-circle d-flex align-items-center justify-content-center btn-secondary step-button" 
-                                            style="z-index: 1;"
-                                            data-step="2"
-                                        >2</button>
+                                        <button type="button"
+                                            class="btn rounded-circle d-flex align-items-center justify-content-center btn-secondary step-button"
+                                            style="z-index: 1;" data-step="2">2</button>
                                         <p>Step 2</p>
                                         <div class="step-line"></div>
                                     </div>
                                     <div class="position-relative px-2 d-flex flex-column align-items-center">
-                                        <button 
-                                            type="button" 
-                                            class="btn rounded-circle d-flex align-items-center justify-content-center btn-secondary step-button" 
-                                            style="z-index: 1;"
-                                            data-step="3"
-                                        >3</button>
+                                        <button type="button"
+                                            class="btn rounded-circle d-flex align-items-center justify-content-center btn-secondary step-button"
+                                            style="z-index: 1;" data-step="3">3</button>
                                         <p>Step 3</p>
                                         <div class="step-line"></div>
                                     </div>
                                     <div class="position-relative ps-2 d-flex flex-column align-items-center">
-                                        <button 
-                                            type="button" 
-                                            class="btn rounded-circle d-flex align-items-center justify-content-center btn-secondary step-button" 
-                                            style="z-index: 1;"
-                                            data-step="4"
-                                        >4</button>
+                                        <button type="button"
+                                            class="btn rounded-circle d-flex align-items-center justify-content-center btn-secondary step-button"
+                                            style="z-index: 1;" data-step="4">4</button>
                                         <p>Step 4</p>
                                         <div class="step-line"></div>
                                     </div>
@@ -105,7 +89,8 @@
 
                                             <input type="text" name="title" id="title"
                                                 value="{{ old('title', $requestDocument->title) }}"
-                                                class="form-control @error('title') is-invalid @enderror" placeholder="Title">
+                                                class="form-control @error('title') is-invalid @enderror"
+                                                placeholder="Title" data-label="Title" required>
 
                                             @error('title')
                                                 <div class="invalid-feedback">
@@ -120,7 +105,8 @@
                                             </label>
 
                                             <select name="contract_type"
-                                                class="form-select @error('contract_type') is-invalid @enderror">
+                                                class="form-select @error('contract_type') is-invalid @enderror"
+                                                data-label="Contract Type" required>
                                                 <option value="">Select Contract Type</option>
                                                 <option value="Part"
                                                     {{ old('contract_type', $requestDocument->contract_type) == 'Part' ? 'selected' : '' }}>
@@ -157,6 +143,7 @@
                                                     value="{{ old('potential_amount', $requestDocument->potential_amount) ? number_format((int) old('potential_amount', $requestDocument->potential_amount), 0, ',', '.') : '' }}"
                                                     class="form-control @error('potential_amount') is-invalid @enderror"
                                                     placeholder="Potential Amount" inputmode="numeric"
+                                                    data-label="Potential Amount" required
                                                     oninput="
                                                         this.value = this.value.replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
                                                         document.getElementById('potential_amount').value = this.value.replace(/\./g,'');
@@ -179,7 +166,8 @@
                                             </label>
 
                                             <select name="sign_status"
-                                                class="form-select @error('sign_status') is-invalid @enderror">
+                                                class="form-select @error('sign_status') is-invalid @enderror"
+                                                data-label="Sign Status" required>
                                                 <option value="">Select Sign Status</option>
                                                 <option value="Not Signed"
                                                     {{ old('sign_status', $requestDocument->sign_status) == 'Not Signed' ? 'selected' : '' }}>
@@ -208,7 +196,8 @@
                                             </label>
 
                                             <select name="is_project"
-                                                class="form-select @error('is_project') is-invalid @enderror">
+                                                class="form-select @error('is_project') is-invalid @enderror"
+                                                data-label="Project Category" required>
                                                 <option value="">Select Project Category</option>
                                                 <option value="1"
                                                     {{ old('is_project', $requestDocument->is_project) == '1' ? 'selected' : '' }}>
@@ -232,7 +221,7 @@
                                             </label>
 
                                             <textarea name="sow" id="sow" value="{{ old('sow', $requestDocument->sow) }}"
-                                                class="form-control @error('sow') is-invalid @enderror" placeholder="SOW">{{ old('sow', $requestDocument->sow) }}</textarea>
+                                                class="form-control @error('sow') is-invalid @enderror" placeholder="SOW" data-label="SOW" required>{{ old('sow', $requestDocument->sow) }}</textarea>
 
                                             @error('sow')
                                                 <div class="invalid-feedback">
@@ -248,7 +237,8 @@
 
                                             <textarea name="transaction_procedure" id="transaction_procedure"
                                                 value="{{ old('transaction_procedure', $requestDocument->transaction_procedure) }}"
-                                                class="form-control @error('transaction_procedure') is-invalid @enderror" placeholder="Transaction Procedure">{{ old('transaction_procedure', $requestDocument->transaction_procedure) }}</textarea>
+                                                class="form-control @error('transaction_procedure') is-invalid @enderror" placeholder="Transaction Procedure"
+                                                data-label="Transaction Procedure" required>{{ old('transaction_procedure', $requestDocument->transaction_procedure) }}</textarea>
 
                                             @error('transaction_procedure')
                                                 <div class="invalid-feedback">
@@ -263,7 +253,7 @@
                                             </label>
 
                                             <textarea name="kpi" id="kpi" value="{{ old('kpi', $requestDocument->kpi) }}"
-                                                class="form-control @error('kpi') is-invalid @enderror" placeholder="KPI">{{ old('kpi', $requestDocument->kpi) }}</textarea>
+                                                class="form-control @error('kpi') is-invalid @enderror" placeholder="KPI" data-label="KPI" required>{{ old('kpi', $requestDocument->kpi) }}</textarea>
 
                                             @error('kpi')
                                                 <div class="invalid-feedback">
@@ -271,12 +261,9 @@
                                                 </div>
                                             @enderror
                                         </div>
-                                        
+
                                         <div class="d-flex gap-2 justify-content-end mt-2">
-                                            <button
-                                                type="button"
-                                                class="btn btn-primary next-button"
-                                            >Next</button>
+                                            <button type="button" class="btn btn-primary next-button">Next</button>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -293,7 +280,7 @@
                                             <input type="text" name="pic_name" id="pic_name"
                                                 value="{{ old('pic_name', $requestDocument->pics->name ?? '') }}"
                                                 class="form-control @error('pic_name') is-invalid @enderror"
-                                                placeholder="PIC Name">
+                                                placeholder="PIC Name" data-label="PIC Name" required>
 
                                             @error('pic_name')
                                                 <div class="invalid-feedback">
@@ -310,7 +297,7 @@
                                             <input type="text" name="pic_position" id="pic_position"
                                                 value="{{ old('pic_position', $requestDocument->pics->position ?? '') }}"
                                                 class="form-control @error('pic_position') is-invalid @enderror"
-                                                placeholder="PIC Position">
+                                                placeholder="PIC Position" data-label="PIC Position" required>
                                             @error('pic_position')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -327,7 +314,7 @@
                                                 <input type="text" name="pic_email" id="pic_email"
                                                     value="{{ old('pic_email', $requestDocument->pics->email ?? '') }}"
                                                     class="form-control @error('pic_email') is-invalid @enderror"
-                                                    placeholder="PIC Email">
+                                                    placeholder="PIC Email" data-label="PIC Email" required>
                                                 @error('pic_email')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -343,7 +330,7 @@
                                                 <input type="text" name="pic_phone" id="pic_phone"
                                                     value="{{ old('pic_phone', $requestDocument->pics->phone ?? '') }}"
                                                     class="form-control @error('pic_phone') is-invalid @enderror"
-                                                    placeholder="PIC Phone">
+                                                    placeholder="PIC Phone" data-label="PIC Phone" required>
 
                                                 @error('pic_phone')
                                                     <div class="invalid-feedback">
@@ -355,14 +342,8 @@
                                     </div>
 
                                     <div class="d-flex gap-2 justify-content-end mt-2">
-                                        <button
-                                            type="button"
-                                            class="btn btn-secondary prev-button"
-                                        >Prev</button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-primary next-button"
-                                        >Next</button>
+                                        <button type="button" class="btn btn-secondary prev-button">Prev</button>
+                                        <button type="button" class="btn btn-primary next-button">Next</button>
                                     </div>
                                 </fieldset>
 
@@ -376,7 +357,8 @@
                                             </label>
 
                                             <select name="customer_id"
-                                                class="form-select @error('customer_id') is-invalid @enderror">
+                                                class="form-select @error('customer_id') is-invalid @enderror"
+                                                data-label="Customer Name" required>
                                                 <option value="">Select Customer</option>
                                                 @if ($requestDocument->customer)
                                                     <option value="{{ $requestDocument->customer->id }}" selected>
@@ -405,7 +387,8 @@
                                                 <input type="text" name="customer_nib" id="customer_nib"
                                                     value="{{ old('customer_nib', $requestDocument->customer->nib ?? '') }}"
                                                     class="form-control @error('customer_nib') is-invalid @enderror"
-                                                    placeholder="Customer NIB" readonly>
+                                                    placeholder="Customer NIB" readonly data-label="Customer NIB"
+                                                    required>
 
                                                 @error('customer_nib')
                                                     <div class="invalid-feedback">
@@ -422,7 +405,8 @@
                                                 <input type="text" name="customer_npwp" id="customer_npwp"
                                                     value="{{ old('customer_npwp', $requestDocument->customer->npwp ?? '') }}"
                                                     class="form-control @error('customer_npwp') is-invalid @enderror"
-                                                    placeholder="Customer NPWP" readonly>
+                                                    placeholder="Customer NPWP" readonly data-label="Customer NPWP"
+                                                    required>
 
                                                 @error('customer_npwp')
                                                     <div class="invalid-feedback">
@@ -440,7 +424,8 @@
                                             <input type="text" name="customer_address" id="customer_address"
                                                 value="{{ old('customer_address', $requestDocument->customer->address ?? '') }}"
                                                 class="form-control @error('customer_address') is-invalid @enderror"
-                                                placeholder="Customer Address" readonly>
+                                                placeholder="Customer Address" readonly data-label="Customer Address"
+                                                required>
 
                                             @error('customer_address')
                                                 <div class="invalid-feedback">
@@ -455,10 +440,12 @@
                                                     Customer Postal Code
                                                 </label>
 
-                                                <input type="text" name="customer_postal_code" id="customer_postal_code"
+                                                <input type="text" name="customer_postal_code"
+                                                    id="customer_postal_code"
                                                     value="{{ old('customer_postal_code', $requestDocument->customer->postal_code ?? '') }}"
                                                     class="form-control @error('customer_postal_code') is-invalid @enderror"
-                                                    placeholder="Customer Postal Code" readonly>
+                                                    placeholder="Customer Postal Code" readonly
+                                                    data-label="Customer Postal Code" required>
 
                                                 @error('customer_postal_code')
                                                     <div class="invalid-feedback">
@@ -475,7 +462,8 @@
                                                 <input type="text" name="customer_email" id="customer_email"
                                                     value="{{ old('customer_email', $requestDocument->customer->email ?? '') }}"
                                                     class="form-control @error('customer_email') is-invalid @enderror"
-                                                    placeholder="Customer Email" readonly>
+                                                    placeholder="Customer Email" readonly data-label="Customer Email"
+                                                    required>
 
                                                 @error('customer_email')
                                                     <div class="invalid-feedback">
@@ -502,7 +490,7 @@
                                             <input type="text" name="customer_pic_name" id="customer_pic_name"
                                                 value="{{ old('customer_pic_name', $customerPic->name ?? '') }}"
                                                 class="form-control @error('customer_pic_name') is-invalid @enderror"
-                                                placeholder="Customer PIC Name">
+                                                placeholder="Customer PIC Name" data-label="Customer PIC Name" required>
 
                                             @error('customer_pic_name')
                                                 <div class="invalid-feedback">
@@ -519,7 +507,8 @@
                                             <input type="text" name="customer_pic_position" id="customer_pic_position"
                                                 value="{{ old('customer_pic_position', $customerPic->position ?? '') }}"
                                                 class="form-control @error('customer_pic_position') is-invalid @enderror"
-                                                placeholder="Customer PIC Position">
+                                                placeholder="Customer PIC Position" data-label="Customer PIC Position"
+                                                required>
                                             @error('customer_pic_position')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -536,7 +525,8 @@
                                                 <input type="text" name="customer_pic_email" id="customer_pic_email"
                                                     value="{{ old('customer_pic_email', $customerPic->email ?? '') }}"
                                                     class="form-control @error('customer_pic_email') is-invalid @enderror"
-                                                    placeholder="Customer PIC Email">
+                                                    placeholder="Customer PIC Email" data-label="Customer PIC Email"
+                                                    required>
                                                 @error('customer_pic_email')
                                                     <div class="invalid-feedback">
                                                         {{ $message }}
@@ -552,7 +542,8 @@
                                                 <input type="text" name="customer_pic_phone" id="customer_pic_phone"
                                                     value="{{ old('customer_pic_phone', $customerPic->phone ?? '') }}"
                                                     class="form-control @error('customer_pic_phone') is-invalid @enderror"
-                                                    placeholder="Customer PIC Phone">
+                                                    placeholder="Customer PIC Phone" data-label="Customer PIC Phone"
+                                                    required>
 
                                                 @error('customer_pic_phone')
                                                     <div class="invalid-feedback">
@@ -564,14 +555,8 @@
                                     </div>
 
                                     <div class="d-flex gap-2 justify-content-end mt-2">
-                                        <button
-                                            type="button"
-                                            class="btn btn-secondary prev-button"
-                                        >Prev</button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-primary next-button"
-                                        >Next</button>
+                                        <button type="button" class="btn btn-secondary prev-button">Prev</button>
+                                        <button type="button" class="btn btn-primary next-button">Next</button>
                                     </div>
                                 </fieldset>
 
@@ -579,8 +564,10 @@
                                     <legend class="fs-5">Attachment</legend>
 
                                     <div class="d-flex flex-column gap-2">
-                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2" role="alert">
-                                            Untuk attachment Draft Contract, file harus diawali dengan prefix (Draf_Contract_).
+                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
+                                            role="alert">
+                                            Untuk attachment Draft Contract, file harus diawali dengan prefix
+                                            (Draf_Contract_).
                                         </div>
 
                                         <div>
@@ -588,7 +575,7 @@
                                             <input type="file"
                                                 class="form-control @error('draft_contract') is-invalid @enderror"
                                                 name="draft_contract" id="draft_contract" accept=".pdf"
-                                                placeholder="Draft Contract">
+                                                placeholder="Draft Contract" data-label="Draf Contract" required>
 
                                             @if ($draftContract)
                                                 <div class="mt-2">
@@ -607,22 +594,24 @@
                                             @enderror
                                         </div>
 
-                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2" role="alert">
+                                        <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
+                                            role="alert">
                                             Untuk attachment Quotation, file harus diawali dengan prefix (Quotation_).
                                         </div>
 
                                         <div>
                                             <label for="quotation" class="form-label">Quotation</label>
-                                            <input type="file" class="form-control @error('quotation') is-invalid @enderror "
+                                            <input type="file"
+                                                class="form-control @error('quotation') is-invalid @enderror "
                                                 name="quotation" id="quotation" accept=".pdf"
                                                 value="{{ old('quotation', $requestDocument->quotation) }}"
-                                                placeholder="Quotation">
+                                                placeholder="Quotation" data-label="Quotation" required>
 
                                             @if ($quotation)
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">Existing Document:</small>
-                                                    <a href="{{ url('/tsp/download-request-document-file') }}/{{ $quotation->id }}" target="_blank"
-                                                        rel="noopener">
+                                                    <a href="{{ url('/tsp/download-request-document-file') }}/{{ $quotation->id }}"
+                                                        target="_blank" rel="noopener">
                                                         {{ $quotation->name ?? basename($quotation->file_path) }}
                                                     </a>
                                                 </div>
@@ -636,24 +625,22 @@
 
                                         <div>
                                             <label for="other" class="form-label">Other</label>
-                                            <input 
-                                                type="file" 
-                                                class="form-control @error('other') is-invalid @enderror"
-                                                name="other[]" 
-                                                id="other"
-                                                accept=".pdf"
-                                                multiple
-                                            >
+                                            <input type="file"
+                                                class="form-control @error('other') is-invalid @enderror" name="other[]"
+                                                id="other" accept=".pdf" multiple>
                                             @if ($other && count($other) > 0)
                                                 <div class="mt-2">
                                                     <small class="text-muted d-block">Existing Document:</small>
                                                     @foreach ($other as $file)
                                                         <div class="d-flex align-items-center gap-1 mb-1">
-                                                            <a href="{{ url('/tsp/download-request-document-file') }}/{{ $file->id }}" target="_blank"
-                                                            rel="noopener">
+                                                            <a href="{{ url('/tsp/download-request-document-file') }}/{{ $file->id }}"
+                                                                target="_blank" rel="noopener">
                                                                 {{ $file->name ?? basename($file->file_path) }}
                                                             </a><br>
-                                                            <button type="button" class="btn btn-danger btn-xs delete-file-btn" data-file-id="{{ $file->id }}" data-file-name="{{ $file->name ?? basename($file->file_path) }}">
+                                                            <button type="button"
+                                                                class="btn btn-danger btn-xs delete-file-btn"
+                                                                data-file-id="{{ $file->id }}"
+                                                                data-file-name="{{ $file->name ?? basename($file->file_path) }}">
                                                                 Delete
                                                             </button>
                                                         </div>
@@ -674,10 +661,7 @@
                                     </div>
 
                                     <div class="d-flex gap-2 justify-content-end mt-2">
-                                        <button
-                                            type="button"
-                                            class="btn btn-secondary prev-button"
-                                        >Prev</button>
+                                        <button type="button" class="btn btn-secondary prev-button">Prev</button>
                                     </div>
                                 </fieldset>
 
@@ -717,23 +701,23 @@
             });
 
             // Disable submit button after form submission to prevent double submission
-            $('#form-request-document').on('submit', function(event) {
-                const form = $(this);
+            // $('#form-request-document').on('submit', function(event) {
+            //     const form = $(this);
 
-                // Disable semua tombol submit
-                form.find('button[type="submit"]').prop('disabled', true);
+            //     // Disable semua tombol submit
+            //     form.find('button[type="submit"]').prop('disabled', true);
 
-                // Button yang diklik
-                const submitter = event.originalEvent.submitter;
+            //     // Button yang diklik
+            //     const submitter = event.originalEvent.submitter;
 
-                if (submitter) {
-                    $(submitter).html(`
-                        <span class="spinner-border spinner-border-sm me-1"></span>
-                        Processing...
-                    `);
-                }
-            });
-            
+            //     if (submitter) {
+            //         $(submitter).html(`
+        //             <span class="spinner-border spinner-border-sm me-1"></span>
+        //             Processing...
+        //         `);
+            //     }
+            // });
+
             $("select[name='customer_id']").select2({
                 placeholder: "Select a customer",
                 width: '100%',
@@ -846,8 +830,10 @@
                     fieldsets[currentStep].style.display = 'none';
                     currentStep++;
                     fieldsets[currentStep].style.display = 'block';
-                    $('.step-button').removeClass('active').addClass('btn-secondary').removeClass('btn-primary');
-                    $(`.step-button[data-step="${currentStep + 1}"]`).addClass('active').removeClass('btn-secondary').addClass('btn-primary');
+                    $('.step-button').removeClass('active').addClass('btn-secondary').removeClass(
+                        'btn-primary');
+                    $(`.step-button[data-step="${currentStep + 1}"]`).addClass('active').removeClass(
+                        'btn-secondary').addClass('btn-primary');
                 }
             });
             $('.prev-button').on('click', function() {
@@ -855,8 +841,10 @@
                     fieldsets[currentStep].style.display = 'none';
                     currentStep--;
                     fieldsets[currentStep].style.display = 'block';
-                    $('.step-button').removeClass('active').addClass('btn-secondary').removeClass('btn-primary');
-                    $(`.step-button[data-step="${currentStep + 1}"]`).addClass('active').removeClass('btn-secondary').addClass('btn-primary');
+                    $('.step-button').removeClass('active').addClass('btn-secondary').removeClass(
+                        'btn-primary');
+                    $(`.step-button[data-step="${currentStep + 1}"]`).addClass('active').removeClass(
+                        'btn-secondary').addClass('btn-primary');
                 }
             });
             $('.step-button').on('click', function() {
@@ -865,9 +853,239 @@
                     fieldsets[currentStep].style.display = 'none';
                     currentStep = step;
                     fieldsets[currentStep].style.display = 'block';
-                    $('.step-button').removeClass('active').addClass('btn-secondary').removeClass('btn-primary');
+                    $('.step-button').removeClass('active').addClass('btn-secondary').removeClass(
+                        'btn-primary');
                     $(this).addClass('active').removeClass('btn-secondary').addClass('btn-primary');
                 }
+            });
+
+            function showError(input, message) {
+                const $input = $(input);
+
+                $input.addClass('is-invalid');
+
+                let $error;
+
+                // SELECT2
+                if ($input.hasClass('select2-hidden-accessible')) {
+
+                    const $select2 = $input.next('.select2-container');
+
+                    $select2.find('.select2-selection')
+                        .addClass('is-invalid');
+
+                    $error = $select2.next('.client-error');
+
+                    if (!$error.length) {
+                        $error = $('<div class="invalid-feedback d-block client-error"></div>');
+                        $select2.after($error);
+                    }
+
+                } else {
+
+                    // INPUT / TEXTAREA / SELECT BIASA
+                    $error = $input.siblings('.client-error');
+
+                    if (!$error.length) {
+                        $error = $('<div class="invalid-feedback d-block client-error"></div>');
+                        $input.after($error);
+                    }
+                }
+
+                $error.text(message).show();
+            }
+
+            function clearError(input) {
+                const $input = $(input);
+
+                $input.removeClass('is-invalid');
+
+                $input.siblings('.client-error')
+                    .text('')
+                    .hide();
+            }
+
+
+            $('#form-request-document').on('submit', function(event) {
+
+                const form = this;
+                const $form = $(this);
+                const submitter = event.originalEvent?.submitter;
+
+
+                // SAVE AS DRAFT
+                if (submitter?.value === 'draft') {
+
+                    $form.find('button[type="submit"]').prop('disabled', true);
+
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+
+                    return true;
+                }
+
+
+                // HANYA SUBMIT YANG DIVALIDASI
+                if (submitter?.value !== 'submit') {
+                    return true;
+                }
+
+
+                // VALIDASI FIELD WAJIB
+                let valid = true;
+
+                $form.find('[required]').each(function() {
+
+                    const $field = $(this);
+
+                    // Input / Select / Textarea
+                    const value = $field.val();
+
+                    if (!value || value.toString().trim() === '') {
+
+                        showError(
+                            this,
+                            `${$field.data('label') || $field.attr('name')} is required.`
+                        );
+
+                        valid = false;
+
+                    } else {
+
+                        clearError(this);
+                    }
+                });
+
+
+                // STOP JIKA ADA FIELD KOSONG
+                if (!valid) {
+
+                    event.preventDefault();
+
+                    const firstError = $form.find('.is-invalid').first();
+
+                    if (firstError.length) {
+
+                        firstError[0].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+
+                        firstError.focus();
+                    }
+
+                    return false;
+                }
+
+
+                // VALIDASI ATTACHMENT
+                const files = [{
+                        id: '#draft_contract',
+                        label: 'Draft Contract',
+                        prefix: 'Draft_Contract_'
+                    },
+                    {
+                        id: '#quotation',
+                        label: 'Quotation',
+                        prefix: 'Quotation_'
+                    }
+                ];
+
+
+                let attachmentValid = true;
+
+
+                for (const config of files) {
+
+                    const input = $(config.id)[0];
+                    const file = input?.files?.[0];
+
+
+                    // File tidak ada
+                    if (!file) {
+
+                        showError(
+                            input,
+                            `${config.label} is required.`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    // Nama file
+                    if (!file.name.startsWith(config.prefix)) {
+
+                        showError(
+                            input,
+                            `File name ${config.label} must start with "${config.prefix}".`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    // PDF
+                    if (file.type !== 'application/pdf') {
+
+                        showError(
+                            input,
+                            `${config.label} must be a PDF file.`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    // Max 10 MB
+                    if (file.size > 10 * 1024 * 1024) {
+
+                        showError(
+                            input,
+                            `${config.label} must be at most 10 MB.`
+                        );
+
+                        attachmentValid = false;
+                        continue;
+                    }
+
+
+                    clearError(input);
+                }
+
+
+                // STOP JIKA ATTACHMENT INVALID
+                if (!attachmentValid) {
+
+                    event.preventDefault();
+
+                    const firstError = $form.find('.is-invalid').first();
+
+                    if (firstError.length) {
+
+                        firstError[0].scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+
+                    return false;
+                }
+
+
+                // SEMUA VALID
+                $form.find('button[type="submit"]').prop('disabled', true);
+
+                $(submitter).html(`
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Processing...
+                `);
+
             });
         })
     </script>

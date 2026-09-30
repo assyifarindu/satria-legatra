@@ -10,8 +10,8 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            font-size: 9px;
+            font-family: "Times New Roman", Times, serif !important;
+            font-size: 10px !important;
             margin: 0;
             color: #222;
         }
@@ -34,14 +34,14 @@
         .title {
             text-align: center;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 10px;
             line-height: 1.3;
             margin-bottom: 2px;
         }
 
         .company-name {
             text-align: center;
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
         }
 
@@ -136,7 +136,7 @@
             border: 1px solid #555;
             padding: 3px 5px;
             vertical-align: middle;
-            font-size: 9px;
+            font-size: 10px;
         }
 
         .completeness-table th {
@@ -145,8 +145,9 @@
         }
 
         .completeness-table .number-col {
-            width: 3%;
+            width: 4%;
             text-align: center;
+            vertical-align: top;
         }
 
         .completeness-table .form-col {
@@ -156,10 +157,20 @@
         .completeness-table .pic-dept-col {
             width: 18%;
             text-align: center;
+            vertical-align: top;
         }
+
+        .completeness-table .val-dept-col {
+            width: 18%;
+            text-align: justify;
+            vertical-align: top;
+        }
+
 
         .completeness-table .note-col {
             width: 36%;
+            vertical-align: top;
+            text-align: justify;
         }
 
         .summary-col {
@@ -238,8 +249,13 @@
 
         /* APPROVAL SECTION */
         .approval-section {
-            margin-top: 250px;
+            margin-top: 100px;
             width: 100%;
+        }
+
+        /* BAGIAN APPROVAL TIDAK BOLEH TERPECAH */
+        .approval-main {
+            page-break-inside: avoid;
         }
 
         .approval-date {
@@ -327,7 +343,7 @@
 
         .approval-note {
             margin-top: 65px;
-            font-size: 9px;
+            font-size: 10px;
             line-height: 1.2;
             margin-left: 30px;
             margin-right: 30px;
@@ -372,7 +388,7 @@
 
     </htmlpageheader>
 
-    <div class="title">FORM<br>LEGAL REVIEW<br><small>PT TRIATRA SINERGIA PRATAMA</small></div>
+    <div class="title">FORM<br>LEGAL REVIEW<br>PT TRIATRA SINERGIA PRATAMA</div>
 
     <div class="section-title">
         A. &nbsp; Data dan Informasi Dokumen
@@ -818,11 +834,11 @@
                     Resume Kontrak
                 </th>
 
-                <th class="pic-dept-col">
+                <th class="note-col">
                     Catatan Legal
                 </th>
 
-                <th class="note-col">
+                <th class="val-dept-col">
                     Wajib Divalidasi oleh
                 </th>
             </tr>
@@ -839,11 +855,11 @@
                     {!! nl2br(e($flr->resume ?? '-')) !!}
                 </td>
 
-                <td>
+                <td class="note-col">
                     {!! nl2br(e($flr->legal_note ?? '-')) !!}
                 </td>
 
-                <td>
+                <td class="val-dept-col">
                     {{ $flr->validation_required_by ?? '-' }}
                 </td>
             </tr>
@@ -922,44 +938,47 @@
     </table>
 
     <div class="approval-section">
+        {{-- BAGIAN YANG HARUS TETAP SATU HALAMAN --}}
+        <div class="approval-main">
 
-        <div class="approval-date">
-            Jakarta, {{ formatDate($flr->updated_at ?? ($flr->created_at ?? '')) }}
+            <div class="approval-date">
+                Jakarta, {{ formatDate($flr->updated_at ?? ($flr->created_at ?? '')) }}
+            </div>
+
+            <div class="approval-title">
+                Mengetahui dan Menyetujui
+            </div>
+
+
+            <table class="approval-table">
+                <tr>
+                    @foreach ($committees as $committee)
+                        <td class="approval-column">
+
+                            {{-- POSITION --}}
+                            <div class="approval-position">
+                                {{ $committee->committee_department ?? 'Committee' }}
+                            </div>
+
+                            {{-- AREA TANDA TANGAN --}}
+                            <table class="signature-space-table">
+                                <tr>
+                                    <td>&nbsp;</td>
+                                </tr>
+                            </table>
+
+                            {{-- GARIS + NAMA --}}
+                            <div style="text-align: center;">
+                                <span class="approval-name">
+                                    {{ $committee->committee_name }}
+                                </span>
+                            </div>
+
+                        </td>
+                    @endforeach
+                </tr>
+            </table>
         </div>
-
-        <div class="approval-title">
-            Mengetahui dan Menyetujui
-        </div>
-
-
-        <table class="approval-table">
-            <tr>
-                @foreach ($committees as $committee)
-                    <td class="approval-column">
-
-                        {{-- POSITION --}}
-                        <div class="approval-position">
-                            {{ $committee->committee_department ?? 'Committee' }}
-                        </div>
-
-                        {{-- AREA TANDA TANGAN --}}
-                        <table class="signature-space-table">
-                            <tr>
-                                <td>&nbsp;</td>
-                            </tr>
-                        </table>
-
-                        {{-- GARIS + NAMA --}}
-                        <div style="text-align: center;">
-                            <span class="approval-name">
-                                {{ $committee->committee_name }}
-                            </span>
-                        </div>
-
-                    </td>
-                @endforeach
-            </tr>
-        </table>
 
         <div class="approval-note">
 
@@ -987,7 +1006,7 @@
             style="
             border: none;
             border-collapse: collapse;
-            font-size: 8px;
+            font-size: 10px;
             background: transparent;
         ">
             <tr>

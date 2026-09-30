@@ -122,7 +122,10 @@ VALUES
 (12, 'Need Revision', 'Form Legal Review needs revision by Admin', 1, NOW()),
 (13, 'Final Check', 'Final Check', 1, NOW()),
 (14, 'Fully Approved', 'Fully Approved', 1, NOW()),
-(15, 'Cleared for Delivery', 'Cleared for Delivery', 1, NOW());
+(15, 'Cleared for Delivery', 'Cleared for Delivery', 1, NOW()),
+(16, 'Final Contract', 'Final Contract', 1, NOW()),
+(17, 'Document Filing', 'Document Filing', 1, NOW()),
+(18, 'Contract Active', 'Contract Active', 1, NOW());
 
 
 -- =========================================

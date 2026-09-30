@@ -114,6 +114,16 @@ class RequestDocumentController extends Controller
                     ->orWhere('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
             }
 
+            $query->orderByRaw("
+                CASE 
+                    WHEN satria_legatra.tsp_request_documents.status_id IN (3, 4) THEN 2
+                    WHEN satria_legatra.tsp_request_documents.status_id < 18 THEN 0
+                    ELSE 1
+                END
+            ")
+                // ->orderBy('satria_legatra.tsp_request_documents.stage_id', 'asc')
+                ->orderBy('satria_legatra.tsp_request_documents.created_at', 'asc');
+
             // 4. Filtering Search
             if (!empty($searchValue)) {
                 $query->where(function ($q) use ($searchValue) {
@@ -393,12 +403,12 @@ class RequestDocumentController extends Controller
 
                 'customer_id' => ['required'],
                 'customer_name' => ['required', 'string', 'max:255'],
-                'customer_nib' => ['nullable', 'string', 'max:255'],
-                'customer_npwp' => ['nullable', 'string', 'max:255'],
-                'customer_address' => ['nullable', 'string', 'max:255'],
-                'customer_postal_code' => ['nullable', 'string', 'max:10'],
+                'customer_nib' => ['required', 'string', 'max:255'],
+                'customer_npwp' => ['required', 'string', 'max:255'],
+                'customer_address' => ['required', 'string', 'max:255'],
+                'customer_postal_code' => ['required', 'string', 'max:10'],
 
-                'customer_email' => ['nullable', 'email', 'max:255'],
+                'customer_email' => ['required', 'email', 'max:255'],
                 'customer_pic_name' => ['required', 'string', 'max:255'],
                 'customer_pic_position' => ['required', 'string', 'max:255'],
 
@@ -1397,6 +1407,7 @@ class RequestDocumentController extends Controller
                     'satria.users.name as action_by_name',
                     'satria_legatra.tsp_request_document_histories.action as history_action',
                     'satria_legatra.tsp_request_document_histories.created_at as created_at',
+                    'satria_legatra.tsp_request_document_feedback_files.id as file_id',
                     'satria_legatra.tsp_request_document_feedback_files.name as file_name',
                     'satria_legatra.tsp_request_document_feedback_files.file_path as file_path'
                 )
@@ -3499,13 +3510,42 @@ class RequestDocumentController extends Controller
 
                     $lastNo = TspRequestDocument::whereNotNull('document_number')
                         ->where('document_number', 'like', $prefix . '%')
+                        ->whereNotIn('status_id', [3, 4])
                         ->lockForUpdate()
-                        ->selectRaw("MAX(CAST(SUBSTRING_INDEX(document_number, '/', -1) AS UNSIGNED)) as last_no")
+                        ->selectRaw("
+                            MAX(
+                                CAST(
+                                    SUBSTRING_INDEX(
+                                        SUBSTRING_INDEX(document_number, '/', 4),
+                                        '/',
+                                        -1
+                                    ) AS UNSIGNED
+                                )
+                            ) as last_no
+                        ")
                         ->value('last_no');
 
                     $nextNo = ((int) $lastNo) + 1;
 
-                    return $prefix . $nextNo;
+                    $romanMonths = [
+                        1 => 'I',
+                        2 => 'II',
+                        3 => 'III',
+                        4 => 'IV',
+                        5 => 'V',
+                        6 => 'VI',
+                        7 => 'VII',
+                        8 => 'VIII',
+                        9 => 'IX',
+                        10 => 'X',
+                        11 => 'XI',
+                        12 => 'XII',
+                    ];
+
+                    $month = $romanMonths[(int) now()->format('n')];
+                    $year = now()->format('y');
+
+                    return $prefix . $nextNo . '/' . $month . '/' . $year;
                 })();
             }
 
@@ -4672,7 +4712,7 @@ class RequestDocumentController extends Controller
             /*UPDATE REQUEST DOCUMENT*/
 
             $requestDocument->update([
-                // 'status_id' => 15, statusnya Final Contract tidak ada jadi smeentara tetap Cleared for Delivery
+                'status_id' => 16,
                 'stage_id' => 9,
                 'substage_id' => null,
                 'sign_status' => "Fully Signed",
@@ -4786,6 +4826,7 @@ class RequestDocumentController extends Controller
             /*UPDATE REQUEST DOCUMENT*/
 
             $requestDocument->update([
+                'status_id' => 17,
                 'stage_id' => 10,
                 'substage_id' => null,
             ]);
@@ -4894,6 +4935,7 @@ class RequestDocumentController extends Controller
             /*UPDATE REQUEST DOCUMENT*/
 
             $requestDocument->update([
+                'status_id' => 18,
                 'stage_id' => 11,
                 'substage_id' => null,
             ]);
@@ -5016,6 +5058,11 @@ class RequestDocumentController extends Controller
 
         $data = ['flr' => $flr, 'committees' => $committees];
         $config = [
+            'margin_top' => 15,
+            'margin_bottom' => 50,
+            'margin_left' => 15,
+            'margin_right' => 15,
+
             'instanceConfigurator' => function ($mpdf) {
 
                 $mpdf->SetWatermarkImage(
