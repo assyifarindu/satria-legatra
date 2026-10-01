@@ -34,13 +34,13 @@ class ExportContractRequest implements FromView
         // foreach ($query as $key => $value) {
         //     $value->pic = VwPicDocument::where('document_id', $value->id)->get(['name']);
         //     $value->document_scope = DocumentScope::where('document_id', $value->id)->get(['department_name']);
-         
+
         // }
 
         // Get data Contract 1 Januari 2025 - 30 Juni 2026
         $query = RequestDocument::from('request_documents as rd')
-        ->join('satria.users as u', 'rd.created_by', '=', 'u.id')
-        ->leftJoin(DB::raw("
+            ->join('satria.users as u', 'rd.created_by', '=', 'u.id')
+            ->leftJoin(DB::raw("
             (
                 SELECT *
                 FROM (
@@ -63,15 +63,15 @@ class ExportContractRequest implements FromView
                 WHERE rn = 1
             ) d
         "), 'rd.id', '=', 'd.request_document_id')
-        ->select(
-            'rd.*',
-            'd.contract_number'
-        )
-        ->where('rd.type', 'Contract')
-        ->where('u.companyid', $company) // gunakan variabel
-        // ->whereBetween('rd.created_at', ['2025-01-01', '2026-06-30 23:59:59'])
-        ->orderByDesc('rd.created_at')
-        ->get();
+            ->select(
+                'rd.*',
+                'd.contract_number'
+            )
+            ->where('rd.type', 'Contract')
+            ->where('u.companyid', $company) // gunakan variabel
+            // ->whereBetween('rd.created_at', ['2025-01-01', '2026-06-30 23:59:59'])
+            ->orderByDesc('rd.created_at')
+            ->get();
 
 
         return view('export_request.contract', [

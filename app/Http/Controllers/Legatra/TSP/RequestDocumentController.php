@@ -1805,70 +1805,66 @@ class RequestDocumentController extends Controller
             $db->beginTransaction();
 
             $requestDocument = TspRequestDocument::findOrFail($id);
-            // $committee = User::where(function ($query) {
-            //     $query->where(function ($q) {
-            //         $q->where('companyid', 16731)
-            //             ->where(function ($qq) {
-            //                 $qq->where('title', 'like', '%Dept Head%')
-            //                     ->orWhere('title', 'like', '%Div Head%')
-            //                     ->orWhere('title', 'like', '%Func Head%')
-            //                     ->orWhere('division', 'Board of Directors');
-            //             });
-            //     });
-            // })
-            //     ->orderBy('name')
-            //     ->get();
-
-            $departments = Department::query()
-                ->leftJoin(
-                    'satria.users as depthead',
-                    function ($join) {
-                        $join->whereRaw(
-                            'mst_dept.depthead_name COLLATE utf8mb4_unicode_ci LIKE CONCAT(depthead.name, "%")'
-                        );
-                    }
-                )
-                ->leftJoin(
-                    'satria.users as divhead',
-                    function ($join) {
-                        $join->whereRaw(
-                            'mst_dept.divhead_name COLLATE utf8mb4_unicode_ci LIKE CONCAT(divhead.name, "%")'
-                        );
-                    }
-                )
-                ->where('mst_dept.company_id', 16731)
+            $committee = User::query()
+                ->where('title', 'LIKE', '%Head%')
                 ->select(
-                    'depthead.id as depthead_id',
-                    'mst_dept.depthead_name as depthead_name',
-                    'depthead.title as depthead_title',
-                    'divhead.id as divhead_id',
-                    'mst_dept.divhead_name as divhead_name',
-                    'divhead.title as divhead_title'
+                    'id',
+                    'name',
+                    'title'
                 )
-                ->distinct()
+                ->orderBy('name', 'asc')
                 ->get();
 
-            $committee = $departments
-                ->flatMap(function ($item) {
-                    return [
-                        [
-                            'id' => $item->depthead_id,
-                            'name' => $item->depthead_name,
-                            'title' => $item->depthead_title,
-                        ],
-                        [
-                            'id' => $item->divhead_id,
-                            'name' => $item->divhead_name,
-                            'title' => $item->divhead_title,
-                        ],
-                    ];
-                })
-                ->filter(function ($item) {
-                    return !empty($item['id']);
-                })
-                ->unique('id')
-                ->sortBy('name')
-                ->values();
+            // $departments = Department::query()
+            //     ->leftJoin(
+            //         'satria.users as depthead',
+            //         function ($join) {
+            //             $join->whereRaw(
+            //                 'mst_dept.depthead_name COLLATE utf8mb4_unicode_ci LIKE CONCAT(depthead.name, "%")'
+            //             );
+            //         }
+            //     )
+            //     ->leftJoin(
+            //         'satria.users as divhead',
+            //         function ($join) {
+            //             $join->whereRaw(
+            //                 'mst_dept.divhead_name COLLATE utf8mb4_unicode_ci LIKE CONCAT(divhead.name, "%")'
+            //             );
+            //         }
+            //     )
+            //     ->where('mst_dept.company_id', 16731)
+            //     ->select(
+            //         'depthead.id as depthead_id',
+            //         'mst_dept.depthead_name as depthead_name',
+            //         'depthead.title as depthead_title',
+            //         'divhead.id as divhead_id',
+            //         'mst_dept.divhead_name as divhead_name',
+            //         'divhead.title as divhead_title'
+            //     )
+            //     ->distinct()
+            //     ->get();
+
+            // $committee = $departments
+            //     ->flatMap(function ($item) {
+            //         return [
+            //             [
+            //                 'id' => $item->depthead_id,
+            //                 'name' => $item->depthead_name,
+            //                 'title' => $item->depthead_title,
+            //             ],
+            //             [
+            //                 'id' => $item->divhead_id,
+            //                 'name' => $item->divhead_name,
+            //                 'title' => $item->divhead_title,
+            //             ],
+            //         ];
+            //     })
+            //     ->filter(function ($item) {
+            //         return !empty($item['id']);
+            //     })
+            //     ->unique('id')
+            //     ->sortBy('name')
+            //     ->values();
 
             /*UPDATE REQUEST DOCUMENT*/
 
@@ -2210,19 +2206,16 @@ class RequestDocumentController extends Controller
                 ->where('document_type', 'Draft Contract')
                 ->first();
 
-            $committee = User::where(function ($query) {
-                $query->where(function ($q) {
-                    $q->where('companyid', 16731)
-                        ->where(function ($qq) {
-                            $qq->where('title', 'like', '%Dept Head%')
-                                ->orWhere('title', 'like', '%Div Head%')
-                                ->orWhere('title', 'like', '%Func Head%')
-                                ->orWhere('division', 'Board of Directors');
-                        });
-                });
-            })
-                ->orderBy('name')
+            $committee = User::query()
+                ->where('title', 'LIKE', '%Head%')
+                ->select(
+                    'id',
+                    'name',
+                    'title'
+                )
+                ->orderBy('name', 'asc')
                 ->get();
+
 
             // dd($committee);
 
@@ -3789,8 +3782,6 @@ class RequestDocumentController extends Controller
                     'Form Legal Review berhasil dibuat.'
                 );
         } catch (ValidationException $e) {
-            dd($e->errors());
-
             return back()
                 ->withErrors($e->errors())
                 ->withInput();
@@ -5037,12 +5028,16 @@ class RequestDocumentController extends Controller
             '=',
             'user.id'
         )
+            ->leftJoin('satria.ms_emp_list as emp', 'user.personal_number', '=', 'emp.personal_number')
             ->select(
                 'tsp_request_document_committees.id',
                 'tsp_request_document_committees.committee_id',
                 'tsp_request_document_committees.sequence',
                 'user.name as committee_name',
-                'user.department as committee_department'
+                'emp.department as committee_department',
+                'emp.Division as committee_division',
+                'emp.tittle as committee_title',
+                'emp.job_title as committee_job_title',
             )
             ->where(
                 'tsp_request_document_committees.request_document_id',

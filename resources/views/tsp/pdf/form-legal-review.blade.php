@@ -284,6 +284,10 @@
             vertical-align: top;
         }
 
+        .division-head-row td {
+            padding-top: 35px;
+        }
+
         .approval-position {
             margin-top: 0;
             font-weight: bold;
@@ -949,25 +953,69 @@
                 Mengetahui dan Menyetujui
             </div>
 
+            @php
+                $divHeads = $committees->filter(function ($committee) {
+                    return str_contains(strtolower(trim($committee->committee_job_title ?? '')), 'division head');
+                });
+
+                $deptHeads = $committees->reject(function ($committee) {
+                    return str_contains(strtolower(trim($committee->committee_job_title ?? '')), 'division head');
+                });
+            @endphp
+
 
             <table class="approval-table">
-                <tr>
-                    @foreach ($committees as $committee)
-                        <td class="approval-column">
 
-                            {{-- POSITION --}}
+                {{-- ROW DEPARTMENT HEAD --}}
+                @if ($deptHeads->count())
+                    <tr>
+                        @foreach ($deptHeads as $committee)
+                            <td class="approval-column">
+
+                                {{-- POSITION --}}
+                                <div class="approval-position">
+                                    {{ $committee->committee_department ?? ($committee->committee_division ?? '') }}
+                                </div>
+
+                                {{-- AREA TANDA TANGAN --}}
+                                <table class="signature-space-table">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+
+                                {{-- GARIS + NAMA --}}
+                                <div style="text-align: center;">
+                                    <span class="approval-name">
+                                        {{ $committee->committee_name }}
+                                    </span>
+                                </div>
+
+                            </td>
+                        @endforeach
+                    </tr>
+                @endif
+
+
+                {{-- ROW DIVISION HEAD --}}
+                @if ($divHeads->count() === 1)
+                    @php
+                        $committee = $divHeads->first();
+                    @endphp
+
+                    <tr class="division-head-row">
+                        <td colspan="{{ max($deptHeads->count(), 1) }}" class="approval-column">
+
                             <div class="approval-position">
-                                {{ $committee->committee_department ?? 'Committee' }}
+                                {{ $committee->committee_division ?? 'Division' }}
                             </div>
 
-                            {{-- AREA TANDA TANGAN --}}
                             <table class="signature-space-table">
                                 <tr>
                                     <td>&nbsp;</td>
                                 </tr>
                             </table>
 
-                            {{-- GARIS + NAMA --}}
                             <div style="text-align: center;">
                                 <span class="approval-name">
                                     {{ $committee->committee_name }}
@@ -975,8 +1023,33 @@
                             </div>
 
                         </td>
-                    @endforeach
-                </tr>
+                    </tr>
+                @elseif ($divHeads->count() > 1)
+                    <tr class="division-head-row">
+                        @foreach ($divHeads as $committee)
+                            <td class="approval-column">
+
+                                <div class="approval-position">
+                                    {{ $committee->committee_division ?? 'Division' }}
+                                </div>
+
+                                <table class="signature-space-table">
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </table>
+
+                                <div style="text-align: center;">
+                                    <span class="approval-name">
+                                        {{ $committee->committee_name }}
+                                    </span>
+                                </div>
+
+                            </td>
+                        @endforeach
+                    </tr>
+                @endif
+
             </table>
         </div>
 
