@@ -283,6 +283,56 @@ class RequestDocumentController extends Controller
     }
 
     /**
+     * Get work locations based on search query.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getWorkLocations(Request $request)
+    {
+        try {
+            $q = $request->input('q', '');
+
+            // Base URL API Triatra
+            $triatra_base_url = env('TRIATRA_BASE_URL_API');
+
+            // Get Work Location
+            $response = Http::get(
+                $triatra_base_url . '/api2/hc/master-data/work-location/index'
+            );
+
+            $workLocations = $response->json()['values'] ?? [];
+
+            // Filter berdasarkan query
+            $workLocations = collect($workLocations)
+                ->filter(function ($workLocation) use ($q) {
+
+                    if (empty($q)) {
+                        return true;
+                    }
+
+                    return stripos(
+                        $workLocation['name'] ?? '',
+                        $q
+                    ) !== false;
+                })
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Work locations retrieved successfully.',
+                'data' => $workLocations
+            ]);
+        } catch (Exception $e) {
+
+            return response()->json([
+                'success'       => false,
+                'error_message' => $e->getMessage(),
+                'message'       => 'An error has occurred!'
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created request document in storage.
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -327,6 +377,7 @@ class RequestDocumentController extends Controller
                 'sow' => ['nullable', 'string'],
                 'transaction_procedure' => ['nullable', 'string'],
                 'kpi' => ['nullable', 'string'],
+                'site' => ['nullable', 'string', 'max:255'],
 
                 'pic_name' => ['nullable', 'string', 'max:255'],
 
@@ -384,6 +435,7 @@ class RequestDocumentController extends Controller
                 'transaction_procedure' => ['required', 'string'],
 
                 'kpi' => ['required', 'string'],
+                'site' => ['required', 'string', 'max:255'],
 
                 'pic_name' => ['required', 'string', 'max:255'],
 
@@ -486,6 +538,7 @@ class RequestDocumentController extends Controller
                 'sow' => $validated['sow'] ?? null,
                 'transaction_procedure' => $validated['transaction_procedure'] ?? null,
                 'kpi' => $validated['kpi'] ?? null,
+                'site' => $validated['site'] ?? null,
             ]);
 
             // CREATE PIC
@@ -757,6 +810,7 @@ class RequestDocumentController extends Controller
      */
     public function edit(Request $request, $id)
     {
+        // dd($request->all());
         $action = $request->input('action_type');
         $requestDocument = TspRequestDocument::findOrFail($id);
         $previousStatusId = $requestDocument->status_id;
@@ -814,6 +868,7 @@ class RequestDocumentController extends Controller
                 'sow' => ['nullable', 'string'],
                 'transaction_procedure' => ['nullable', 'string'],
                 'kpi' => ['nullable', 'string'],
+                'site' => ['nullable', 'string', 'max:255'],
 
                 'pic_name' => ['nullable', 'string', 'max:255'],
 
@@ -866,6 +921,7 @@ class RequestDocumentController extends Controller
                 'transaction_procedure' => ['required', 'string'],
 
                 'kpi' => ['required', 'string'],
+                'site' => ['required', 'string', 'max:255'],
 
                 'pic_name' => ['required', 'string', 'max:255'],
 
@@ -989,6 +1045,9 @@ class RequestDocumentController extends Controller
 
                 'kpi' => $validated['kpi']
                     ?? $requestDocument->kpi,
+
+                'site' => $validated['site']
+                    ?? $requestDocument->site,
 
 
             ]);

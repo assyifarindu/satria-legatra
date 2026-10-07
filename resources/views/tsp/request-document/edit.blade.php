@@ -262,6 +262,29 @@
                                             @enderror
                                         </div>
 
+                                        <div>
+                                            <label for="site" class="fw-bold d-block">
+                                                Site
+                                            </label>
+
+                                            <select name="site" id="site"
+                                                class="form-select @error('site') is-invalid @enderror" data-label="Site"
+                                                required>
+                                                <option value="">Select Site</option>
+                                                @if ($requestDocument->site)
+                                                    <option value="{{ $requestDocument->site }}" selected>
+                                                        {{ $requestDocument->site }}
+                                                    </option>
+                                                @endif
+                                            </select>
+
+                                            @error('site')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                        </div>
+
                                         <div class="d-flex gap-2 justify-content-end mt-2">
                                             <button type="button" class="btn btn-primary next-button">Next</button>
                                         </div>
@@ -743,6 +766,43 @@
                 }
             });
 
+            // Restore customer setelah validation error
+            @if (old('customer_id'))
+
+                $.ajax({
+                    url: "{{ url('tsp/customers') }}/{{ old('customer_id') }}",
+                    type: 'GET',
+
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            const customer = response.data;
+
+                            // Tambahkan option ke Select2
+                            const option = new Option(
+                                customer.name,
+                                customer.id,
+                                true,
+                                true
+                            );
+
+                            $("select[name='customer_id']")
+                                .append(option)
+                                .trigger('change');
+
+                            // Restore customer data
+                            $("#customer_name").val(customer.name ?? "");
+                            $("#customer_nib").val(customer.nib ?? "");
+                            $("#customer_npwp").val(customer.npwp ?? "");
+                            $("#customer_address").val(customer.address ?? "");
+                            $("#customer_postal_code").val(customer.postal_code ?? "");
+                            $("#customer_email").val(customer.email ?? "");
+                        }
+                    }
+                });
+            @endif
+
             $("select[name='customer_id']").on('select2:select', function(e) {
                 var selectedCustomerId = e.params.data.id;
                 $.ajax({
@@ -763,6 +823,7 @@
                     error: function(xhr) {
                         alert('Terjadi kesalahan saat mengambil data customer.');
                         // Kosongkan form jika terjadi error
+                        $("#customer_name").val("");
                         $("#customer_nib").val("");
                         $("#customer_npwp").val("");
                         $("#customer_address").val("");
@@ -771,6 +832,63 @@
                     }
                 })
             });
+
+            $("select[name='site']").select2({
+                placeholder: "Select a Site",
+                width: '100%',
+                ajax: {
+                    url: "{{ url('tsp/work-locations') }}",
+                    dataType: 'json',
+                    delay: 500,
+                    data: function(params) {
+                        return {
+                            q: params.term // search term
+                        };
+                    },
+                    processResults: function(response) {
+                        return {
+                            results: response.data.map(function(site) {
+                                return {
+                                    id: site.name,
+                                    text: site.name
+                                };
+                            })
+                        };
+                    }
+                }
+            });
+
+            // Restore customer setelah validation error
+            @if (old('site'))
+
+                $.ajax({
+                    url: "{{ url('tsp/work-locations') }}/{{ old('site') }}",
+                    type: 'GET',
+
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            const site = response.data;
+
+                            // Tambahkan option ke Select2
+                            const option = new Option(
+                                site.name,
+                                site.name,
+                                true,
+                                true
+                            );
+
+                            $("select[name='site']")
+                                .append(option)
+                                .trigger('change');
+
+                            // Restore site data
+                            $("#site").val(site.name ?? "");
+                        }
+                    }
+                });
+            @endif
 
             $("select[name='contract_type']").select2({
                 placeholder: "Select Contract Type",

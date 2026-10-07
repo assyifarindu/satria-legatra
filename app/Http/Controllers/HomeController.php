@@ -40,16 +40,16 @@ class HomeController extends Controller
 
     public function index()
     {
-       
-            $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-            return FacadesRedirect::to($actual_link.'/satria/welcome');
+
+        $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+        return FacadesRedirect::to($actual_link . '/satria/welcome');
     }
 
 
     public function profile()
-    {       
-            $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-            return FacadesRedirect::to($actual_link.'/satria/profile');
+    {
+        $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
+        return FacadesRedirect::to($actual_link . '/satria/profile');
     }
     /**
      * Show the application dashboard.
@@ -58,63 +58,66 @@ class HomeController extends Controller
      */
     public function home()
     {
-        try{
+        try {
             $user = User::findOrFail(Auth::user()->id);
             $company_id = $user->companyid;
             $company_name = $user->company_name;
             $user->accessed_app = 31;
             $user->update();
-            
+
+
             if ($this->PermissionMenu('contract') == 0) {
                 return redirect()->route('home-user.index');
-            }else{
+            } else {
+
+                if ($company_id == 16731) {
+                    return view('tsp.dashboard.index');
+                }
 
                 $company = DB::connection('legatra')->table('base_documents')
-                            ->select('short_name','companies.name', 'companies.name as document')->join('companies','base_documents.company','=','companies.name')->distinct('base_documents.company')->get();
-               
+                    ->select('short_name', 'companies.name', 'companies.name as document')->join('companies', 'base_documents.company', '=', 'companies.name')->distinct('base_documents.company')->get();
+
                 foreach ($company as $value) {
                     $value->document = DB::connection('legatra')->table('base_documents')->select(DB::raw('count(*) as count_document, category'))->groupBy('category')->orderBy('category', 'asc')->where('company', $value->name)->get();
                 }
 
-                
-                // $tracking = RequestDocument::join('users', 'request_documents.created_by', '=', 'users.id')->where('request_documents.is_cancel', false)->where('users.company_name', $company_name)->orderBy('request_documents.created_at', 'desc')->get();
-              
 
-                $data = [   
+                // $tracking = RequestDocument::join('users', 'request_documents.created_by', '=', 'users.id')->where('request_documents.is_cancel', false)->where('users.company_name', $company_name)->orderBy('request_documents.created_at', 'desc')->get();
+
+
+                $data = [
                     // 'template' => Template::all(),
                     'template' => Template::where('company_name', $company_name)->get(),
                     // 'tracking' => RequestDocument::where('is_cancel', false)->orderBy('created_at', 'desc')->get(),
                     'tracking' => RequestDocument::join('satria.users', 'created_by', '=', 'satria.users.id')->where('satria.users.company_name', $company_name)
-                    ->where('is_cancel', false)->orderBy('request_documents.created_at', 'desc')
-                    ->select('request_documents.*')
-                    ->get(),
+                        ->where('is_cancel', false)->orderBy('request_documents.created_at', 'desc')
+                        ->select('request_documents.*')
+                        ->get(),
                     'contract' => BaseDocument::where('status', 1)->where('is_proceed', false)->where('company', $company_name)->orderBy('created_at', 'desc')->get(),
                     'duration' => Alert::get(),
                     'document' => $company
                 ];
 
-               
+
 
                 sendEmailAutomatically();
 
-                if ($company_id == 16731){
-                    return view('TSP.dashboard_tsp')->with('data', $data);
-                }
-        
+
+
                 return view('dashboard')->with('data', $data);
             }
-        } catch (Exception $e) {    
+        } catch (Exception $e) {
             dd($e);
             $this->ErrorLog($e);
             return redirect()->back()->with('error', 'Error Request, Exception Error ');
-        } 
+        }
     }
 
-    public function logout(){
+    public function logout()
+    {
         Session::flush();
         Auth::logout();
         $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-        return FacadesRedirect::to($actual_link.'/satria/welcome');
+        return FacadesRedirect::to($actual_link . '/satria/welcome');
     }
-    
 }

@@ -28,6 +28,7 @@ class TspRequestDocument extends Model
         'sow',
         'transaction_procedure',
         'kpi',
+        'site',
         'created_by',
         'updated_by',
     ];

@@ -251,6 +251,24 @@
                                                 </div>
                                             @enderror
                                         </div>
+
+                                        <div>
+                                            <label for="site" class="fw-bold d-block">
+                                                Site
+                                            </label>
+
+                                            <select name="site" id="site"
+                                                class="form-select @error('site') is-invalid @enderror" data-label="Site"
+                                                required>
+                                                <option value="">Select Site</option>
+                                            </select>
+
+                                            @error('site')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                        </div>
                                     </div>
 
                                     <div class="d-flex gap-2 justify-content-end mt-2">
@@ -749,6 +767,63 @@
                     }
                 })
             });
+
+            $("select[name='site']").select2({
+                placeholder: "Select a Site",
+                width: '100%',
+                ajax: {
+                    url: "{{ url('tsp/work-locations') }}",
+                    dataType: 'json',
+                    delay: 500,
+                    data: function(params) {
+                        return {
+                            q: params.term // search term
+                        };
+                    },
+                    processResults: function(response) {
+                        return {
+                            results: response.data.map(function(site) {
+                                return {
+                                    id: site.name,
+                                    text: site.name
+                                };
+                            })
+                        };
+                    }
+                }
+            });
+
+            // Restore customer setelah validation error
+            @if (old('site'))
+
+                $.ajax({
+                    url: "{{ url('tsp/work-locations') }}/{{ old('site') }}",
+                    type: 'GET',
+
+                    success: function(response) {
+
+                        if (response.success) {
+
+                            const site = response.data;
+
+                            // Tambahkan option ke Select2
+                            const option = new Option(
+                                site.name,
+                                site.name,
+                                true,
+                                true
+                            );
+
+                            $("select[name='site']")
+                                .append(option)
+                                .trigger('change');
+
+                            // Restore site data
+                            $("#site").val(site.name ?? "");
+                        }
+                    }
+                });
+            @endif
 
             $("select[name='contract_type']").select2({
                 placeholder: "Select Contract Type",

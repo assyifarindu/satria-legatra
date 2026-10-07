@@ -300,6 +300,7 @@ Route::middleware('auth')->group(function () {
   Route::get('/tsp/dashboard', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'index'])->name('tsp.dashboard');
   Route::get('/tsp/customers', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomers'])->name('tsp.customers');
   Route::get('/tsp/customers/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getCustomerById'])->name('tsp.customers.by-id');
+  Route::get('/tsp/work-locations', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getWorkLocations'])->name('tsp.work-locations');
   Route::get('/tsp/request-document', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'index'])->name('tsp.request-document');
   Route::get('/tsp/request-document/data', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'getRequestDocuments'])->name('tsp.request-document.data');
   Route::get('/tsp/request-document/create', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showCreate'])->name('tsp.request-document.create');
@@ -353,7 +354,11 @@ Route::middleware('auth')->group(function () {
   Route::get('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'showDocumentFiling'])->name('tsp.request-document.show-document-filing');
   Route::post('/tsp/request-document/document-filing/{id}', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'documentFiling'])->name('tsp.request-document.document-filing');
   Route::get('/tsp/request-document/form-legal-review/{id}/generate-pdf', [App\Http\Controllers\Legatra\TSP\RequestDocumentController::class, 'generatePdfFormLegalReview'])->name('tsp.request-document.form-legal-review.generate-pdf');
-  // Route::get('/tsp/download-file/{fileId}', [App\Http\Controllers\Legatra\TSP\DownloadFileController::class, 'downloadFile'])->name('tsp.download-file');
   Route::get('/tsp/download-request-document-file/{fileId}', [App\Http\Controllers\Legatra\TSP\DownloadFileController::class, 'downloadRequestDocumentFile'])->name('tsp.download-request-document-file');
   Route::get('/tsp/download-feedback-file/{fileId}', [App\Http\Controllers\Legatra\TSP\DownloadFileController::class, 'downloadFeedbackFile'])->name('tsp.download-feedback-file');
+  Route::get('/tsp/dashboard/contract-type-composition/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getContractTypeComposition'])->name('tsp.dashboard.contract-type-composition');
+  Route::get('/tsp/dashboard/pending-legal-review/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getPendingLegalReview'])->name('tsp.dashboard.pending-legal-review');
+  Route::get('/tsp/dashboard/pending-review/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getPendingReview'])->name('tsp.dashboard.pending-review');
+  Route::get('/tsp/dashboard/pending-sign-customer/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getPendingSignCustomer'])->name('tsp.dashboard.pending-sign-customer');
+  Route::get('/tsp/dashboard/contract-customer-all-site/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getContractCustomerAllSite'])->name('tsp.dashboard.contract-customer-all-site');
 });

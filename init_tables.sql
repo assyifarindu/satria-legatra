@@ -159,6 +159,7 @@ CREATE TABLE tsp_request_documents (
     sow TEXT NULL,
     transaction_procedure TEXT NULL,
     kpi TEXT NULL,
+    site VARCHAR(255) NULL,
 
     created_by BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
