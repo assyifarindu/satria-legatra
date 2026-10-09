@@ -345,8 +345,16 @@
             padding-top: 2px;
         }
 
-        .approval-note {
-            margin-top: 65px;
+        .approval-note1 {
+            margin-top: 20px;
+            font-size: 10px;
+            line-height: 1.2;
+            margin-left: 30px;
+            margin-right: 30px;
+        }
+
+        .approval-note2 {
+            margin-top: 50px;
             font-size: 10px;
             line-height: 1.2;
             margin-left: 30px;
@@ -1053,7 +1061,11 @@
             </table>
         </div>
 
-        <div class="approval-note">
+        <div class="approval-note1">
+            Note: This document is automatically generated with no signature required.
+        </div>
+
+        <div class="approval-note2">
 
             <div class="note-title">
                 Catatan:
