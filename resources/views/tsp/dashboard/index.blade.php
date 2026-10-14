@@ -34,7 +34,6 @@
 
             <!-- Dashboard Row 1 -->
             <div class="row g-3 align-items-stretch">
-
                 <div class="col-xl-4 col-lg-6">
                     @include('tsp.dashboard.components.contract-type-composition')
                 </div>
@@ -46,7 +45,6 @@
                 <div class="col-xl-4 col-lg-6">
                     @include('tsp.dashboard.components.pending-review')
                 </div>
-
             </div>
 
             <!-- Dashboard Row 2 -->
@@ -65,14 +63,11 @@
                     @include('tsp.dashboard.components.contract-customer-all-site')
 
                 </div>
-
             </div>
-
         </div>
     </div>
 @endsection
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 @section('js')
     @include('tsp.dashboard.js.contract-type-composition')
     @include('tsp.dashboard.js.pending-legal-review')

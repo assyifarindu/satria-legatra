@@ -257,6 +257,29 @@
                                                 </div>
                                             @enderror
                                         </div>
+
+                                        <div>
+                                            <label for="site" class="fw-bold d-block">
+                                                Site
+                                            </label>
+
+                                            <select name="site" id="site"
+                                                class="form-select @error('site') is-invalid @enderror" data-label="Site"
+                                                required>
+                                                <option value="">Select Site</option>
+                                                @if ($requestDocument->site)
+                                                    <option value="{{ $requestDocument->site }}" selected>
+                                                        {{ $requestDocument->site }}
+                                                    </option>
+                                                @endif
+                                            </select>
+
+                                            @error('site')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                        </div>
                                     </div>
 
                                     <div class="d-flex gap-2 justify-content-end mt-2">
