@@ -410,7 +410,7 @@
                                                 <input type="text" name="customer_nib" id="customer_nib"
                                                     value="{{ old('customer_nib', $requestDocument->customer->nib ?? '') }}"
                                                     class="form-control @error('customer_nib') is-invalid @enderror"
-                                                    placeholder="Customer NIB" readonly data-label="Customer NIB"
+                                                    placeholder="Customer NIB" data-label="Customer NIB"
                                                     required>
 
                                                 @error('customer_nib')
@@ -428,7 +428,7 @@
                                                 <input type="text" name="customer_npwp" id="customer_npwp"
                                                     value="{{ old('customer_npwp', $requestDocument->customer->npwp ?? '') }}"
                                                     class="form-control @error('customer_npwp') is-invalid @enderror"
-                                                    placeholder="Customer NPWP" readonly data-label="Customer NPWP"
+                                                    placeholder="Customer NPWP" data-label="Customer NPWP"
                                                     required>
 
                                                 @error('customer_npwp')
@@ -447,7 +447,7 @@
                                             <input type="text" name="customer_address" id="customer_address"
                                                 value="{{ old('customer_address', $requestDocument->customer->address ?? '') }}"
                                                 class="form-control @error('customer_address') is-invalid @enderror"
-                                                placeholder="Customer Address" readonly data-label="Customer Address"
+                                                placeholder="Customer Address" data-label="Customer Address"
                                                 required>
 
                                             @error('customer_address')
@@ -467,7 +467,7 @@
                                                     id="customer_postal_code"
                                                     value="{{ old('customer_postal_code', $requestDocument->customer->postal_code ?? '') }}"
                                                     class="form-control @error('customer_postal_code') is-invalid @enderror"
-                                                    placeholder="Customer Postal Code" readonly
+                                                    placeholder="Customer Postal Code" 
                                                     data-label="Customer Postal Code" required>
 
                                                 @error('customer_postal_code')
@@ -485,7 +485,7 @@
                                                 <input type="text" name="customer_email" id="customer_email"
                                                     value="{{ old('customer_email', $requestDocument->customer->email ?? '') }}"
                                                     class="form-control @error('customer_email') is-invalid @enderror"
-                                                    placeholder="Customer Email" readonly data-label="Customer Email"
+                                                    placeholder="Customer Email" data-label="Customer Email"
                                                     required>
 
                                                 @error('customer_email')
