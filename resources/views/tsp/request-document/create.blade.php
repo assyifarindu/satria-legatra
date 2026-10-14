@@ -685,7 +685,7 @@
                     delay: 500,
                     data: function(params) {
                         return {
-                            q: params.term // search term
+                            search: params.term // search term
                         };
                     },
                     processResults: function(response) {
@@ -777,7 +777,7 @@
                     delay: 500,
                     data: function(params) {
                         return {
-                            q: params.term // search term
+                            search: params.term // search term
                         };
                     },
                     processResults: function(response) {
