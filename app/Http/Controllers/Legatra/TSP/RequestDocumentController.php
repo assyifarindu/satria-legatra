@@ -196,7 +196,7 @@ class RequestDocumentController extends Controller
     public function getCustomers(Request $request)
     {
         try {
-            $q = $request->input('q', '');
+            $search = $request->input('search', '');
 
             // Login TSP
             $triatra_base_url = env('TRIATRA_BASE_URL_API');
@@ -215,11 +215,11 @@ class RequestDocumentController extends Controller
             ])->get($triatra_base_url . '/api2/tsp/customers');
             $customers = $getCustomers->json()['data'] ?? [];
 
-            $customers = collect($customers)->filter(function ($customer) use ($q) {
-                if (empty($q)) {
+            $customers = collect($customers)->filter(function ($customer) use ($search) {
+                if (empty($search)) {
                     return true; // Jika query kosong, tampilkan semua customer
                 }
-                return stripos($customer['name'], $q) !== false;
+                return stripos($customer['name'], $search) !== false;
             })->values();
 
             return response()->json([
@@ -290,7 +290,7 @@ class RequestDocumentController extends Controller
     public function getWorkLocations(Request $request)
     {
         try {
-            $q = $request->input('q', '');
+            $search = $request->input('search', '');
 
             // Base URL API Triatra
             $triatra_base_url = env('TRIATRA_BASE_URL_API');
@@ -304,15 +304,15 @@ class RequestDocumentController extends Controller
 
             // Filter berdasarkan query
             $workLocations = collect($workLocations)
-                ->filter(function ($workLocation) use ($q) {
+                ->filter(function ($workLocation) use ($search) {
 
-                    if (empty($q)) {
+                    if (empty($search)) {
                         return true;
                     }
 
                     return stripos(
                         $workLocation['name'] ?? '',
-                        $q
+                        $search
                     ) !== false;
                 })
                 ->values();
