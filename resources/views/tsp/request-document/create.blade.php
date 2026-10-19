@@ -254,7 +254,7 @@
 
                                         <div>
                                             <label for="site" class="fw-bold d-block">
-                                                Site
+                                                Site TRIATRA
                                             </label>
 
                                             <select name="site" id="site"
@@ -652,6 +652,14 @@
 @section('js')
     <script>
         $(document).ready(function() {
+            // Prevent accidental form submission when pressing Enter
+            $("#form-request-document").on("keydown", function(e) {
+                if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+                    e.preventDefault();
+                }
+            });
+
+
             // Set action type
             $("button[type='submit']").on('click', function() {
                 const actionType = $(this).val();

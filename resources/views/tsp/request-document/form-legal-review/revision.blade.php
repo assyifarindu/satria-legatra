@@ -510,6 +510,12 @@
 @section('js')
     <script>
         $(document).ready(function() {
+            // Prevent accidental form submission when pressing Enter
+            $("#form-legal-review-revision").on("keydown", function(e) {
+                if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+                    e.preventDefault();
+                }
+            });
 
             $("select[name='department']").select2({
                 placeholder: "Select Department",

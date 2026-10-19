@@ -569,6 +569,13 @@
                 }
             );
 
+            // Prevent accidental form submission when pressing Enter
+            $("#legal-drafting-form").on("keydown", function(e) {
+                if (e.key === "Enter" && e.target.tagName !== "TEXTAREA") {
+                    e.preventDefault();
+                }
+            });
+
             // Disable submit button after form submission to prevent multiple submissions
             $('#legal-drafting-form').on('submit', function(event) {
                 const form = $(this);
