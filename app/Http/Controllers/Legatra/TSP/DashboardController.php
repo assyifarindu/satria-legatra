@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Legatra\TSP;
 
 use App\Http\Controllers\Controller;
+use App\Models\Table\TspFormLegalReview;
 use App\Models\Table\TspRequestDocument;
 use App\Models\Table\TspRequestDocumentCustomer;
+use App\Models\Table\TspRequestDocumentHistory;
+use App\Models\Table\TspRequestStage;
+use App\Models\Table\TspRequestSubstage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -80,31 +85,133 @@ class DashboardController extends Controller
     {
         try {
 
-            $pendingLegal = TspRequestDocument::whereIn('status_id', [2, 3])
+            $pendingLegal = TspRequestDocument::whereIn('stage_id', [2, 3])
                 ->count();
 
-            // Sesuaikan formula SLA sesuai definisi yang kamu gunakan
-            $totalSlaStandard = TspRequestDocument::whereIn('status_id', [2, 3])
-                ->count();
+            // ========================================
+            // 1. TOTAL SLA STANDARD
+            // ========================================
 
-            $totalActualSla = TspRequestDocument::whereIn('status_id', [2, 3])
-                ->whereNotNull('updated_at')
-                ->count();
+            $stage2 = TspRequestStage::find(2);
+            $stage3 = TspRequestStage::find(3);
 
-            $achSlaLegal = $totalSlaStandard > 0
-                ? round(($totalSlaStandard * 100) / $totalActualSla)
+            $totalDocumentsStage2 = TspRequestDocument::where('stage_id', 2)->count();
+            $totalDocumentsStage3 = TspRequestDocument::where('stage_id', 3)->count();
+
+            // sla_hours
+            $totalSlaStandardStage2 = ($stage2->sla_hours ?? 0) * $totalDocumentsStage2;
+
+            $totalSlaStandardStage3 = ($stage3->sla_hours ?? 0) * $totalDocumentsStage3;
+
+            $totalSlaStandard = $totalSlaStandardStage2 + $totalSlaStandardStage3;
+
+
+            // ========================================
+            // 2. AMBIL DATA HISTORY
+            // ========================================
+
+            $histories = TspRequestDocumentHistory::whereIn('stage_id', [2, 3])
+                ->whereNotNull('created_at')
+                ->orderBy('request_document_id')
+                ->orderBy('created_at')
+                ->get()
+                ->groupBy('request_document_id');
+
+            // ========================================
+            // 3. HITUNG ACTUAL SLA PER DOKUMEN
+            // ========================================
+
+            $totalActualSlaStage2 = 0;
+            $totalActualSlaStage3 = 0;
+
+            $countActualStage2 = 0;
+            $countActualStage3 = 0;
+
+            $today = Carbon::today();
+
+            foreach ($histories as $documentId => $documentHistories) {
+
+                // History sudah diurutkan berdasarkan created_at ascending.
+                $documentHistories = $documentHistories->values();
+
+                // Ambil history Stage 2 paling terakhir
+                $lastStage2 = $documentHistories
+                    ->filter(fn($history) => (int) $history->stage_id === 2)
+                    ->last();
+
+                // Ambil history Stage 3 paling terakhir
+                $lastStage3 = $documentHistories
+                    ->filter(fn($history) => (int) $history->stage_id === 3)
+                    ->last();
+
+                // Ambil stage terakhir dari Stage 2 atau Stage 3
+                // berdasarkan created_at yang paling baru.
+                $lastHistory = collect([$lastStage2, $lastStage3])
+                    ->filter()
+                    ->sortBy('created_at')
+                    ->last();
+
+                if (!$lastHistory) {
+                    continue;
+                }
+
+                $startDate = Carbon::parse($lastHistory->created_at);
+                $actualSla = (int) $startDate->startOfDay()->diffInDays($today);
+
+                if ((int) $lastHistory->stage_id === 2) {
+                    $totalActualSlaStage2 += $actualSla;
+                    $countActualStage2++;
+                } elseif ((int) $lastHistory->stage_id === 3) {
+                    $totalActualSlaStage3 += $actualSla;
+                    $countActualStage3++;
+                }
+            }
+
+            // ========================================
+            // 4. TOTAL ACTUAL SLA DAN ACHIEVEMENT
+            // ========================================
+
+            $totalActualSla =
+                $totalActualSlaStage2 + $totalActualSlaStage3;
+
+            $achSlaLegal = $totalActualSla > 0
+                ? round(($totalSlaStandard / $totalActualSla) * 100, 2)
                 : 0;
+
+            $agingDueDateAggrement = TspFormLegalReview::join('tsp_request_documents as documents', 'tsp_form_legal_reviews.request_document_id', '=', 'documents.id')
+                ->whereIn('documents.stage_id', [2, 3])
+                ->whereNotNull('tsp_form_legal_reviews.end_date')
+                ->get()
+                ->groupBy(function ($item) {
+                    $dueDate = Carbon::parse($item->end_date);
+                    $today = Carbon::today();
+                    $diffInDays = $today->diffInDays($dueDate, false);
+
+                    if ($diffInDays < 30) {
+                        return 'less_than_30_days';
+                    } elseif ($diffInDays >= 30 && $diffInDays < 60) {
+                        return 'between_30_and_60_days';
+                    } elseif ($diffInDays >= 60 && $diffInDays < 90) {
+                        return 'between_60_and_90_days';
+                    } else {
+                        return 'more_than_90_days';
+                    }
+                })
+                ->map(function ($group) {
+                    return count($group);
+                });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully retrieved pending legal review data.',
                 'data' => [
-                    'pending_legal' => 24,
-                    'ach_sla_legal' => 32,
+                    'pending_legal' => $pendingLegal,
+                    'ach_sla_legal' => $achSlaLegal,
                     'aging_due_date_agreement' => [
-                        'less_than_30_days' => 6,
-                        'between_30_and_60_days' => 9,
-                        'between_60_and_90_days' => 9,
+                        'less_than_30_days' => $agingDueDateAggrement->get('less_than_30_days', 0),
+                        'between_30_and_60_days' => $agingDueDateAggrement->get('between_30_and_60_days', 0),
+                        'between_60_and_90_days' => $agingDueDateAggrement->get('between_60_and_90_days', 0),
+                        'more_than_90_days' => $agingDueDateAggrement->get('more_than_90_days', 0),
                     ]
                 ]
             ]);
@@ -132,33 +239,177 @@ class DashboardController extends Controller
                 ->count();
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | SLA
-            |--------------------------------------------------------------------------
-            | Formula SLA akan disesuaikan setelah nama field
-            | SLA Standard dan Actual SLA sudah diketahui.
-            |--------------------------------------------------------------------------
-            */
+            // HITUNG SLA ACHIEVEMENT USER
+            // 1. TOTAL SLA STANDARD
 
-            $achSlaUser = 0;
-            $achSlaCommittee = 0;
+            $subStage1 = TspRequestSubstage::find(1);
+            $subStage4 = TspRequestSubstage::find(4);
 
+            $totalDocumentsSubStage1 = TspRequestDocument::where('substage_id', 1)->count();
+            $totalDocumentsSubStage4 = TspRequestDocument::where('substage_id', 4)->count();
+
+            // sla_hours
+            $totalSlaStandardSubStage1 = ($subStage1->sla_hours ?? 0) * $totalDocumentsSubStage1;
+
+            $totalSlaStandardSubStage4 = ($subStage4->sla_hours ?? 0) * $totalDocumentsSubStage4;
+
+            $totalSlaStandard = $totalSlaStandardSubStage1 + $totalSlaStandardSubStage4;
+
+
+            // 2. AMBIL DATA HISTORY
+
+            $histories = TspRequestDocumentHistory::whereIn('substage_id', [1, 4])
+                ->whereNotNull('created_at')
+                ->orderBy('request_document_id')
+                ->orderBy('created_at')
+                ->get()
+                ->groupBy('request_document_id');
+
+            // 3. HITUNG ACTUAL SLA PER DOKUMEN
+
+            $totalActualSlaSubStage1 = 0;
+            $totalActualSlaSubStage4 = 0;
+
+            $countActualSubStage1 = 0;
+            $countActualSubStage4 = 0;
+            $today = Carbon::today();
+
+            foreach ($histories as $documentId => $documentHistories) {
+
+                // History sudah diurutkan berdasarkan created_at ascending.
+                $documentHistories = $documentHistories->values();
+
+                // Ambil history SubStage 1 paling terakhir
+                $lastSubStage1 = $documentHistories
+                    ->filter(fn($history) => (int) $history->substage_id === 1)
+                    ->last();
+
+                // Ambil history SubStage 4 paling terakhir
+                $lastSubStage4 = $documentHistories
+                    ->filter(fn($history) => (int) $history->substage_id === 4)
+                    ->last();
+
+                // Ambil stage terakhir dari SubStage 1 atau SubStage 4 berdasarkan created_at yang paling baru.
+                $lastHistory = collect([$lastSubStage1, $lastSubStage4])
+                    ->filter()
+                    ->sortBy('created_at')
+                    ->last();
+
+                if (!$lastHistory) {
+                    continue;
+                }
+
+                $startDate = Carbon::parse($lastHistory->created_at);
+                $actualSla = (int) $startDate->startOfDay()->diffInDays($today);
+
+                if ((int) $lastHistory->substage_id === 1) {
+                    $totalActualSlaSubStage1 += $actualSla;
+                    $countActualSubStage1++;
+                } elseif ((int) $lastHistory->substage_id === 4) {
+                    $totalActualSlaSubStage4 += $actualSla;
+                    $countActualSubStage4++;
+                }
+            }
+
+            // 4. TOTAL ACTUAL SLA DAN ACHIEVEMENT
+
+            $totalActualSlaUser = $totalActualSlaSubStage1 + $totalActualSlaSubStage4;
+
+            $achSlaUser = $totalActualSlaUser > 0
+                ? round(($totalSlaStandard / $totalActualSlaUser) * 100, 2)
+                : 0;
+
+            // HITUNG SLA ACHIEVEMENT COMMITTEE
+            // 1. TOTAL SLA STANDARD
+
+            $subStage1 = TspRequestSubstage::find(2);
+            $subStage4 = TspRequestSubstage::find(5);
+
+            $totalDocumentsSubStage2 = TspRequestDocument::where('substage_id', 2)->count();
+            $totalDocumentsSubStage5 = TspRequestDocument::where('substage_id', 5)->count();
+
+            // sla_hours
+            $totalSlaStandardSubStage2 = ($subStage1->sla_hours ?? 0) * $totalDocumentsSubStage2;
+            $totalSlaStandardSubStage5 = ($subStage4->sla_hours ?? 0) * $totalDocumentsSubStage5;
+
+            $totalSlaStandard = $totalSlaStandardSubStage2 + $totalSlaStandardSubStage5;
+
+            // 2. AMBIL DATA HISTORY
+            $histories = TspRequestDocumentHistory::whereIn('substage_id', [2, 5])
+                ->whereNotNull('created_at')
+                ->orderBy('request_document_id')
+                ->orderBy('created_at')
+                ->get()
+                ->groupBy('request_document_id');
+
+            // 3. HITUNG ACTUAL SLA PER DOKUMEN
+
+            $totalActualSlaSubStage2 = 0;
+            $totalActualSlaSubStage5 = 0;
+
+            $countActualSubStage2 = 0;
+            $countActualSubStage5 = 0;
+            $today = Carbon::today();
+
+            foreach ($histories as $documentId => $documentHistories) {
+
+                // History sudah diurutkan berdasarkan created_at ascending.
+                $documentHistories = $documentHistories->values();
+
+                // Ambil history SubStage 2 paling terakhir
+                $lastSubStage2 = $documentHistories
+                    ->filter(fn($history) => (int) $history->substage_id === 2)
+                    ->last();
+
+                // Ambil history SubStage 5 paling terakhir
+                $lastSubStage5 = $documentHistories
+                    ->filter(fn($history) => (int) $history->substage_id === 5)
+                    ->last();
+
+                // Ambil stage terakhir dari SubStage 2 atau SubStage 5
+                // berdasarkan created_at yang paling baru.
+                $lastHistory = collect([$lastSubStage2, $lastSubStage5])
+                    ->filter()
+                    ->sortBy('created_at')
+                    ->last();
+
+                if (!$lastHistory) {
+                    continue;
+                }
+
+                $startDate = Carbon::parse($lastHistory->created_at);
+                $actualSla = (int) $startDate->startOfDay()->diffInDays($today);
+
+                if ((int) $lastHistory->substage_id === 2) {
+                    $totalActualSlaSubStage2 += $actualSla;
+                    $countActualSubStage2++;
+                } elseif ((int) $lastHistory->substage_id === 5) {
+                    $totalActualSlaSubStage5 += $actualSla;
+                    $countActualSubStage5++;
+                }
+            }
+
+            // 4. TOTAL ACTUAL SLA DAN ACHIEVEMENT
+
+            $totalActualSlaCommittee = $totalActualSlaSubStage2 + $totalActualSlaSubStage5;
+
+            $achSlaCommittee = $totalActualSlaCommittee > 0
+                ? round(($totalSlaStandard / $totalActualSlaCommittee) * 100, 2)
+                : 0;
 
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully retrieved pending review data.',
                 'data' => [
 
-                    'user_review' => 24,
+                    'user_review' => $userReview,
 
-                    'committee_review' => 12,
+                    'committee_review' => $committeeReview,
 
-                    'bod_review' => 6,
+                    'bod_review' => $bodReview,
+                    'ach_sla_user' => $achSlaUser,
 
-                    'ach_sla_user' => 78,
-
-                    'ach_sla_committee' => 65,
+                    'ach_sla_committee' => $achSlaCommittee,
 
                 ]
             ]);
@@ -176,20 +427,12 @@ class DashboardController extends Controller
     {
         try {
 
-            /*
-            |--------------------------------------------------------------------------
-            | Total Pending Sign Customer
-            |--------------------------------------------------------------------------
-            */
+            /*Total Pending Sign Customer*/
             $total = TspRequestDocument::where('sign_status', 'Partial Signed')
                 ->count();
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Top 5 Customer Pending Sign
-            |--------------------------------------------------------------------------
-            */
+            /*Top 5 Customer Pending Sign*/
             $topCustomers = TspRequestDocumentCustomer::join(
                 'tsp_request_documents as documents',
                 'tsp_request_document_customers.request_document_id',
@@ -209,31 +452,18 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get();
 
-            $data = [
-                'total' => 5,
 
-                'top_5_customers' => [
-                    [
-                        'customer_name' => 'Sapta Indra Sejati',
-                        'pending_sign_count' => 3,
-                    ],
-                    [
-                        'customer_name' => 'Pamapersada',
-                        'pending_sign_count' => 2,
-                    ],
-                    [
-                        'customer_name' => 'Kalimantan Prima Coal',
-                        'pending_sign_count' => 0,
-                    ],
-                    [
-                        'customer_name' => 'United Tractors',
-                        'pending_sign_count' => 0,
-                    ],
-                    [
-                        'customer_name' => 'Putra Perkasa Abadi',
-                        'pending_sign_count' => 0,
-                    ],
-                ],
+            $data = [
+                'total' => $total,
+
+                'top_5_customers' => $topCustomers
+                    ->map(function ($customer) {
+                        return [
+                            'customer_name' => $customer->customer_name,
+                            'pending_sign_count' => (int) $customer->pending_sign_count,
+                        ];
+                    })
+                    ->values(),
             ];
 
 
@@ -241,18 +471,6 @@ class DashboardController extends Controller
                 'success' => true,
                 'message' => 'Successfully retrieved pending sign customer data.',
                 'data' => $data
-                // [
-                //     'total' => $total,
-
-                //     'top_5_customers' => $topCustomers
-                //         ->map(function ($customer) {
-                //             return [
-                //                 'customer_name' => $customer->customer_name,
-                //                 'pending_sign_count' => (int) $customer->pending_sign_count,
-                //             ];
-                //         })
-                //         ->values(),
-                // ]
             ]);
         } catch (\Throwable $e) {
 
@@ -268,40 +486,17 @@ class DashboardController extends Controller
     {
         try {
 
-            $data = [
-                [
-                    'site' => 'Jakarta',
-                    'total_contract' => 90,
-                ],
-                [
-                    'site' => 'Surabaya',
-                    'total_contract' => 80,
-                ],
-                [
-                    'site' => 'Balikpapan',
-                    'total_contract' => 70,
-                ],
-                [
-                    'site' => 'Samarinda',
-                    'total_contract' => 60,
-                ],
-                [
-                    'site' => 'Makassar',
-                    'total_contract' => 50,
-                ],
-                [
-                    'site' => 'Banjarmasin',
-                    'total_contract' => 40,
-                ],
-                [
-                    'site' => 'Palembang',
-                    'total_contract' => 30,
-                ],
-                [
-                    'site' => 'Medan',
-                    'total_contract' => 20,
-                ],
-            ];
+            $data = TspRequestDocument::select('site', DB::raw('COUNT(*) as total_contract'))
+                ->whereNotIn('status_id', [1, 3, 4])
+                ->groupBy('site')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'site' => $item->site,
+                        'total_contract' => (int) $item->total_contract,
+                    ];
+                })
+                ->values();
 
             return response()->json([
                 'success' => true,
