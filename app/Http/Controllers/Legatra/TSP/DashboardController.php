@@ -85,7 +85,7 @@ class DashboardController extends Controller
     {
         try {
 
-            $pendingLegal = TspRequestDocument::whereIn('stage_id', [2, 3])
+            $pendingLegal = TspRequestDocument::whereIn('stage_id', [2])
                 ->count();
 
             // ========================================
@@ -93,24 +93,20 @@ class DashboardController extends Controller
             // ========================================
 
             $stage2 = TspRequestStage::find(2);
-            $stage3 = TspRequestStage::find(3);
 
             $totalDocumentsStage2 = TspRequestDocument::where('stage_id', 2)->count();
-            $totalDocumentsStage3 = TspRequestDocument::where('stage_id', 3)->count();
 
             // sla_hours
             $totalSlaStandardStage2 = ($stage2->sla_hours ?? 0) * $totalDocumentsStage2;
 
-            $totalSlaStandardStage3 = ($stage3->sla_hours ?? 0) * $totalDocumentsStage3;
-
-            $totalSlaStandard = $totalSlaStandardStage2 + $totalSlaStandardStage3;
+            $totalSlaStandard = $totalSlaStandardStage2;
 
 
             // ========================================
             // 2. AMBIL DATA HISTORY
             // ========================================
 
-            $histories = TspRequestDocumentHistory::whereIn('stage_id', [2, 3])
+            $histories = TspRequestDocumentHistory::whereIn('stage_id', [2])
                 ->whereNotNull('created_at')
                 ->orderBy('request_document_id')
                 ->orderBy('created_at')
@@ -122,10 +118,8 @@ class DashboardController extends Controller
             // ========================================
 
             $totalActualSlaStage2 = 0;
-            $totalActualSlaStage3 = 0;
 
             $countActualStage2 = 0;
-            $countActualStage3 = 0;
 
             $today = Carbon::today();
 
@@ -139,14 +133,9 @@ class DashboardController extends Controller
                     ->filter(fn($history) => (int) $history->stage_id === 2)
                     ->last();
 
-                // Ambil history Stage 3 paling terakhir
-                $lastStage3 = $documentHistories
-                    ->filter(fn($history) => (int) $history->stage_id === 3)
-                    ->last();
-
-                // Ambil stage terakhir dari Stage 2 atau Stage 3
+                // Ambil stage terakhir dari Stage 2 
                 // berdasarkan created_at yang paling baru.
-                $lastHistory = collect([$lastStage2, $lastStage3])
+                $lastHistory = collect([$lastStage2])
                     ->filter()
                     ->sortBy('created_at')
                     ->last();
@@ -156,14 +145,11 @@ class DashboardController extends Controller
                 }
 
                 $startDate = Carbon::parse($lastHistory->created_at);
-                $actualSla = (int) $startDate->startOfDay()->diffInDays($today);
+                $actualSla = (int) $startDate->diffInHours(Carbon::now());
 
                 if ((int) $lastHistory->stage_id === 2) {
                     $totalActualSlaStage2 += $actualSla;
                     $countActualStage2++;
-                } elseif ((int) $lastHistory->stage_id === 3) {
-                    $totalActualSlaStage3 += $actualSla;
-                    $countActualStage3++;
                 }
             }
 
@@ -172,14 +158,14 @@ class DashboardController extends Controller
             // ========================================
 
             $totalActualSla =
-                $totalActualSlaStage2 + $totalActualSlaStage3;
+                $totalActualSlaStage2;
 
             $achSlaLegal = $totalActualSla > 0
                 ? round(($totalSlaStandard / $totalActualSla) * 100, 2)
                 : 0;
 
             $agingDueDateAggrement = TspFormLegalReview::join('tsp_request_documents as documents', 'tsp_form_legal_reviews.request_document_id', '=', 'documents.id')
-                ->whereIn('documents.stage_id', [2, 3])
+                ->whereIn('documents.stage_id', [2])
                 ->whereNotNull('tsp_form_legal_reviews.end_date')
                 ->get()
                 ->groupBy(function ($item) {
@@ -300,7 +286,7 @@ class DashboardController extends Controller
                 }
 
                 $startDate = Carbon::parse($lastHistory->created_at);
-                $actualSla = (int) $startDate->startOfDay()->diffInDays($today);
+                $actualSla = (int) $startDate->diffInHours(Carbon::now());
 
                 if ((int) $lastHistory->substage_id === 1) {
                     $totalActualSlaSubStage1 += $actualSla;
@@ -378,7 +364,7 @@ class DashboardController extends Controller
                 }
 
                 $startDate = Carbon::parse($lastHistory->created_at);
-                $actualSla = (int) $startDate->startOfDay()->diffInDays($today);
+                $actualSla = (int) $startDate->diffInHours(Carbon::now());
 
                 if ((int) $lastHistory->substage_id === 2) {
                     $totalActualSlaSubStage2 += $actualSla;
