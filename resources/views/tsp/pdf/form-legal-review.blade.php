@@ -982,7 +982,11 @@
 
                                 {{-- POSITION --}}
                                 <div class="approval-position">
-                                    {{ $committee->committee_department ?? ($committee->committee_division ?? '') }}
+                                    @php
+                                        $jobTitle = strtolower(trim($committee->committee_job_title ?? ''));
+                                        // dd($jobTitle);
+                                    @endphp
+                                    {{ str_contains($jobTitle, 'Division Head') ? 'DIV HEAD' : $committee->committee_dept_short_name ?? ($committee->committee_division ?? '') }}
                                 </div>
 
                                 {{-- AREA TANDA TANGAN --}}

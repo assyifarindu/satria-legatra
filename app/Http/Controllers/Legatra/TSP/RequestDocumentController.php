@@ -5088,6 +5088,7 @@ class RequestDocumentController extends Controller
             'user.id'
         )
             ->leftJoin('satria.ms_emp_list as emp', 'user.personal_number', '=', 'emp.personal_number')
+            ->leftJoin('departments as dept', 'user.dept', '=', 'dept.dept_id')
             ->select(
                 'tsp_request_document_committees.id',
                 'tsp_request_document_committees.committee_id',
@@ -5097,6 +5098,7 @@ class RequestDocumentController extends Controller
                 'emp.Division as committee_division',
                 'emp.tittle as committee_title',
                 'emp.job_title as committee_job_title',
+                'dept.short_name as committee_dept_short_name',
             )
             ->where(
                 'tsp_request_document_committees.request_document_id',
@@ -5109,6 +5111,8 @@ class RequestDocumentController extends Controller
                 'tsp_request_document_committees.sequence'
             )
             ->get();
+
+
 
         $data = ['flr' => $flr, 'committees' => $committees];
         $config = [
