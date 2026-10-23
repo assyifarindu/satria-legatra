@@ -1864,8 +1864,37 @@ class RequestDocumentController extends Controller
             $db->beginTransaction();
 
             $requestDocument = TspRequestDocument::findOrFail($id);
+            // $committee = User::query()
+            //     ->where('title', 'LIKE', '%Head%')
+            //     ->select(
+            //         'id',
+            //         'name',
+            //         'title'
+            //     )
+            //     ->orderBy('name', 'asc')
+            //     ->get();
+
+            $deptHead = Department::query()
+                ->where('company_id', 16731)
+                ->select(
+                    'depthead_name as name',
+                    'depthead_nrp as nrp'
+
+                )
+                ->get();
+            $divHead = Division::query()
+                ->where('company_id', 16731)
+                ->select(
+                    'divhead_name as name',
+                    'divhead_nrp as nrp'
+
+                )
+                ->get();
+
+            $merge = $deptHead->concat($divHead)->values();
+
             $committee = User::query()
-                ->where('title', 'LIKE', '%Head%')
+                ->whereIn('personal_number', $merge->pluck('nrp')->toArray())
                 ->select(
                     'id',
                     'name',
@@ -2265,8 +2294,37 @@ class RequestDocumentController extends Controller
                 ->where('document_type', 'Draft Contract')
                 ->first();
 
+            // $committee = User::query()
+            //     ->where('title', 'LIKE', '%Head%')
+            //     ->select(
+            //         'id',
+            //         'name',
+            //         'title'
+            //     )
+            //     ->orderBy('name', 'asc')
+            //     ->get();
+
+            $deptHead = Department::query()
+                ->where('company_id', 16731)
+                ->select(
+                    'depthead_name as name',
+                    'depthead_nrp as nrp'
+
+                )
+                ->get();
+            $divHead = Division::query()
+                ->where('company_id', 16731)
+                ->select(
+                    'divhead_name as name',
+                    'divhead_nrp as nrp'
+
+                )
+                ->get();
+
+            $merge = $deptHead->concat($divHead)->values();
+
             $committee = User::query()
-                ->where('title', 'LIKE', '%Head%')
+                ->whereIn('personal_number', $merge->pluck('nrp')->toArray())
                 ->select(
                     'id',
                     'name',
@@ -5111,6 +5169,8 @@ class RequestDocumentController extends Controller
                 'tsp_request_document_committees.sequence'
             )
             ->get();
+
+        // dd($committees);
 
 
 

@@ -982,11 +982,7 @@
 
                                 {{-- POSITION --}}
                                 <div class="approval-position">
-                                    @php
-                                        $jobTitle = strtolower(trim($committee->committee_job_title ?? ''));
-                                        // dd($jobTitle);
-                                    @endphp
-                                    {{ str_contains($jobTitle, 'Division Head') ? 'DIV HEAD' : $committee->committee_dept_short_name ?? ($committee->committee_division ?? '') }}
+                                    {{ $committee->committee_dept_short_name ?? 'Department Head' }}
                                 </div>
 
                                 {{-- AREA TANDA TANGAN --}}
@@ -1019,7 +1015,7 @@
                         <td colspan="{{ max($deptHeads->count(), 1) }}" class="approval-column">
 
                             <div class="approval-position">
-                                {{ $committee->committee_division ?? 'Division' }}
+                                DIV HEAD
                             </div>
 
                             <table class="signature-space-table">

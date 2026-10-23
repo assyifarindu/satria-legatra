@@ -205,7 +205,11 @@
                                                                 <option value="{{ $item['id'] }}"
                                                                     {{ $selectedCommittee == $item['id'] ? 'selected' : '' }}>
 
-                                                                    {{ $item['name'] }}
+                                                                    {{ $item->name }}
+
+                                                                    @if ($item->title)
+                                                                        - {{ $item->title }}
+                                                                    @endif
 
                                                                 </option>
                                                             @endforeach
@@ -296,7 +300,7 @@
                     e.preventDefault();
                 }
             });
-            
+
             // Disable submit button after form submission to prevent multiple submissions
             $('#legal-drafting-form').on('submit', function(event) {
                 const form = $(this);
@@ -365,7 +369,11 @@
                                     <option value="{{ $item['id'] }}"
                                         {{ $selectedCommittee == $item['id'] ? 'selected' : '' }}>
 
-                                        {{ $item['name'] }}
+                                        {{ $item->name }}
+
+                                        @if ($item->title)
+                                            - {{ $item->title }}
+                                        @endif
 
                                     </option>
                                 @endforeach

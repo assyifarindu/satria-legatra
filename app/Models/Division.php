@@ -15,6 +15,7 @@ class Division extends Model
         'divid',
         'company_id',
         'company_name',
-        'divhead_name'
+        'divhead_name',
+        'divhead_nrp'
     ];
 }
