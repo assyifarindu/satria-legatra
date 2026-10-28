@@ -363,6 +363,54 @@ CREATE TABLE tsp_request_document_committees (
 
 
 -- =========================================
+-- REQUEST DOCUMENT HISTORIES
+-- =========================================
+
+CREATE TABLE tsp_request_document_histories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    request_document_id BIGINT NOT NULL,
+    stage_id BIGINT NOT NULL,
+    substage_id BIGINT NULL,
+    status_id BIGINT NOT NULL,
+
+    action VARCHAR(100) NOT NULL,
+    action_by BIGINT NOT NULL,
+    assigned_to BIGINT NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_request_document_histories_document
+        FOREIGN KEY (request_document_id)
+        REFERENCES tsp_request_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_request_document_histories_stage
+        FOREIGN KEY (stage_id)
+        REFERENCES tsp_request_stages(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_request_document_histories_substage
+        FOREIGN KEY (substage_id)
+        REFERENCES tsp_request_substages(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_request_document_histories_status
+        FOREIGN KEY (status_id)
+        REFERENCES tsp_request_status(id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+
+-- =========================================
 -- REQUEST DOCUMENT FEEDBACKS
 -- =========================================
 
@@ -503,54 +551,6 @@ CREATE TABLE tsp_form_legal_reviews (
         REFERENCES tsp_request_documents(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
-);
-
-
--- =========================================
--- REQUEST DOCUMENT HISTORIES
--- =========================================
-
-CREATE TABLE tsp_request_document_histories (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-    request_document_id BIGINT NOT NULL,
-    stage_id BIGINT NOT NULL,
-    substage_id BIGINT NULL,
-    status_id BIGINT NOT NULL,
-
-    action VARCHAR(100) NOT NULL,
-    action_by BIGINT NOT NULL,
-    assigned_to BIGINT NULL,
-
-    created_by BIGINT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_by BIGINT NULL,
-    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
-
-    CONSTRAINT fk_request_document_histories_document
-        FOREIGN KEY (request_document_id)
-        REFERENCES tsp_request_documents(id)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE,
-
-    CONSTRAINT fk_request_document_histories_stage
-        FOREIGN KEY (stage_id)
-        REFERENCES tsp_request_stages(id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
-
-    CONSTRAINT fk_request_document_histories_substage
-        FOREIGN KEY (substage_id)
-        REFERENCES tsp_request_substages(id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT,
-
-    CONSTRAINT fk_request_document_histories_status
-        FOREIGN KEY (status_id)
-        REFERENCES tsp_request_status(id)
-        ON UPDATE CASCADE
-        ON DELETE RESTRICT
 );
 
 
