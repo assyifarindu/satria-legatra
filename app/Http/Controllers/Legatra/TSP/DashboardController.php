@@ -105,13 +105,16 @@ class DashboardController extends Controller
             // ========================================
             // 2. AMBIL DATA HISTORY
             // ========================================
+            $requestDocumentIds = TspRequestDocument::whereIn('stage_id', [2])->pluck('id')->toArray();
 
-            $histories = TspRequestDocumentHistory::whereIn('stage_id', [2])
+            $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIds)
                 ->whereNotNull('created_at')
                 ->orderBy('request_document_id')
                 ->orderBy('created_at')
                 ->get()
                 ->groupBy('request_document_id');
+
+
 
             // ========================================
             // 3. HITUNG ACTUAL SLA PER DOKUMEN
@@ -145,7 +148,10 @@ class DashboardController extends Controller
                 }
 
                 $startDate = Carbon::parse($lastHistory->created_at);
-                $actualSla = (int) $startDate->diffInHours(Carbon::now());
+                $actualSla = round(
+                    ($startDate)->diffInSeconds(Carbon::now()) / 3600,
+                    2
+                );
 
                 if ((int) $lastHistory->stage_id === 2) {
                     $totalActualSlaStage2 += $actualSla;
@@ -157,15 +163,15 @@ class DashboardController extends Controller
             // 4. TOTAL ACTUAL SLA DAN ACHIEVEMENT
             // ========================================
 
-            $totalActualSla =
-                $totalActualSlaStage2;
+            $totalActualSla = $totalActualSlaStage2;
 
             $achSlaLegal = $totalActualSla > 0
                 ? round(($totalSlaStandard / $totalActualSla) * 100, 2)
                 : 0;
 
+
             $agingDueDateAggrement = TspFormLegalReview::join('tsp_request_documents as documents', 'tsp_form_legal_reviews.request_document_id', '=', 'documents.id')
-                ->whereIn('documents.stage_id', [2])
+                ->where('documents.stage_id', 11)
                 ->whereNotNull('tsp_form_legal_reviews.end_date')
                 ->get()
                 ->groupBy(function ($item) {
@@ -242,14 +248,18 @@ class DashboardController extends Controller
             $totalSlaStandard = $totalSlaStandardSubStage1 + $totalSlaStandardSubStage4;
 
 
+
             // 2. AMBIL DATA HISTORY
 
-            $histories = TspRequestDocumentHistory::whereIn('substage_id', [1, 4])
+            $requestDocumentIds = TspRequestDocument::whereIn('substage_id', [1, 4])->pluck('id')->toArray();
+
+            $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIds)
                 ->whereNotNull('created_at')
                 ->orderBy('request_document_id')
                 ->orderBy('created_at')
                 ->get()
                 ->groupBy('request_document_id');
+
 
             // 3. HITUNG ACTUAL SLA PER DOKUMEN
 
@@ -286,7 +296,10 @@ class DashboardController extends Controller
                 }
 
                 $startDate = Carbon::parse($lastHistory->created_at);
-                $actualSla = (int) $startDate->diffInHours(Carbon::now());
+                $actualSla = round(
+                    ($startDate)->diffInSeconds(Carbon::now()) / 3600,
+                    2
+                );
 
                 if ((int) $lastHistory->substage_id === 1) {
                     $totalActualSlaSubStage1 += $actualSla;
@@ -321,7 +334,8 @@ class DashboardController extends Controller
             $totalSlaStandard = $totalSlaStandardSubStage2 + $totalSlaStandardSubStage5;
 
             // 2. AMBIL DATA HISTORY
-            $histories = TspRequestDocumentHistory::whereIn('substage_id', [2, 5])
+            $requestDocumentIdsCommittee = TspRequestDocument::whereIn('substage_id', [2, 5])->pluck('id')->toArray();
+            $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIdsCommittee)
                 ->whereNotNull('created_at')
                 ->orderBy('request_document_id')
                 ->orderBy('created_at')
@@ -364,7 +378,10 @@ class DashboardController extends Controller
                 }
 
                 $startDate = Carbon::parse($lastHistory->created_at);
-                $actualSla = (int) $startDate->diffInHours(Carbon::now());
+                $actualSla = round(
+                    ($startDate)->diffInSeconds(Carbon::now()) / 3600,
+                    2
+                );
 
                 if ((int) $lastHistory->substage_id === 2) {
                     $totalActualSlaSubStage2 += $actualSla;
@@ -431,10 +448,12 @@ class DashboardController extends Controller
                 )
                 ->select(
                     'tsp_request_document_customers.name as customer_name',
-                    DB::raw('COUNT(*) as pending_sign_count')
+                    DB::raw('COUNT(*) as pending_sign_count'),
+                    'documents.created_at'
                 )
                 ->groupBy('tsp_request_document_customers.name')
-                ->orderByDesc('pending_sign_count')
+                ->orderBy('pending_sign_count', 'desc')
+                ->orderBy('created_at', 'asc')
                 ->limit(5)
                 ->get();
 
