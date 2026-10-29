@@ -74,16 +74,13 @@ class RequestDocumentController extends Controller
             $length = $request->input('length', 10);
             $searchValue = $request->input('search.value');
 
-            // 1. Validasi & fallback pengurutan (mencegah error offset/undefined index)
+            //Validasi & fallback pengurutan (mencegah error offset/undefined index)
             $order = $request->input('order.0');
             $columnIndex = $order['column'] ?? null;
             $columnName = $request->input("columns.{$columnIndex}.name") ?? 'id';
             $dir = ($order['dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 
-            // 2. Hitung total seluruh record secara efisien (tanpa memuat data ke memori)
-            $recordsTotal = TspRequestDocument::count();
-
-            // 3. Inisialisasi Query Base
+            // Inisialisasi Query Base
             $query = TspRequestDocument::leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
                 ->leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
                 ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
@@ -107,6 +104,7 @@ class RequestDocumentController extends Controller
                 )
                 ->distinct();
 
+
             if ($role === 'Admin Legal TSP') {
                 $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
             } else {
@@ -124,7 +122,10 @@ class RequestDocumentController extends Controller
                 // ->orderBy('satria_legatra.tsp_request_documents.stage_id', 'asc')
                 ->orderBy('satria_legatra.tsp_request_documents.created_at', 'asc');
 
-            // 4. Filtering Search
+            // Hitung total seluruh record secara efisien (tanpa memuat data ke memori)
+            $recordsTotal = count($query->get());
+
+            // Filtering Search
             if (!empty($searchValue)) {
                 $query->where(function ($q) use ($searchValue) {
                     $q->where('satria_legatra.tsp_request_documents.document_number', 'like', '%' . $searchValue . '%')
@@ -134,17 +135,21 @@ class RequestDocumentController extends Controller
                 });
             }
 
-            // 5. Hitung total record setelah di-filter
-            $recordsFiltered = $query
-                ->count();
 
-            // 6. Ambil data terpaginasi
+
+            // Hitung total record setelah di-filter
+            $recordsFiltered = count($query->get());
+
+
+
+            // Ambil data terpaginasi
             $data = $query->orderBy($columnName, $dir)
                 ->skip($start)
                 ->take($length)
                 ->get();
 
-            // 7. Mapping data untuk response
+
+            // Mapping data untuk response
             $data = $data->map(function ($item) {
                 return [
                     'id' => $item->id,

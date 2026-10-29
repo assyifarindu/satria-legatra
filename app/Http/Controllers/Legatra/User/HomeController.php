@@ -8,6 +8,7 @@ use App\Models\Table\BaseDocument;
 use App\Models\Table\EmailAlert;
 use App\Models\Table\RequestDocument;
 use App\Models\Table\Template;
+use App\Models\Table\Company;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +34,7 @@ class HomeController extends Controller
 
     public function index()
     {
-        try{
+        try {
 
             $user = Auth::user();
 
@@ -62,8 +63,10 @@ class HomeController extends Controller
                 ];
             }
 
+            $companyLegatra = Company::where('company_id', $user->companyid)->first();
+
             $data = [
-                'template' => Template::where('company_name', Auth::user()->company_name)->get(),
+                'template' => Template::where('company_id', $companyLegatra->id)->get(),
                 'tracking' => RequestDocument::where('created_by', Auth::user()->id)->where('is_cancel', false)->orderBy('created_at', 'desc')->get(),
                 'contract' => EmailAlert::where('to', Auth::user()->id)->where('is_action', false)->orderBy('created_at', 'desc')->get(),
                 'duration' => Alert::get(),
@@ -71,13 +74,13 @@ class HomeController extends Controller
             ];
 
             sendEmailAutomatically(Auth::user()->id);
-    
+
             return view('user.home.index')->with('data', $data);
-        } catch (Exception $e) {    
+        } catch (Exception $e) {
             $this->ErrorLog($e);
             $this->ErrorLogLegatra($e);
             return redirect()->back()->with('error', 'Error Request, Exception Error ');
-        } 
+        }
     }
 
     /**
@@ -146,7 +149,8 @@ class HomeController extends Controller
         //
     }
 
-    public function logout(){
+    public function logout()
+    {
         Session::flush();
         Auth::logout();
         return redirect('login');
@@ -155,10 +159,10 @@ class HomeController extends Controller
     public function download($id)
     {
         $template = Template::findOrFail($id);
-        $file = "upload/master/template/".$template->file;
-    	$filePath = public_path($file);
-    	$fileName = $template->file;
+        $file = "upload/master/template/" . $template->file;
+        $filePath = public_path($file);
+        $fileName = $template->file;
 
-    	return response()->download($filePath, $fileName);
+        return response()->download($filePath, $fileName);
     }
 }

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect as FacadesRedirect;
 use Redirect;
+use App\Models\Table\Company;
 
 class HomeController extends Controller
 {
@@ -84,10 +85,10 @@ class HomeController extends Controller
 
                 // $tracking = RequestDocument::join('users', 'request_documents.created_by', '=', 'users.id')->where('request_documents.is_cancel', false)->where('users.company_name', $company_name)->orderBy('request_documents.created_at', 'desc')->get();
 
-
+                $companyLegatra = Company::where('company_id', $company_id)->first();
                 $data = [
                     // 'template' => Template::all(),
-                    'template' => Template::where('company_name', $company_name)->get(),
+                    'template' => Template::where('company_id', $companyLegatra->id)->get(),
                     // 'tracking' => RequestDocument::where('is_cancel', false)->orderBy('created_at', 'desc')->get(),
                     'tracking' => RequestDocument::join('satria.users', 'created_by', '=', 'satria.users.id')->where('satria.users.company_name', $company_name)
                         ->where('is_cancel', false)->orderBy('request_documents.created_at', 'desc')

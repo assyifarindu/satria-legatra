@@ -378,7 +378,7 @@
                                                 {{-- button confirm document by user --}}
                                                 @if (
                                                     $requestDocument->stage_id == 9 &&
-                                                        $requestDocument->status_id == 15 &&
+                                                        $requestDocument->status_id == 16 &&
                                                         getRoles(Auth::user()->id) !== 'Admin Legal TSP' &&
                                                         $requestDocument->requester_id == Auth::user()->id)
                                                     <div class="col-sm-6">
@@ -399,7 +399,7 @@
                                                 {{-- button upload document pasal-pasal terkait kontrak by admin --}}
                                                 @if (
                                                     $requestDocument->stage_id == 10 &&
-                                                        $requestDocument->status_id == 15 &&
+                                                        $requestDocument->status_id == 17 &&
                                                         getRoles(Auth::user()->id) === 'Admin Legal TSP')
                                                     <div class="col-sm-6">
                                                         <div class="text-sm-end mt-2 mt-sm-0">
@@ -698,25 +698,25 @@
 
                                     <!-- Attachment -->
                                     ${fileUrl ? `
-                                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                                <a href="${fileUrl}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="text-decoration-none">
+                                                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                            <a href="${fileUrl}"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="text-decoration-none">
 
-                                                    <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                    title="Download"
-                                                    tabindex="0"
-                                                    data-plugin="tippy"
-                                                    data-tippy-placement="top">
-                                                    </i>
-                                                </a>
+                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                title="Download"
+                                                                tabindex="0"
+                                                                data-plugin="tippy"
+                                                                data-tippy-placement="top">
+                                                                </i>
+                                                            </a>
 
-                                                <div class="small text-muted mt-1 text-break">
-                                                    ${feedback.file_name ?? '-'}
-                                                </div>
-                                            </div>
-                                        ` : ''}
+                                                            <div class="small text-muted mt-1 text-break">
+                                                                ${feedback.file_name ?? '-'}
+                                                            </div>
+                                                        </div>
+                                                    ` : ''}
 
                                 </div>
                             </div>
