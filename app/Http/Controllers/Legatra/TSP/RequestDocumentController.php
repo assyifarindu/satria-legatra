@@ -5151,7 +5151,7 @@ class RequestDocumentController extends Controller
             'user.id'
         )
             ->leftJoin('satria.ms_emp_list as emp', 'user.personal_number', '=', 'emp.personal_number')
-            ->leftJoin('departments as dept', 'user.dept', '=', 'dept.dept_id')
+            ->leftJoin('departments as dept', 'user.dept', '=', 'dept.id')
             ->select(
                 'tsp_request_document_committees.id',
                 'tsp_request_document_committees.committee_id',
