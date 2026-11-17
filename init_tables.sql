@@ -139,6 +139,7 @@ CREATE TABLE tsp_request_documents (
     substage_id BIGINT NULL,
     status_id BIGINT NOT NULL,
 
+    ticket_number VARCHAR(100) NULL,
     document_number VARCHAR(100) NULL,
     title VARCHAR(255) NOT NULL,
 

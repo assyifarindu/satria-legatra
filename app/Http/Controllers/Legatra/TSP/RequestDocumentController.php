@@ -92,6 +92,7 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.substage_id',
                     'satria_legatra.tsp_request_documents.status_id',
                     'satria_legatra.tsp_request_status.status as status',
+                    'satria_legatra.tsp_request_documents.ticket_number',
                     'satria_legatra.tsp_request_documents.document_number',
                     'satria_legatra.tsp_request_documents.title',
                     'satria_legatra.tsp_request_documents.contract_type',
@@ -130,6 +131,7 @@ class RequestDocumentController extends Controller
                 $query->where(function ($q) use ($searchValue) {
                     $q->where('satria_legatra.tsp_request_documents.document_number', 'like', '%' . $searchValue . '%')
                         ->orWhere('satria_legatra.tsp_request_documents.title', 'like', '%' . $searchValue . '%')
+                        ->orWhere('satria_legatra.tsp_request_documents.ticket_number', 'like', '%' . $searchValue . '%')
                         ->orWhere('satria_legatra.tsp_request_documents.contract_type', 'like', '%' . $searchValue . '%')
                         ->orWhere('satria.users.name', 'like', '%' . $searchValue . '%');
                 });
@@ -157,6 +159,7 @@ class RequestDocumentController extends Controller
                     'substage_id' => $item->substage_id,
                     'status_id' => $item->status_id,
                     'status' => $item->status ?? '-',
+                    'ticket_number' => $item->ticket_number ?? '-',
                     'document_number' => $item->document_number ?? '-',
                     'title' => $item->title ?? '-',
                     'contract_type' => $item->contract_type ?? '-',
@@ -1267,10 +1270,14 @@ class RequestDocumentController extends Controller
         $db->beginTransaction();
 
         try {
+            /* Generate Ticket Number */
+            $request_count = TspRequestDocument::count();
+            $ticket_number = str_pad($request_count + 1, 5, "0", STR_PAD_LEFT);
 
             /* CREATE REQUEST DOCUMENT */
 
             $requestDocument = TspRequestDocument::create([
+                'ticket_number' => $ticket_number,
                 'stage_id' => 1,
                 'status_id' => $action === 'draft' ? 1 : 2,
                 'title' => $validated['title'],
