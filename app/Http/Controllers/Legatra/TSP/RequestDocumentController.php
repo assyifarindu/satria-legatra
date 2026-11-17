@@ -1490,7 +1490,7 @@ class RequestDocumentController extends Controller
 
                 );
 
-                Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'New Request Document', $requestDocument->id);
             }
 
@@ -2112,7 +2112,7 @@ class RequestDocumentController extends Controller
 
                 // jika status request document sebelum di update adalah draft maka baru kirim email,tapi jika sudah submit maka tidak  kirim email lagi ketika submit di edit
                 if ($previousStatusId == 1) {
-                    Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'New Request Document', $requestDocument->id);
                 }
             }
@@ -2530,7 +2530,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Request Document Declined', $requestDocument->id);
 
             $db->commit();
@@ -2885,7 +2885,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Legal Drafting Completed', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -2995,7 +2995,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -3256,7 +3256,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
             $committee = User::find($committee->committee_id);
 
-            Mail::to($afterCommitteReview ? $committee->email_sf : $user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($afterCommitteReview ? $committee->email_sf : $user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($afterCommitteReview ? $committee->id : $user->id, 'tsp.request-document.tracking', 'Revision Legal Drafting Completed', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -3358,9 +3358,9 @@ class RequestDocumentController extends Controller
 
             $committee = User::find($committee->committee_id);
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request Document Verified by User', $requestDocument->id);
-            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email_committee));
+            // Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email_committee));
             addNotification($committee->id, 'tsp.request-document.tracking', 'Request Document Waiting for Verification', $requestDocument->id);
 
             $db->commit();
@@ -3485,7 +3485,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting by Committee', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -4041,7 +4041,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting After Committee Review', $requestDocument->id);
 
 
@@ -4199,7 +4199,7 @@ class RequestDocumentController extends Controller
                     ];
 
 
-                    Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification($nextCommitteeUser->id, 'tsp.request-document.tracking', 'Request Document Waiting for Verification', $requestDocument->id);
                 }
 
@@ -4272,14 +4272,14 @@ class RequestDocumentController extends Controller
 
                 /* SEND EMAIL TO USER */
                 if ($requester && $requester->email_sf) {
-                    Mail::to($requester->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($requester->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
                 addNotification($requester->id, 'tsp.request-document.tracking', 'Request Document Verified by Committee', $requestDocument->id);
 
                 /* SEND EMAIL TO ADMIN LEGAL */
 
                 if ($adminLegal && $adminLegal->email_sf) {
-                    Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
                 addNotification($adminLegal->id, 'tsp.request-document.tracking', 'Request Document Verified by Committee', $requestDocument->id);
 
@@ -4470,7 +4470,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, Final Document telah diunggah dan siap untuk diproses lebih lanjut oleh Admin Legal.',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Final Document Uploaded', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -4548,7 +4548,7 @@ class RequestDocumentController extends Controller
         try {
             $validated = $request->validate([
                 'date' => ['required', 'date'],
-                'department' => ['required', 'string', 'max:255'],
+                'department_id' => ['required', 'numeric'],
                 'document_objective' => ['required', 'string', 'max:255'],
                 'start_date' => ['required', 'string', 'max:255'],
                 'end_date' => ['required', 'string', 'max:255'],
@@ -4578,7 +4578,7 @@ class RequestDocumentController extends Controller
                 [
                     'request_document_id' => $requestDocument->id,
                     'date' => $validated['date'],
-                    'department' => $validated['department'],
+                    'department_id' => $validated['department_id'],
                     'document_objective' => $validated['document_objective'],
                     'start_date' => $validated['start_date'],
                     'end_date' => $validated['end_date'],
@@ -4638,7 +4638,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Form Legal Review Created', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -4748,7 +4748,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada Form Legal Review yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Form Legal Review Need Revision', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -4912,7 +4912,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Form Legal Review Revised', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -5007,7 +5007,7 @@ class RequestDocumentController extends Controller
 
             $committee = User::find($committee->committee_id);
 
-            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($committee->id, 'tsp.request-document.tracking', 'Form Legal Review Waiting for Verification', $requestDocument->id);
 
             $db->commit();
@@ -5131,7 +5131,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada form legal review yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Form Legal Review Need Revision', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -5295,7 +5295,7 @@ class RequestDocumentController extends Controller
                     ];
 
 
-                    Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification($nextCommitteeUser->id, 'tsp.request-document.tracking', 'Form Legal Review Waiting for Verification', $requestDocument->id);
                 }
 
@@ -5364,7 +5364,7 @@ class RequestDocumentController extends Controller
                 /* SEND EMAIL TO ADMIN LEGAL */
 
                 if ($adminLegal && $adminLegal->email_sf) {
-                    Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification($adminLegal->id, 'tsp.request-document.tracking', 'Form Legal Review Verified by Committee', $requestDocument->id);
                 }
 
@@ -5507,7 +5507,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification($user->id ?? null, 'tsp.request-document.tracking', 'Signed BOD Document Uploaded', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -5715,7 +5715,7 @@ class RequestDocumentController extends Controller
             ];
 
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request Document Confirmed for Filing', $requestDocument->id);
 
             $db->commit();
@@ -5878,17 +5878,19 @@ class RequestDocumentController extends Controller
      */
     public function generatePdfFormLegalReview($id)
     {
-        $flr = TspFormLegalReview::leftJoin('tsp_request_documents', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_documents.id')
-            ->leftJoin('tsp_request_document_pics', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_document_pics.request_document_id')
-            ->leftJoin('tsp_request_document_customers', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_document_customers.request_document_id')
+        $flr = TspFormLegalReview::leftJoin('satria_legatra.tsp_request_documents', 'satria_legatra.tsp_form_legal_reviews.request_document_id', '=', 'satria_legatra.tsp_request_documents.id')
+            ->leftJoin('satria_legatra.tsp_request_document_pics', 'satria_legatra.tsp_form_legal_reviews.request_document_id', '=', 'satria_legatra.tsp_request_document_pics.request_document_id')
+            ->leftJoin('satria_legatra.tsp_request_document_customers', 'satria_legatra.tsp_form_legal_reviews.request_document_id', '=', 'satria_legatra.tsp_request_document_customers.request_document_id')
+            ->leftJoin('satria.mst_dept', 'satria.mst_dept.id', '=', 'satria_legatra.tsp_form_legal_reviews.department_id')
             ->select(
-                'tsp_form_legal_reviews.*',
-                'tsp_request_documents.title as title',
-                'tsp_request_documents.document_number as document_number',
-                'tsp_request_document_pics.name as pic_name',
-                'tsp_request_document_customers.name as customer_name',
+                'satria_legatra.tsp_form_legal_reviews.*',
+                'satria_legatra.tsp_request_documents.title as title',
+                'satria_legatra.tsp_request_documents.document_number as document_number',
+                'satria_legatra.tsp_request_document_pics.name as pic_name',
+                'satria_legatra.tsp_request_document_customers.name as customer_name',
+                'satria.mst_dept.nama as department',
             )
-            ->where('tsp_form_legal_reviews.request_document_id', $id)->firstOrFail();
+            ->where('satria_legatra.tsp_form_legal_reviews.request_document_id', $id)->firstOrFail();
 
         $committees = TspRequestDocumentCommittees::leftJoin(
             'satria.users as user',
@@ -6062,7 +6064,7 @@ class RequestDocumentController extends Controller
                         'Email Pemberitahuan, Request Document telah melewati SLA dan perlu segera ditindaklanjuti.',
                     ];
 
-                    Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
 
                 $totalSent++;
@@ -6213,7 +6215,7 @@ class RequestDocumentController extends Controller
                         'message' => 'Email Pemberitahuan, Kontrak akan berakhir dalam ' . $remainingDays . ' hari dan perlu segera ditindaklanjuti.',
                     ];
 
-                    Mail::to($customerEmail)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($customerEmail)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
 
                 $totalSent++;

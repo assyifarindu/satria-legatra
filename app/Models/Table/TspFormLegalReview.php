@@ -18,7 +18,7 @@ class TspFormLegalReview extends Model
     protected $fillable = [
         'request_document_id',
         'date',
-        'department',
+        'department_id',
         'document_objective',
         'start_date',
         'end_date',
