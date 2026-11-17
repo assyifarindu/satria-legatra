@@ -152,4 +152,23 @@ class MonitoringController extends Controller
             ], 500);
         }
     }
+
+    /** Display the specified request document.
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
+    public function showActiveContractsDetail($id)
+    {
+        $document = TspRequestDocument::leftJoin('satria_legatra.tsp_request_stages', 'satria_legatra.tsp_request_documents.stage_id', '=', 'satria_legatra.tsp_request_stages.id')
+            ->leftJoin('satria_legatra.tsp_request_status', 'satria_legatra.tsp_request_documents.status_id', '=', 'satria_legatra.tsp_request_status.id')
+            ->leftJoin('satria_legatra.tsp_request_substages', 'satria_legatra.tsp_request_documents.substage_id', '=', 'satria_legatra.tsp_request_substages.id')
+            ->select(
+                'satria_legatra.tsp_request_documents.*',
+                'satria_legatra.tsp_request_stages.stage as stage_name',
+                'satria_legatra.tsp_request_status.status as status_name',
+                'satria_legatra.tsp_request_substages.substage as substage_name'
+            )
+            ->findOrFail($id);
+        return view('tsp.monitoring.active-contract-detail', compact('document'));
+    }
 }

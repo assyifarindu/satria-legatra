@@ -105,7 +105,7 @@
                         orderable: false,
                         searchable: false,
                         render: function(data, type, row) {
-                            let viewUrl = "{{ url('tsp/request-document') }}/" + row.id;
+                            let viewUrl = "{{ url('tsp/monitoring/active-contracts') }}/" + row.id;
 
                             return `
                                 <a href="${viewUrl}" target="_blank"
