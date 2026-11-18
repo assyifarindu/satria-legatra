@@ -519,7 +519,7 @@ CREATE TABLE tsp_form_legal_reviews (
     request_document_id BIGINT NOT NULL,
 
     date DATE NOT NULL,
-    department VARCHAR(255) NOT NULL,
+    department_id BIGINT NOT NULL,
     document_objective VARCHAR(255) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
