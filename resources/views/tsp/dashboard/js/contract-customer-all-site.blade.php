@@ -93,7 +93,7 @@
                             trim: false,
                             hideOverlappingLabels: false,
                             style: {
-                                fontSize: '10px'
+                                fontSize: '7px'
                             }
                         },
 

@@ -82,49 +82,16 @@
                         name: 'status',
                         render: function(data, type, row) {
                             $status = row.status_id;
-                            if (row.is_cancel) {
-                                return '<span class="badge bg-danger">Cancel</span>';
-                            }
-
-                            switch (parseInt($status)) {
-                                case 1:
-                                    return '<span class="badge bg-warning">Draft</span>';
-                                case 2:
-                                    return '<span class="badge bg-primary">Submitted</span>';
-                                case 3:
-                                    return '<span class="badge bg-danger">Cancel</span>';
-                                case 4:
-                                    return '<span class="badge bg-danger">Decline</span>';
-                                case 5:
-                                    return '<span class="badge bg-primary">Drafting</span>';
-                                case 6:
-                                    return '<span class="badge bg-primary">User Review</span>';
-                                case 7:
-                                    return '<span class="badge bg-primary">Verified By User</span>';
-                                case 8:
-                                    return '<span class="badge bg-primary">Committee Review</span>';
-                                case 9:
-                                    return '<span class="badge bg-primary">Verified By Committee</span>';
-                                case 10:
-                                    return '<span class="badge bg-primary">Need Revision</span>';
-                                case 11:
-                                    return '<span class="badge bg-primary">Need Revision</span>';
-                                case 12:
-                                    return '<span class="badge bg-primary">Need Revision</span>';
-                                case 13:
-                                    return '<span class="badge bg-primary">Final Check</span>';
-                                case 14:
-                                    return '<span class="badge bg-primary">Fully Approved</span>';
-                                case 15:
-                                    return '<span class="badge bg-warning">Cleared for Delivery</span>';
-                                case 16:
-                                    return '<span class="badge bg-warning">Final Contract</span>';
-                                case 17:
-                                    return '<span class="badge bg-warning">Document Filing</span>';
-                                case 18:
-                                    return '<span class="badge bg-success">Contract Active</span>';
-                                default:
-                                    return '-';
+                            $status_name = row.status;
+                            if ($status == 3 || $status == 4) {
+                                return '<span class="badge bg-danger">' + $status_name + '</span>';
+                            } else if ($status == 1 || $status == 15 || $status == 16 || $status ==
+                                17) {
+                                return '<span class="badge bg-warning">' + $status_name + '</span>';
+                            } else if ($status == 18) {
+                                return '<span class="badge bg-success">' + $status_name + '</span>';
+                            } else {
+                                return '<span class="badge bg-primary">' + $status_name + '</span>';
                             }
                         }
                     },
@@ -183,11 +150,11 @@
 
                             return `
                                 ${ (row.status_id == 1) ? `
-                                                                            <a href="${editUrl}"
-                                                                                class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
-                                                                                title="Edit" tabindex="0" data-plugin="tippy"
-                                                                                data-tippy-placement="top"><i class="fas fa-pen"></i></a>
-                                                                        ` : '' }
+                                                                                        <a href="${editUrl}"
+                                                                                            class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                                                                            title="Edit" tabindex="0" data-plugin="tippy"
+                                                                                            data-tippy-placement="top"><i class="fas fa-pen"></i></a>
+                                                                                    ` : '' }
                                 <a href="${viewUrl}"
                                     class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
                                     title="View Detail" tabindex="0" data-plugin="tippy"
@@ -200,18 +167,18 @@
                                     class="mdi mdi-book-clock-outline"></i>
                                 </a>
                                 ${row.status_id == 1 || row.status_id == 2 ? `
-                                                                            <a href="javascript:void(0)"
-                                                                                class="btn btn-danger btn-xs d-inline waves-effect waves-light {{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'btn_decline' : 'btn_cancel' }}"
-                                                                                title="{{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'Decline Request' : 'Cancel Request' }}"
-                                                                                tabindex="0"
-                                                                                data-plugin="tippy"
-                                                                                data-tippy-placement="top"
-                                                                                data-id="${row.id}">
+                                                                                        <a href="javascript:void(0)"
+                                                                                            class="btn btn-danger btn-xs d-inline waves-effect waves-light {{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'btn_decline' : 'btn_cancel' }}"
+                                                                                            title="{{ getRoles(Auth::user()->id) === 'Admin Legal TSP' ? 'Decline Request' : 'Cancel Request' }}"
+                                                                                            tabindex="0"
+                                                                                            data-plugin="tippy"
+                                                                                            data-tippy-placement="top"
+                                                                                            data-id="${row.id}">
 
-                                                                                <i class="fas fa-times"></i>
+                                                                                            <i class="fas fa-times"></i>
 
-                                                                            </a>
-                                                                        ` : ''}                            `;
+                                                                                        </a>
+                                                                                    ` : ''}                            `;
                         }
                     },
                 ]

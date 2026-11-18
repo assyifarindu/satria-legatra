@@ -87,6 +87,18 @@ class ExportContractRequest implements FromView
         //     ->orderBy('rd.created_at', 'desc')
         //     ->get();
 
+        //GET data Contract PMP 1 Oktober 2026 - 31 Oktober 2026
+        // $query = RequestDocument::from('request_documents as rd')
+        //     ->join('satria.users as u', 'rd.created_by', '=', 'u.id')
+        //     ->select('rd.*')
+        //     ->where('rd.type', 'Contract')
+        //     ->where('u.companyid', 16729) // jika ingin dinamis, ganti ke $company
+        //     ->where('rd.is_cancel', false)
+        //     ->where('rd.created_at', '>=', '2026-10-01')
+        //     ->where('rd.created_at', '<', '2026-10-31')
+        //     ->orderBy('rd.created_at', 'desc')
+        //     ->get();
+
 
         return view('export_request.contract', [
             'document' => $query

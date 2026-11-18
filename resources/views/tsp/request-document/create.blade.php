@@ -556,7 +556,7 @@
                                         <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
                                             role="alert">
                                             Untuk attachment Draft Contract, file harus diawali dengan prefix
-                                            (Draft_Contract_).
+                                            (draft contract).
                                         </div>
 
                                         <div>
@@ -580,7 +580,7 @@
                                         <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
                                             role="alert">
                                             Untuk attachment Quotation, file harus diawali dengan prefix
-                                            (Quotation_).
+                                            (quotation).
                                         </div>
 
                                         <div>
@@ -1017,12 +1017,12 @@
                 const files = [{
                         id: '#draft_contract',
                         label: 'Draft Contract',
-                        prefix: 'Draft_Contract_'
+                        prefix: 'draft contract'
                     },
                     {
                         id: '#quotation',
                         label: 'Quotation',
-                        prefix: 'Quotation_'
+                        prefix: 'quotation'
                     }
                 ];
 
@@ -1050,7 +1050,10 @@
 
 
                     // Nama file
-                    if (!file.name.startsWith(config.prefix)) {
+                    // Validasi prefix (case-insensitive)
+                    const fileName = file.name.trim().toLowerCase();
+                    const prefix = config.prefix.toLowerCase();
+                    if (!fileName.startsWith(prefix)) {
 
                         showError(
                             input,

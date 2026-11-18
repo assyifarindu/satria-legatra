@@ -497,7 +497,7 @@ class RequestDocumentController extends Controller
                     ->withInput()
                     ->withErrors([
                         'draft_contract' =>
-                        'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        'Nama file Draft Contract harus diawali dengan prefix draft contract'
                     ]);
             }
         }
@@ -517,7 +517,7 @@ class RequestDocumentController extends Controller
                     ->withInput()
                     ->withErrors([
                         'quotation' =>
-                        'Nama file Quotation harus diawali dengan prefix Quotation_.'
+                        'Nama file Quotation harus diawali dengan prefix quotation'
                     ]);
             }
         }
