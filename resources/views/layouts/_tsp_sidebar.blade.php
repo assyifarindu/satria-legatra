@@ -11,6 +11,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('tsp.monitoring.active-contract') }}">
+                        <i class="fe-archive"></i>
+                        <span>Monitoring </span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('tsp.request-document') }}">
                         <i class="fe-file-plus"></i>
                         <span>Request Document </span>

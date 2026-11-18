@@ -40,6 +40,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Status</th>
+                                        <th>Ticket Number</th>
                                         <th>Document Number</th>
                                         <th>Title</th>
                                         <th>Contract Type</th>
@@ -94,6 +95,10 @@
                                 return '<span class="badge bg-primary">' + $status_name + '</span>';
                             }
                         }
+                    },
+                    {
+                        data: 'ticket_number',
+                        name: 'ticket_number'
                     },
                     {
                         data: 'document_number',

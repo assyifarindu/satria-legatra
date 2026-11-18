@@ -18,6 +18,7 @@ class TspRequestDocument extends Model
         'stage_id',
         'substage_id',
         'status_id',
+        'ticket_number',
         'document_number',
         'title',
         'contract_type',

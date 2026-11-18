@@ -163,25 +163,22 @@
                                         </div>
 
                                         <div>
-                                            <label for="department" class="fw-bold d-block">
+                                            <label for="department_id" class="fw-bold d-block">
                                                 Department
                                             </label>
 
-                                            <select name="department"
-                                                class="form-select @error('department') is-invalid @enderror">
+                                            <select name="department_id"
+                                                class="form-select @error('department_id') is-invalid @enderror">
                                                 <option value="">Select Department</option>
                                                 @foreach ($department as $item)
-                                                    <option value="{{ $item['name'] }}"
-                                                        {{ ($flr->department ?? old('department')) == $item['name'] ? 'selected' : '' }}>
+                                                    <option value="{{ $item['id'] }}"
+                                                        {{ ($flr->department_id ?? old('department_id')) == $item['id'] ? 'selected' : '' }}>
                                                         {{ $item['name'] }}
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            {{-- <input type="text" name="department" id="department" value="{{ old('department') }}"
-                                                class="form-control d-none @error('department') is-invalid @enderror"
-                                                placeholder="Department" readonly> --}}
 
-                                            @error('department')
+                                            @error('department_id')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
                                                 </div>
@@ -518,7 +515,7 @@
                 }
             });
 
-            $("select[name='department']").select2({
+            $("select[name='department_id']").select2({
                 placeholder: "Select Department",
                 width: '100%',
                 allowClear: true

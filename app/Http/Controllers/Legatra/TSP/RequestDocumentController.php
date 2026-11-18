@@ -92,6 +92,7 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.substage_id',
                     'satria_legatra.tsp_request_documents.status_id',
                     'satria_legatra.tsp_request_status.status as status',
+                    'satria_legatra.tsp_request_documents.ticket_number',
                     'satria_legatra.tsp_request_documents.document_number',
                     'satria_legatra.tsp_request_documents.title',
                     'satria_legatra.tsp_request_documents.contract_type',
@@ -102,14 +103,17 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.created_at',
                     'satria_legatra.tsp_request_documents.updated_at'
                 )
-                ->distinct();
+                ->distinct()
+                ->whereNotIn('satria_legatra.tsp_request_documents.stage_id', [11]);
 
 
             if ($role === 'Admin Legal TSP') {
                 $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
             } else {
-                $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id)
-                    ->orWhere('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
+                $query->where(function ($q) use ($user_id) {
+                    $q->where('satria_legatra.tsp_request_documents.requester_id', $user_id)
+                        ->orWhere('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
+                });
             }
 
             $query->orderByRaw("
@@ -130,6 +134,7 @@ class RequestDocumentController extends Controller
                 $query->where(function ($q) use ($searchValue) {
                     $q->where('satria_legatra.tsp_request_documents.document_number', 'like', '%' . $searchValue . '%')
                         ->orWhere('satria_legatra.tsp_request_documents.title', 'like', '%' . $searchValue . '%')
+                        ->orWhere('satria_legatra.tsp_request_documents.ticket_number', 'like', '%' . $searchValue . '%')
                         ->orWhere('satria_legatra.tsp_request_documents.contract_type', 'like', '%' . $searchValue . '%')
                         ->orWhere('satria.users.name', 'like', '%' . $searchValue . '%');
                 });
@@ -157,6 +162,7 @@ class RequestDocumentController extends Controller
                     'substage_id' => $item->substage_id,
                     'status_id' => $item->status_id,
                     'status' => $item->status ?? '-',
+                    'ticket_number' => $item->ticket_number ?? '-',
                     'document_number' => $item->document_number ?? '-',
                     'title' => $item->title ?? '-',
                     'contract_type' => $item->contract_type ?? '-',
@@ -203,22 +209,348 @@ class RequestDocumentController extends Controller
         try {
             $search = $request->input('search', '');
 
-            // Login TSP
-            $triatra_base_url = env('TRIATRA_BASE_URL_API');
-            $nrp = env('TRIATRA_LOGIN_NRP');
-            $source = env('TRIATRA_LOGIN_SOURCE');
-            $login = Http::post($triatra_base_url . '/api1/auth/ext-login', [
-                'nrp' => $nrp,
-                'source' => $source
-            ]);
-            $access_token = $login->json()['values']['accessToken'] ?? null;
+            // // Login TSP
+            // $triatra_base_url = env('TRIATRA_BASE_URL_API');
+            // $nrp = env('TRIATRA_LOGIN_NRP');
+            // $source = env('TRIATRA_LOGIN_SOURCE');
+            // $login = Http::post($triatra_base_url . '/api1/auth/ext-login', [
+            //     'nrp' => $nrp,
+            //     'source' => $source
+            // ]);
+            // $access_token = $login->json()['values']['accessToken'] ?? null;
 
-            // Get customers
-            $getCustomers = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $access_token,
-                'Site' => 'external'
-            ])->get($triatra_base_url . '/api2/tsp/customers');
-            $customers = $getCustomers->json()['data'] ?? [];
+            // // Get customers
+            // $getCustomers = Http::withHeaders([
+            //     'Authorization' => 'Bearer ' . $access_token,
+            //     'Site' => 'external'
+            // ])->get($triatra_base_url . '/api2/tsp/customers');
+            // $customers = $getCustomers->json()['data'] ?? [];
+            $customers = [
+                [
+                    'id' => 2125,
+                    'name' => 'ACSET PONDASI INDONUSA',
+                    'nib' => null,
+                    'npwp' => '806713822028000',
+                    'address' => 'ACSET Building, Jalan Majapahit No.26',
+                    'postal_code' => null,
+                    'email' => null,
+                ],
+                [
+                    'id' => 2126,
+                    'name' => 'ADARO WAMCO PRIMA',
+                    'nib' => null,
+                    'npwp' => '918362351735000',
+                    'address' => 'JL HAULING PARINGIN KM 69 RISA',
+                    'postal_code' => '71611',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2127,
+                    'name' => 'AGINCOURT RESOURCES',
+                    'nib' => null,
+                    'npwp' => '10720811091000',
+                    'address' => 'Wisma Pondok Indah 2 Suite 1201',
+                    'postal_code' => '1231',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2128,
+                    'name' => 'Anugerah Ramos Prima',
+                    'nib' => null,
+                    'npwp' => '851321927216000',
+                    'address' => 'Komplek Beringin Surya Damai Blok X',
+                    'postal_code' => null,
+                    'email' => null,
+                ],
+                [
+                    'id' => 2129,
+                    'name' => 'ASTRA INTERNATIONAL TBK',
+                    'nib' => null,
+                    'npwp' => '13025846092000',
+                    'address' => 'LT 58-63 GEDUNG MENARA ASTRA',
+                    'postal_code' => '122',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2130,
+                    'name' => 'ASYATEK INDONESIA',
+                    'nib' => null,
+                    'npwp' => '29019247417000',
+                    'address' => 'KOMP PCI BLOK D46 NO 23 RT004 RW004',
+                    'postal_code' => '3166',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2131,
+                    'name' => 'ATHA MARTH NAHA KRAMO',
+                    'nib' => null,
+                    'npwp' => '28528537727000',
+                    'address' => 'JL. IR. JUANDA RT 006',
+                    'postal_code' => '77212',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2132,
+                    'name' => 'AZZKA JAYA MANDIRI',
+                    'nib' => null,
+                    'npwp' => '430556175407000',
+                    'address' => 'AIR MANCUR II RT.001 RW.004',
+                    'postal_code' => '17152',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2133,
+                    'name' => 'BERKAH PERMATA GEMILANG',
+                    'nib' => null,
+                    'npwp' => '826717308721000',
+                    'address' => 'JL.RE Martadinata GG Hasanudin No 3',
+                    'postal_code' => '75251',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2134,
+                    'name' => 'BINA BANGUN ESA',
+                    'nib' => null,
+                    'npwp' => '21592407432000',
+                    'address' => 'Jalan Raya Narogong',
+                    'postal_code' => '17131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2135,
+                    'name' => 'BINA SARANA SUKSES.',
+                    'nib' => null,
+                    'npwp' => '24601528046000',
+                    'address' => 'JALAN PLUIT SELATAN RAYA',
+                    'postal_code' => '1234',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2136,
+                    'name' => 'BINTANG ARWANA',
+                    'nib' => null,
+                    'npwp' => '22293054701000',
+                    'address' => 'JL.A.YANI KP.MEGAMALL BLOK E NO.3-4',
+                    'postal_code' => '77554',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2137,
+                    'name' => 'BINUANG JAYA MULIA',
+                    'nib' => null,
+                    'npwp' => '18340752733000',
+                    'address' => 'JL. A. YANI KM 6, KOMPLEK BUNYAMIN',
+                    'postal_code' => '7117',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2138,
+                    'name' => 'BUMIPUTERA MAHA TERPERCAYA',
+                    'nib' => null,
+                    'npwp' => '844316331503000',
+                    'address' => 'Jalan Raya Provinsi No. 02 RT. 002',
+                    'postal_code' => '72211',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2139,
+                    'name' => 'CAHAYA MUGIA GEMILANG',
+                    'nib' => null,
+                    'npwp' => '628605909407000',
+                    'address' => 'RUKO DGREEN SQUARE DUKUH ZAMRUD',
+                    'postal_code' => '17151',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2140,
+                    'name' => 'CIPTA KRIDATAMA',
+                    'nib' => null,
+                    'npwp' => '17972670091000',
+                    'address' => 'Gedung TMT 2,3rd floor suite 301',
+                    'postal_code' => '1256',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2141,
+                    'name' => 'CV BERAU SANGGAM ABADI',
+                    'nib' => null,
+                    'npwp' => '933982639727000',
+                    'address' => 'JL. DURIAN III',
+                    'postal_code' => '77311',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2142,
+                    'name' => 'CV CITRA KARYA SANTOSA',
+                    'nib' => null,
+                    'npwp' => '26921940712000',
+                    'address' => 'Jalan Kapten Mulyono Selatan No.88',
+                    'postal_code' => '72271',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2143,
+                    'name' => 'CV KANA SURYA GEMILANG',
+                    'nib' => null,
+                    'npwp' => '19971431504000',
+                    'address' => 'JL. MUARA MAS RAYA BLOK B NO.19',
+                    'postal_code' => '3258',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2144,
+                    'name' => 'CV SUKSES SARANA SEJAHTERA',
+                    'nib' => null,
+                    'npwp' => '916655053732000',
+                    'address' => 'JL A YANI KM 21 RT.004',
+                    'postal_code' => '71571',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2145,
+                    'name' => 'CV. PUSPA JUITA',
+                    'nib' => null,
+                    'npwp' => '28428860725000',
+                    'address' => 'JL. MAKASSAR RT.11',
+                    'postal_code' => '75',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2146,
+                    'name' => 'CV.CATURPILAR BERSATU',
+                    'nib' => null,
+                    'npwp' => '808406268085000',
+                    'address' => 'Rukan Citi Square Business Park, Jl Peta Selatan C9',
+                    'postal_code' => '1153',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2147,
+                    'name' => 'DGAS ALAM SEMESTA',
+                    'nib' => null,
+                    'npwp' => '24147548056000',
+                    'address' => 'GEDUNG CIBIS NINE LT.12',
+                    'postal_code' => '1256',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2148,
+                    'name' => 'DUTA FLOW HIDROLIK',
+                    'nib' => null,
+                    'npwp' => '16803355039000',
+                    'address' => 'Rukan Green Garden Blok Z2',
+                    'postal_code' => '161',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2149,
+                    'name' => 'Dwiwira Lestari Jaya',
+                    'nib' => null,
+                    'npwp' => '16845927725000',
+                    'address' => 'JL. Belatuk, 06, Temindung Permai',
+                    'postal_code' => '75',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2151,
+                    'name' => 'GARUDA ASIA SERVICE',
+                    'nib' => null,
+                    'npwp' => '412718090741000',
+                    'address' => 'JL. NIAGA 2 RT.002',
+                    'postal_code' => '75131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2152,
+                    'name' => 'Gebe Prima Mandiri',
+                    'nib' => null,
+                    'npwp' => '904234937805000',
+                    'address' => 'JL PELITA RAYA A 32 NO.15 D RT. 004',
+                    'postal_code' => '77554',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2153,
+                    'name' => 'HAMZAH BAJA INDONESIA',
+                    'nib' => null,
+                    'npwp' => '414820811436000',
+                    'address' => 'JL. SABILLILAH RT.003 RW.002',
+                    'postal_code' => '1551',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2154,
+                    'name' => 'HEXINDO ADIPERKASA Tbk',
+                    'nib' => null,
+                    'npwp' => '13859574091000',
+                    'address' => 'Jl. Pulo Kambing II KAV I & II /33',
+                    'postal_code' => '1392',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2155,
+                    'name' => 'ISCO PERKASA ENGINEERING',
+                    'nib' => null,
+                    'npwp' => '32894990722000',
+                    'address' => 'JL. CIPTOMANGUN KUSUMO',
+                    'postal_code' => '75131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2156,
+                    'name' => 'JIM',
+                    'nib' => null,
+                    'npwp' => '317566040721000',
+                    'address' => 'KOMPLEK PELANGI RESIDENCE, SEPINGGA',
+                    'postal_code' => '76115',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2157,
+                    'name' => 'KALIMANTAN INTI MAJU',
+                    'nib' => null,
+                    'npwp' => '662646801211000',
+                    'address' => 'JL RIAU GG GELIGA 9E, PADANG TERUBU',
+                    'postal_code' => '17828',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2158,
+                    'name' => 'KALTIM DIAMOND COAL',
+                    'nib' => null,
+                    'npwp' => '30340533722000',
+                    'address' => 'PERUM. BUKIT MEDITERANIA',
+                    'postal_code' => '75117',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2159,
+                    'name' => 'Karya Kubotindo Sejahtera',
+                    'nib' => null,
+                    'npwp' => '393054978427000',
+                    'address' => 'Jl. Bulevar Hijau Blok H.2 No.8A',
+                    'postal_code' => '17131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2160,
+                    'name' => 'Karya Surya Lestari',
+                    'nib' => null,
+                    'npwp' => '911823474013000',
+                    'address' => 'Jalan Teuku nyak Arif Ruko blok h',
+                    'postal_code' => '1219',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2150,
+                    'name' => 'PT ETAM BERSAMA LESTARI',
+                    'nib' => null,
+                    'npwp' => '18335547725000',
+                    'address' => 'Jl. Belatuk No. 6 RT 32, Termindung Permai',
+                    'postal_code' => '75243',
+                    'email' => null,
+                ],
+            ];
 
             $customers = collect($customers)->filter(function ($customer) use ($search) {
                 if (empty($search)) {
@@ -249,22 +581,349 @@ class RequestDocumentController extends Controller
     public function getCustomerById($id)
     {
         try {
-            // Login TSP
-            $triatra_base_url = env('TRIATRA_BASE_URL_API');
-            $nrp = env('TRIATRA_LOGIN_NRP');
-            $source = env('TRIATRA_LOGIN_SOURCE');
-            $login = Http::post($triatra_base_url . '/api1/auth/ext-login', [
-                'nrp' => $nrp,
-                'source' => $source
-            ]);
-            $access_token = $login->json()['values']['accessToken'] ?? null;
+            // // Login TSP
+            // $triatra_base_url = env('TRIATRA_BASE_URL_API');
+            // $nrp = env('TRIATRA_LOGIN_NRP');
+            // $source = env('TRIATRA_LOGIN_SOURCE');
+            // $login = Http::post($triatra_base_url . '/api1/auth/ext-login', [
+            //     'nrp' => $nrp,
+            //     'source' => $source
+            // ]);
+            // $access_token = $login->json()['values']['accessToken'] ?? null;
 
-            // Get customer by ID
-            $getCustomer = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $access_token,
-                'Site' => 'external'
-            ])->get($triatra_base_url . '/api2/tsp/customers/' . $id);
-            $customer = $getCustomer->json()['data'] ?? null;
+            // // Get customer by ID
+            // $getCustomer = Http::withHeaders([
+            //     'Authorization' => 'Bearer ' . $access_token,
+            //     'Site' => 'external'
+            // ])->get($triatra_base_url . '/api2/tsp/customers/' . $id);
+            // $customer = $getCustomer->json()['data'] ?? null;
+            $customers = [
+                [
+                    'id' => 2125,
+                    'name' => 'ACSET PONDASI INDONUSA',
+                    'nib' => null,
+                    'npwp' => '806713822028000',
+                    'address' => 'ACSET Building, Jalan Majapahit No.26',
+                    'postal_code' => null,
+                    'email' => null,
+                ],
+                [
+                    'id' => 2126,
+                    'name' => 'ADARO WAMCO PRIMA',
+                    'nib' => null,
+                    'npwp' => '918362351735000',
+                    'address' => 'JL HAULING PARINGIN KM 69 RISA',
+                    'postal_code' => '71611',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2127,
+                    'name' => 'AGINCOURT RESOURCES',
+                    'nib' => null,
+                    'npwp' => '10720811091000',
+                    'address' => 'Wisma Pondok Indah 2 Suite 1201',
+                    'postal_code' => '1231',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2128,
+                    'name' => 'Anugerah Ramos Prima',
+                    'nib' => null,
+                    'npwp' => '851321927216000',
+                    'address' => 'Komplek Beringin Surya Damai Blok X',
+                    'postal_code' => null,
+                    'email' => null,
+                ],
+                [
+                    'id' => 2129,
+                    'name' => 'ASTRA INTERNATIONAL TBK',
+                    'nib' => null,
+                    'npwp' => '13025846092000',
+                    'address' => 'LT 58-63 GEDUNG MENARA ASTRA',
+                    'postal_code' => '122',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2130,
+                    'name' => 'ASYATEK INDONESIA',
+                    'nib' => null,
+                    'npwp' => '29019247417000',
+                    'address' => 'KOMP PCI BLOK D46 NO 23 RT004 RW004',
+                    'postal_code' => '3166',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2131,
+                    'name' => 'ATHA MARTH NAHA KRAMO',
+                    'nib' => null,
+                    'npwp' => '28528537727000',
+                    'address' => 'JL. IR. JUANDA RT 006',
+                    'postal_code' => '77212',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2132,
+                    'name' => 'AZZKA JAYA MANDIRI',
+                    'nib' => null,
+                    'npwp' => '430556175407000',
+                    'address' => 'AIR MANCUR II RT.001 RW.004',
+                    'postal_code' => '17152',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2133,
+                    'name' => 'BERKAH PERMATA GEMILANG',
+                    'nib' => null,
+                    'npwp' => '826717308721000',
+                    'address' => 'JL.RE Martadinata GG Hasanudin No 3',
+                    'postal_code' => '75251',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2134,
+                    'name' => 'BINA BANGUN ESA',
+                    'nib' => null,
+                    'npwp' => '21592407432000',
+                    'address' => 'Jalan Raya Narogong',
+                    'postal_code' => '17131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2135,
+                    'name' => 'BINA SARANA SUKSES.',
+                    'nib' => null,
+                    'npwp' => '24601528046000',
+                    'address' => 'JALAN PLUIT SELATAN RAYA',
+                    'postal_code' => '1234',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2136,
+                    'name' => 'BINTANG ARWANA',
+                    'nib' => null,
+                    'npwp' => '22293054701000',
+                    'address' => 'JL.A.YANI KP.MEGAMALL BLOK E NO.3-4',
+                    'postal_code' => '77554',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2137,
+                    'name' => 'BINUANG JAYA MULIA',
+                    'nib' => null,
+                    'npwp' => '18340752733000',
+                    'address' => 'JL. A. YANI KM 6, KOMPLEK BUNYAMIN',
+                    'postal_code' => '7117',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2138,
+                    'name' => 'BUMIPUTERA MAHA TERPERCAYA',
+                    'nib' => null,
+                    'npwp' => '844316331503000',
+                    'address' => 'Jalan Raya Provinsi No. 02 RT. 002',
+                    'postal_code' => '72211',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2139,
+                    'name' => 'CAHAYA MUGIA GEMILANG',
+                    'nib' => null,
+                    'npwp' => '628605909407000',
+                    'address' => 'RUKO DGREEN SQUARE DUKUH ZAMRUD',
+                    'postal_code' => '17151',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2140,
+                    'name' => 'CIPTA KRIDATAMA',
+                    'nib' => null,
+                    'npwp' => '17972670091000',
+                    'address' => 'Gedung TMT 2,3rd floor suite 301',
+                    'postal_code' => '1256',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2141,
+                    'name' => 'CV BERAU SANGGAM ABADI',
+                    'nib' => null,
+                    'npwp' => '933982639727000',
+                    'address' => 'JL. DURIAN III',
+                    'postal_code' => '77311',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2142,
+                    'name' => 'CV CITRA KARYA SANTOSA',
+                    'nib' => null,
+                    'npwp' => '26921940712000',
+                    'address' => 'Jalan Kapten Mulyono Selatan No.88',
+                    'postal_code' => '72271',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2143,
+                    'name' => 'CV KANA SURYA GEMILANG',
+                    'nib' => null,
+                    'npwp' => '19971431504000',
+                    'address' => 'JL. MUARA MAS RAYA BLOK B NO.19',
+                    'postal_code' => '3258',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2144,
+                    'name' => 'CV SUKSES SARANA SEJAHTERA',
+                    'nib' => null,
+                    'npwp' => '916655053732000',
+                    'address' => 'JL A YANI KM 21 RT.004',
+                    'postal_code' => '71571',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2145,
+                    'name' => 'CV. PUSPA JUITA',
+                    'nib' => null,
+                    'npwp' => '28428860725000',
+                    'address' => 'JL. MAKASSAR RT.11',
+                    'postal_code' => '75',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2146,
+                    'name' => 'CV.CATURPILAR BERSATU',
+                    'nib' => null,
+                    'npwp' => '808406268085000',
+                    'address' => 'Rukan Citi Square Business Park, Jl Peta Selatan C9',
+                    'postal_code' => '1153',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2147,
+                    'name' => 'DGAS ALAM SEMESTA',
+                    'nib' => null,
+                    'npwp' => '24147548056000',
+                    'address' => 'GEDUNG CIBIS NINE LT.12',
+                    'postal_code' => '1256',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2148,
+                    'name' => 'DUTA FLOW HIDROLIK',
+                    'nib' => null,
+                    'npwp' => '16803355039000',
+                    'address' => 'Rukan Green Garden Blok Z2',
+                    'postal_code' => '161',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2149,
+                    'name' => 'Dwiwira Lestari Jaya',
+                    'nib' => null,
+                    'npwp' => '16845927725000',
+                    'address' => 'JL. Belatuk, 06, Temindung Permai',
+                    'postal_code' => '75',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2151,
+                    'name' => 'GARUDA ASIA SERVICE',
+                    'nib' => null,
+                    'npwp' => '412718090741000',
+                    'address' => 'JL. NIAGA 2 RT.002',
+                    'postal_code' => '75131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2152,
+                    'name' => 'Gebe Prima Mandiri',
+                    'nib' => null,
+                    'npwp' => '904234937805000',
+                    'address' => 'JL PELITA RAYA A 32 NO.15 D RT. 004',
+                    'postal_code' => '77554',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2153,
+                    'name' => 'HAMZAH BAJA INDONESIA',
+                    'nib' => null,
+                    'npwp' => '414820811436000',
+                    'address' => 'JL. SABILLILAH RT.003 RW.002',
+                    'postal_code' => '1551',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2154,
+                    'name' => 'HEXINDO ADIPERKASA Tbk',
+                    'nib' => null,
+                    'npwp' => '13859574091000',
+                    'address' => 'Jl. Pulo Kambing II KAV I & II /33',
+                    'postal_code' => '1392',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2155,
+                    'name' => 'ISCO PERKASA ENGINEERING',
+                    'nib' => null,
+                    'npwp' => '32894990722000',
+                    'address' => 'JL. CIPTOMANGUN KUSUMO',
+                    'postal_code' => '75131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2156,
+                    'name' => 'JIM',
+                    'nib' => null,
+                    'npwp' => '317566040721000',
+                    'address' => 'KOMPLEK PELANGI RESIDENCE, SEPINGGA',
+                    'postal_code' => '76115',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2157,
+                    'name' => 'KALIMANTAN INTI MAJU',
+                    'nib' => null,
+                    'npwp' => '662646801211000',
+                    'address' => 'JL RIAU GG GELIGA 9E, PADANG TERUBU',
+                    'postal_code' => '17828',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2158,
+                    'name' => 'KALTIM DIAMOND COAL',
+                    'nib' => null,
+                    'npwp' => '30340533722000',
+                    'address' => 'PERUM. BUKIT MEDITERANIA',
+                    'postal_code' => '75117',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2159,
+                    'name' => 'Karya Kubotindo Sejahtera',
+                    'nib' => null,
+                    'npwp' => '393054978427000',
+                    'address' => 'Jl. Bulevar Hijau Blok H.2 No.8A',
+                    'postal_code' => '17131',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2160,
+                    'name' => 'Karya Surya Lestari',
+                    'nib' => null,
+                    'npwp' => '911823474013000',
+                    'address' => 'Jalan Teuku nyak Arif Ruko blok h',
+                    'postal_code' => '1219',
+                    'email' => null,
+                ],
+                [
+                    'id' => 2150,
+                    'name' => 'PT ETAM BERSAMA LESTARI',
+                    'nib' => null,
+                    'npwp' => '18335547725000',
+                    'address' => 'Jl. Belatuk No. 6 RT 32, Termindung Permai',
+                    'postal_code' => '75243',
+                    'email' => null,
+                ],
+            ];
+            $customer = collect($customers)->firstWhere('id', $id);
 
             if ($customer) {
                 return response()->json([
@@ -297,15 +956,101 @@ class RequestDocumentController extends Controller
         try {
             $search = $request->input('search', '');
 
-            // Base URL API Triatra
-            $triatra_base_url = env('TRIATRA_BASE_URL_API');
+            // // Base URL API Triatra
+            // $triatra_base_url = env('TRIATRA_BASE_URL_API');
 
             // Get Work Location
-            $response = Http::get(
-                $triatra_base_url . '/api2/hc/master-data/work-location/index'
-            );
+            // $response = Http::get(
+            //     $triatra_base_url . '/api2/hc/master-data/work-location/index'
+            // );
 
-            $workLocations = $response->json()['values'] ?? [];
+            // $workLocations = $response->json()['values'] ?? [];
+            $workLocations = [
+                [
+                    'id' => 25,
+                    'name' => '1000 - HEAD OFFICE',
+                ],
+                [
+                    'id' => 13,
+                    'name' => '1001 - SITE OPERATION SANGATTA',
+                ],
+                [
+                    'id' => 24,
+                    'name' => '1002 - SITE REPRESENTATIVE TANJUNG REDEB',
+                ],
+                [
+                    'id' => 22,
+                    'name' => '1003 - SITE REPRESENTATIVE TABANG',
+                ],
+                [
+                    'id' => 18,
+                    'name' => '1004 - SITE REPRESENTATIVE MELAK',
+                ],
+                [
+                    'id' => 26,
+                    'name' => '1005 - SITE OPERATION BALIKPAPAN',
+                ],
+                [
+                    'id' => 33,
+                    'name' => '1006 - SITE REPRESENTATIVE KALIORANG',
+                ],
+                [
+                    'id' => 28,
+                    'name' => '1200 - DEPO WAREHOUSE BALIKPAPAN',
+                ],
+                [
+                    'id' => 14,
+                    'name' => '2001 - SITE OPERATION TANJUNG',
+                ],
+                [
+                    'id' => 17,
+                    'name' => '2002 - SITE REPRESENTATIVE BATU KAJANG',
+                ],
+                [
+                    'id' => 16,
+                    'name' => '2003 - SITE REPRESENTATIVE BANJARMASIN',
+                ],
+                [
+                    'id' => 21,
+                    'name' => '2004 - SITE REPRESENTATIVE SUNGAI DANAU',
+                ],
+                [
+                    'id' => 19,
+                    'name' => '2005 - SITE REPRESENTATIVE MUARA TEWEH',
+                ],
+                [
+                    'id' => 27,
+                    'name' => '9001 - SITE OPERATION JAKARTA',
+                ],
+                [
+                    'id' => 15,
+                    'name' => '9002 - SITE OPERATION TIMIKA',
+                ],
+                [
+                    'id' => 23,
+                    'name' => '9003 - SITE REPRESENTATIVE TANJUNG ENIM',
+                ],
+                [
+                    'id' => 20,
+                    'name' => '9004 - SITE REPRESENTATIVE PEKANBARU',
+                ],
+                [
+                    'id' => 34,
+                    'name' => '9005 - SITE REPRESENTATIVE SUMBAWA',
+                ],
+                [
+                    'id' => 32,
+                    'name' => '9009 - SITE OPERATION JAKARTA UNIT',
+                ],
+                [
+                    'id' => 30,
+                    'name' => '9100 - DEPO WAREHOUSE JAKARTA',
+                ],
+                [
+                    'id' => 29,
+                    'name' => 'OTHER',
+                ],
+            ];
 
             // Filter berdasarkan query
             $workLocations = collect($workLocations)
@@ -528,10 +1273,14 @@ class RequestDocumentController extends Controller
         $db->beginTransaction();
 
         try {
+            /* Generate Ticket Number */
+            $request_count = TspRequestDocument::count();
+            $ticket_number = str_pad($request_count + 1, 5, "0", STR_PAD_LEFT);
 
             /* CREATE REQUEST DOCUMENT */
 
             $requestDocument = TspRequestDocument::create([
+                'ticket_number' => $ticket_number,
                 'stage_id' => 1,
                 'status_id' => $action === 'draft' ? 1 : 2,
                 'title' => $validated['title'],
@@ -744,7 +1493,7 @@ class RequestDocumentController extends Controller
 
                 );
 
-                Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'New Request Document', $requestDocument->id);
             }
 
@@ -1366,7 +2115,7 @@ class RequestDocumentController extends Controller
 
                 // jika status request document sebelum di update adalah draft maka baru kirim email,tapi jika sudah submit maka tidak  kirim email lagi ketika submit di edit
                 if ($previousStatusId == 1) {
-                    Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'New Request Document', $requestDocument->id);
                 }
             }
@@ -1784,7 +2533,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Request Document Declined', $requestDocument->id);
 
             $db->commit();
@@ -2139,7 +2888,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Legal Drafting Completed', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -2249,7 +2998,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -2510,7 +3259,7 @@ class RequestDocumentController extends Controller
             $user = User::find($requestDocument->requester_id);
             $committee = User::find($committee->committee_id);
 
-            Mail::to($afterCommitteReview ? $committee->email_sf : $user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($afterCommitteReview ? $committee->email_sf : $user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($afterCommitteReview ? $committee->id : $user->id, 'tsp.request-document.tracking', 'Revision Legal Drafting Completed', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -2612,9 +3361,9 @@ class RequestDocumentController extends Controller
 
             $committee = User::find($committee->committee_id);
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request Document Verified by User', $requestDocument->id);
-            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email_committee));
+            // Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email_committee));
             addNotification($committee->id, 'tsp.request-document.tracking', 'Request Document Waiting for Verification', $requestDocument->id);
 
             $db->commit();
@@ -2739,7 +3488,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting by Committee', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -3295,7 +4044,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada request document yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to(getAdminLegalTSP()->first()->email ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request to Revision Legal Drafting After Committee Review', $requestDocument->id);
 
 
@@ -3453,7 +4202,7 @@ class RequestDocumentController extends Controller
                     ];
 
 
-                    Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification($nextCommitteeUser->id, 'tsp.request-document.tracking', 'Request Document Waiting for Verification', $requestDocument->id);
                 }
 
@@ -3526,14 +4275,14 @@ class RequestDocumentController extends Controller
 
                 /* SEND EMAIL TO USER */
                 if ($requester && $requester->email_sf) {
-                    Mail::to($requester->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($requester->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
                 addNotification($requester->id, 'tsp.request-document.tracking', 'Request Document Verified by Committee', $requestDocument->id);
 
                 /* SEND EMAIL TO ADMIN LEGAL */
 
                 if ($adminLegal && $adminLegal->email_sf) {
-                    Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
                 addNotification($adminLegal->id, 'tsp.request-document.tracking', 'Request Document Verified by Committee', $requestDocument->id);
 
@@ -3724,7 +4473,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, Final Document telah diunggah dan siap untuk diproses lebih lanjut oleh Admin Legal.',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Final Document Uploaded', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -3802,7 +4551,7 @@ class RequestDocumentController extends Controller
         try {
             $validated = $request->validate([
                 'date' => ['required', 'date'],
-                'department' => ['required', 'string', 'max:255'],
+                'department_id' => ['required', 'numeric'],
                 'document_objective' => ['required', 'string', 'max:255'],
                 'start_date' => ['required', 'string', 'max:255'],
                 'end_date' => ['required', 'string', 'max:255'],
@@ -3832,7 +4581,7 @@ class RequestDocumentController extends Controller
                 [
                     'request_document_id' => $requestDocument->id,
                     'date' => $validated['date'],
-                    'department' => $validated['department'],
+                    'department_id' => $validated['department_id'],
                     'document_objective' => $validated['document_objective'],
                     'start_date' => $validated['start_date'],
                     'end_date' => $validated['end_date'],
@@ -3892,7 +4641,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Form Legal Review Created', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -4002,7 +4751,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada Form Legal Review yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Form Legal Review Need Revision', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -4166,7 +4915,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($user->id, 'tsp.request-document.tracking', 'Form Legal Review Revised', $requestDocument->id);
 
             Alert::success('Data Saved Successfully', 'Success Message');
@@ -4261,7 +5010,7 @@ class RequestDocumentController extends Controller
 
             $committee = User::find($committee->committee_id);
 
-            Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to($committee->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification($committee->id, 'tsp.request-document.tracking', 'Form Legal Review Waiting for Verification', $requestDocument->id);
 
             $db->commit();
@@ -4385,7 +5134,7 @@ class RequestDocumentController extends Controller
                 'message' => 'Email Pemberitahuan, ada form legal review yang perlu direvisi',
             );
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Form Legal Review Need Revision', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -4549,7 +5298,7 @@ class RequestDocumentController extends Controller
                     ];
 
 
-                    Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($nextCommitteeUser->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification($nextCommitteeUser->id, 'tsp.request-document.tracking', 'Form Legal Review Waiting for Verification', $requestDocument->id);
                 }
 
@@ -4618,7 +5367,7 @@ class RequestDocumentController extends Controller
                 /* SEND EMAIL TO ADMIN LEGAL */
 
                 if ($adminLegal && $adminLegal->email_sf) {
-                    Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($adminLegal->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                     addNotification($adminLegal->id, 'tsp.request-document.tracking', 'Form Legal Review Verified by Committee', $requestDocument->id);
                 }
 
@@ -4761,7 +5510,7 @@ class RequestDocumentController extends Controller
 
             $user = User::find($requestDocument->requester_id);
 
-            Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
+            // Mail::to($user->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($data_email));
             addNotification($user->id ?? null, 'tsp.request-document.tracking', 'Signed BOD Document Uploaded', $requestDocument->id);
 
             // Alert::success('Data Saved Successfully', 'Success Message');
@@ -4969,7 +5718,7 @@ class RequestDocumentController extends Controller
             ];
 
 
-            Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+            // Mail::to(getAdminLegalTSP()->first()->email_sf ?? null)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
             addNotification(getAdminLegalTSP()->first()->id ?? null, 'tsp.request-document.tracking', 'Request Document Confirmed for Filing', $requestDocument->id);
 
             $db->commit();
@@ -5132,17 +5881,19 @@ class RequestDocumentController extends Controller
      */
     public function generatePdfFormLegalReview($id)
     {
-        $flr = TspFormLegalReview::leftJoin('tsp_request_documents', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_documents.id')
-            ->leftJoin('tsp_request_document_pics', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_document_pics.request_document_id')
-            ->leftJoin('tsp_request_document_customers', 'tsp_form_legal_reviews.request_document_id', '=', 'tsp_request_document_customers.request_document_id')
+        $flr = TspFormLegalReview::leftJoin('satria_legatra.tsp_request_documents', 'satria_legatra.tsp_form_legal_reviews.request_document_id', '=', 'satria_legatra.tsp_request_documents.id')
+            ->leftJoin('satria_legatra.tsp_request_document_pics', 'satria_legatra.tsp_form_legal_reviews.request_document_id', '=', 'satria_legatra.tsp_request_document_pics.request_document_id')
+            ->leftJoin('satria_legatra.tsp_request_document_customers', 'satria_legatra.tsp_form_legal_reviews.request_document_id', '=', 'satria_legatra.tsp_request_document_customers.request_document_id')
+            ->leftJoin('satria.mst_dept', 'satria.mst_dept.id', '=', 'satria_legatra.tsp_form_legal_reviews.department_id')
             ->select(
-                'tsp_form_legal_reviews.*',
-                'tsp_request_documents.title as title',
-                'tsp_request_documents.document_number as document_number',
-                'tsp_request_document_pics.name as pic_name',
-                'tsp_request_document_customers.name as customer_name',
+                'satria_legatra.tsp_form_legal_reviews.*',
+                'satria_legatra.tsp_request_documents.title as title',
+                'satria_legatra.tsp_request_documents.document_number as document_number',
+                'satria_legatra.tsp_request_document_pics.name as pic_name',
+                'satria_legatra.tsp_request_document_customers.name as customer_name',
+                'satria.mst_dept.nama as department',
             )
-            ->where('tsp_form_legal_reviews.request_document_id', $id)->firstOrFail();
+            ->where('satria_legatra.tsp_form_legal_reviews.request_document_id', $id)->firstOrFail();
 
         $committees = TspRequestDocumentCommittees::leftJoin(
             'satria.users as user',
@@ -5151,7 +5902,7 @@ class RequestDocumentController extends Controller
             'user.id'
         )
             ->leftJoin('satria.ms_emp_list as emp', 'user.personal_number', '=', 'emp.personal_number')
-            ->leftJoin('departments as dept', 'user.dept', '=', 'dept.dept_id')
+            ->leftJoin('departments as dept', 'user.dept', '=', 'dept.id')
             ->select(
                 'tsp_request_document_committees.id',
                 'tsp_request_document_committees.committee_id',
@@ -5316,7 +6067,7 @@ class RequestDocumentController extends Controller
                         'Email Pemberitahuan, Request Document telah melewati SLA dan perlu segera ditindaklanjuti.',
                     ];
 
-                    Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($user->email_sf)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
 
                 $totalSent++;
@@ -5467,7 +6218,7 @@ class RequestDocumentController extends Controller
                         'message' => 'Email Pemberitahuan, Kontrak akan berakhir dalam ' . $remainingDays . ' hari dan perlu segera ditindaklanjuti.',
                     ];
 
-                    Mail::to($customerEmail)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
+                    // Mail::to($customerEmail)->send(new \App\Mail\TSP\RequestDocumentNotification($detail_email));
                 }
 
                 $totalSent++;
