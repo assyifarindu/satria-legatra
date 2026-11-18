@@ -103,14 +103,17 @@ class RequestDocumentController extends Controller
                     'satria_legatra.tsp_request_documents.created_at',
                     'satria_legatra.tsp_request_documents.updated_at'
                 )
-                ->distinct();
+                ->distinct()
+                ->whereNotIn('satria_legatra.tsp_request_documents.stage_id', [11]);
 
 
             if ($role === 'Admin Legal TSP') {
                 $query->whereNotIn('satria_legatra.tsp_request_documents.status_id', [1, 3]);
             } else {
-                $query->where('satria_legatra.tsp_request_documents.requester_id', $user_id)
-                    ->orWhere('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
+                $query->where(function ($q) use ($user_id) {
+                    $q->where('satria_legatra.tsp_request_documents.requester_id', $user_id)
+                        ->orWhere('satria_legatra.tsp_request_document_histories.assigned_to', $user_id);
+                });
             }
 
             $query->orderByRaw("
