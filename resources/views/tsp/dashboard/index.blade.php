@@ -9,6 +9,7 @@
     @include('tsp.dashboard.css.pending-legal-review-css')
     @include('tsp.dashboard.css.pending-review-css')
     @include('tsp.dashboard.css.pending-sign-customer-css')
+    @include('tsp.dashboard.css.waiting-customer-css')
 @endsection
 
 @section('content')
@@ -38,18 +39,6 @@
                     @include('tsp.dashboard.components.contract-type-composition')
                 </div>
 
-                <div class="col-xl-4 col-lg-6">
-                    @include('tsp.dashboard.components.pending-legal-review')
-                </div>
-
-                <div class="col-xl-4 col-lg-6">
-                    @include('tsp.dashboard.components.pending-review')
-                </div>
-            </div>
-
-            <!-- Dashboard Row 2 -->
-            <div class="row g-3 align-items-stretch">
-
                 <!-- Pending Sign Customer -->
                 <div class="col-xl-4 col-lg-6">
 
@@ -57,8 +46,30 @@
 
                 </div>
 
+                <!-- Waiting Customer -->
+                <div class="col-xl-4 col-lg-6">
+
+                    @include('tsp.dashboard.components.waiting-customer')
+
+                </div>
+            </div>
+
+            <!-- Dashboard Row 2 -->
+            <div class="row g-2 align-items-stretch">
+                <div class="col-xl-6 col-lg-6">
+                    @include('tsp.dashboard.components.pending-legal-review')
+                </div>
+
+                <div class="col-xl-6 col-lg-6">
+                    @include('tsp.dashboard.components.pending-review')
+                </div>
+            </div>
+
+
+            <!-- Dashboard Row 3 -->
+            <div class="row g-3 align-items-stretch">
                 <!-- Contract Customer All Site -->
-                <div class="col-xl-8 col-lg-6">
+                <div class="col-xl-12 col-lg-6">
 
                     @include('tsp.dashboard.components.contract-customer-all-site')
 
@@ -74,4 +85,5 @@
     @include('tsp.dashboard.js.pending-review')
     @include('tsp.dashboard.js.pending-sign-customer')
     @include('tsp.dashboard.js.contract-customer-all-site')
+    @include('tsp.dashboard.js.waiting-customer')
 @endsection

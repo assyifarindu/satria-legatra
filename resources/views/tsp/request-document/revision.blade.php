@@ -577,11 +577,11 @@
                                         <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
                                             role="alert">
                                             Untuk attachment Draft Contract, file harus diawali dengan prefix
-                                            (Draf_Contract_).
+                                            (draft contract).
                                         </div>
 
                                         <div>
-                                            <label for="draft_contract" class="form-label">Draf Contract</label>
+                                            <label for="draft_contract" class="form-label">Draft Contract</label>
                                             <input type="file"
                                                 class="form-control @error('draft_contract') is-invalid @enderror"
                                                 name="draft_contract" id="draft_contract" accept=".pdf"
@@ -606,7 +606,7 @@
 
                                         <div class="alert alert-warning alert-dismissible fade show mb-0 py-2"
                                             role="alert">
-                                            Untuk attachment Quotation, file harus diawali dengan prefix (Quotation_).
+                                            Untuk attachment Quotation, file harus diawali dengan prefix (quotation).
                                         </div>
 
                                         <div>
@@ -639,10 +639,10 @@
                                     </div>
                                 </fieldset>
 
-                                <input type="hidden" name="action_type" id="action_type">
+                                <input type="hidden" name="action_type" id="action_type" value="submit">
 
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="action_type" value="submit" class="btn btn-primary">
+                                    <button type="submit" name="action_type" class="btn btn-primary">
                                         Submit
                                     </button>
                                 </div>
@@ -667,19 +667,244 @@
 
             // Set action type
             $("button[type='submit']").on('click', function() {
-                const actionType = $(this).val();
-                $("#action_type").val(actionType);
+                $("#action_type").val($(this).val());
             });
 
             // Disable submit button after form submission to prevent double submission
+            // ERROR HANDLING
+
+            function showError(input, message) {
+                const $input = $(input);
+                $input.addClass('is-invalid');
+
+                let $error;
+
+                if ($input.hasClass('select2-hidden-accessible')) {
+                    const $select2 = $input.next('.select2-container');
+
+                    $select2.find('.select2-selection').addClass('is-invalid');
+
+                    $error = $select2.next('.client-error');
+
+                    if (!$error.length) {
+                        $error = $('<div class="invalid-feedback d-block client-error"></div>');
+                        $select2.after($error);
+                    }
+                } else {
+                    $error = $input.next('.client-error');
+
+                    if (!$error.length) {
+                        $error = $('<div class="invalid-feedback d-block client-error"></div>');
+                        $input.after($error);
+                    }
+                }
+
+                $error.text(message).show();
+            }
+
+            function clearError(input) {
+                const $input = $(input);
+
+                $input.removeClass('is-invalid');
+
+                if ($input.hasClass('select2-hidden-accessible')) {
+                    const $select2 = $input.next('.select2-container');
+
+                    $select2.find('.select2-selection').removeClass('is-invalid');
+                    $select2.next('.client-error').remove();
+                } else {
+                    $input.next('.client-error').remove();
+                }
+            }
+
+            // ATTACHMENT CONFIGURATION
+
+            const attachmentConfigs = [{
+                    id: '#draft_contract',
+                    label: 'Draft Contract',
+                    prefix: 'draft contract'
+                },
+                {
+                    id: '#quotation',
+                    label: 'Quotation',
+                    prefix: 'quotation'
+                }
+            ];
+
+            // ATTACHMENT VALIDATION
+
+            function validateAttachment(input, config) {
+                const file = input.files?.[0];
+
+                // 1. Required validation
+                if (!file) {
+                    showError(input, `${config.label} is required.`);
+                    return false;
+                }
+
+                const fileName = file.name.trim().toLowerCase();
+                const prefix = config.prefix.toLowerCase();
+
+                // 2. Prefix validation
+                if (!fileName.startsWith(prefix)) {
+                    showError(
+                        input,
+                        `File name ${config.label} must start with "${config.prefix}".`
+                    );
+                    return false;
+                }
+
+                // 3. PDF validation
+                if (!fileName.endsWith('.pdf')) {
+                    showError(input, `${config.label} must be a PDF file.`);
+                    return false;
+                }
+
+                // 4. Maximum file size: 10 MB
+                if (file.size > 10 * 1024 * 1024) {
+                    showError(input, `${config.label} must be at most 10 MB.`);
+                    return false;
+                }
+
+                clearError(input);
+                return true;
+            }
+
+            // VALIDATE ATTACHMENT WHEN FILE IS SELECTED
+
+            attachmentConfigs.forEach(config => {
+                $(config.id).on('change', function() {
+                    validateAttachment(this, config);
+                });
+            });
+
+            // NAVIGATE TO FIELD ERROR
+
+            function navigateToError(input) {
+                const $input = $(input);
+                const fieldset = $input.closest('fieldset');
+
+                if (fieldset.length) {
+                    $('fieldset').hide();
+
+                    fieldset.show();
+
+                    currentStep = $('fieldset').index(fieldset);
+
+                    $('.step-button')
+                        .removeClass('active btn-primary')
+                        .addClass('btn-secondary');
+
+                    $(`.step-button[data-step="${currentStep + 1}"]`)
+                        .addClass('active btn-primary')
+                        .removeClass('btn-secondary');
+                }
+
+                input.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                if (!$input.hasClass('select2-hidden-accessible')) {
+                    input.focus({
+                        preventScroll: true
+                    });
+                } else {
+                    $input.select2('open');
+                }
+            }
+
+            // FORM SUBMIT VALIDATION
+
             $('#form-request-document').on('submit', function(event) {
-                const form = $(this);
 
-                // Disable semua tombol submit
-                form.find('button[type="submit"]').prop('disabled', true);
+                const form = this;
+                const $form = $(this);
 
-                // Button yang diklik
-                const submitter = event.originalEvent.submitter;
+                const submitter = event.originalEvent?.submitter;
+
+                const actionType = submitter?.value || $('#action_type').val();
+
+                // SAVE AS DRAFT - SKIP VALIDATION
+
+                if (actionType === 'draft') {
+                    $('#action_type').val('draft');
+
+                    $form.find('button[type="submit"]').prop('disabled', true);
+
+                    if (submitter) {
+                        $(submitter).html(`
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                            Processing...
+                        `);
+                    }
+
+                    return true;
+                }
+
+                // ONLY VALIDATE SUBMIT
+
+                if (actionType !== 'submit') {
+                    return true;
+                }
+
+                $('#action_type').val('submit');
+
+                let valid = true;
+
+                // 1. REQUIRED FIELD VALIDATION
+
+                $form.find('[required]').not('[type="file"]').each(function() {
+
+                    const $field = $(this);
+                    const value = $field.val();
+
+                    if (!value || value.toString().trim() === '') {
+
+                        showError(
+                            this,
+                            `${$field.data('label') || $field.attr('name')} is required.`
+                        );
+
+                        valid = false;
+
+                    } else {
+
+                        clearError(this);
+                    }
+                });
+
+                // 2. ATTACHMENT VALIDATION
+
+                attachmentConfigs.forEach(config => {
+
+                    const input = $(config.id)[0];
+
+                    if (!validateAttachment(input, config)) {
+                        valid = false;
+                    }
+
+                });
+
+                // 3. STOP SUBMISSION IF INVALID
+
+                if (!valid) {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const firstError = $form.find('.is-invalid').first();
+
+                    if (firstError.length) {
+                        navigateToError(firstError[0]);
+                    }
+
+                    return false;
+                }
+
+                // 4. ALL VALID - SUBMIT FORM
+
+                $form.find('button[type="submit"]').prop('disabled', true);
 
                 if (submitter) {
                     $(submitter).html(`
@@ -687,6 +912,9 @@
                         Processing...
                     `);
                 }
+
+                return true;
+
             });
 
             $("select[name='customer_id']").select2({

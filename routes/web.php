@@ -361,8 +361,9 @@ Route::middleware('auth')->group(function () {
   Route::get('/tsp/dashboard/pending-review/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getPendingReview'])->name('tsp.dashboard.pending-review');
   Route::get('/tsp/dashboard/pending-sign-customer/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getPendingSignCustomer'])->name('tsp.dashboard.pending-sign-customer');
   Route::get('/tsp/dashboard/contract-customer-all-site/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getContractCustomerAllSite'])->name('tsp.dashboard.contract-customer-all-site');
+  Route::get('/tsp/dashboard/waiting-customer/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getWaitingCustomer'])->name('tsp.dashboard.waiting-customer');
   Route::get('/tsp/monitoring/active-contracts', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'showActiveContracts'])->name('tsp.monitoring.active-contract');
   Route::get('/tsp/monitoring/active-contracts/data', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'getActiveContracts'])->name('tsp.monitoring.active-contract.data');
-  
+
   Route::get('/tsp/monitoring/active-contracts/{id}', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'showActiveContractsDetail'])->name('tsp.monitoring.active-contract.showDetail');
 });

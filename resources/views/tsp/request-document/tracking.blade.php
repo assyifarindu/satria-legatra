@@ -435,6 +435,7 @@
 @section('js')
     <script>
         let requestDocumentData = null;
+        let committees = null;
 
         $(document).ready(function() {
             const stages = [{
@@ -698,25 +699,25 @@
 
                                     <!-- Attachment -->
                                     ${fileUrl ? `
-                                                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                                            <a href="${fileUrl}"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            class="text-decoration-none">
+                                                                                                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                                                                                    <a href="${fileUrl}"
+                                                                                                                    target="_blank"
+                                                                                                                    rel="noopener noreferrer"
+                                                                                                                    class="text-decoration-none">
 
-                                                                <i class="mdi mdi-file-download-outline text-muted font-20"
-                                                                title="Download"
-                                                                tabindex="0"
-                                                                data-plugin="tippy"
-                                                                data-tippy-placement="top">
-                                                                </i>
-                                                            </a>
+                                                                                                                        <i class="mdi mdi-file-download-outline text-muted font-20"
+                                                                                                                        title="Download"
+                                                                                                                        tabindex="0"
+                                                                                                                        data-plugin="tippy"
+                                                                                                                        data-tippy-placement="top">
+                                                                                                                        </i>
+                                                                                                                    </a>
 
-                                                            <div class="small text-muted mt-1 text-break">
-                                                                ${feedback.file_name ?? '-'}
-                                                            </div>
-                                                        </div>
-                                                    ` : ''}
+                                                                                                                    <div class="small text-muted mt-1 text-break">
+                                                                                                                        ${feedback.file_name ?? '-'}
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            ` : ''}
 
                                 </div>
                             </div>
@@ -727,7 +728,8 @@
                 $('#feedback-list-container').html(html);
             }
 
-            function renderRequestDocument(data, selectedStageId = null, selectedSubstageId = null) {
+            function renderRequestDocument(data, selectedStageId = null, selectedSubstageId = null,
+                committees = []) {
 
                 let filesHtml = '';
                 const stageInformation = {
@@ -886,202 +888,133 @@
 
                 // RENDER DETAIL REQUEST DOCUMENT
 
-                let html = `
+                const detailItem = (label, value) => `
+                    <div class="row mb-2 align-items-start">
+                        <div class="col-5 pe-0">
+                            <span class="fw-semibold">${label}</span>
+                        </div>
+                        <div class="col-auto px-1">:</div>
+                        <div class="col ps-1">
+                            <span>${value ?? '-'}</span>
+                        </div>
+                    </div>
+                `;
+
+                const formatCurrency = (amount) => {
+                    return amount ?
+                        new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            maximumFractionDigits: 0
+                        }).format(amount) :
+                        '-';
+                };
+
+                const customer = data.customer ?? {};
+                const pic = data.pics ?? {};
+                const customerPic = customer.customer_pics?.[0] ?? {};
+
+                console.log('Committees:', committees);
+
+                const html = `
                 <div class="row">
                     <div class="col-md-12">
-
                         <div class="border p-3 rounded mb-3">
 
-                            <h5 class="mt-3 ps-3 pt-1">
+                            <h5 class="mt-2 mb-4">
                                 ${data.document_number ? data.document_number + ' - ' : ''}${data.title ?? '-'}
                             </h5>
 
+                            <!-- INFORMATION & PIC -->
                             <div class="row">
+
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Contract Type :
-                                        </span>
-                                        ${data.contract_type ?? '-'}
-                                    </p>
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Potential Amount :
-                                        </span>
-                                        ${data.potential_amount ? `${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(data.potential_amount)}` : '-'}
-                                    </p>
+                                    ${detailItem('Contract Type', data.contract_type)}
+                                    ${detailItem('Potential Amount', formatCurrency(data.potential_amount))}
+                                    ${detailItem('Requester', data.requester)}
+                                    ${detailItem('Sign Status', data.sign_status)}
+                                    ${detailItem('Project Category', data.is_project ? 'Project' : 'Non-Project')}
+                                    ${detailItem('SOW', data.sow)}
+                                    ${detailItem('Transaction Procedure', data.transaction_procedure)}
+                                    ${detailItem('KPI', data.kpi)}
+                                    ${detailItem('Site', data.site)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Requester :
-                                        </span>
-                                        ${data.requester ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Sign Status :
-                                        </span>
-                                        ${data.sign_status ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Project Category :
-                                        </span>
-                                        ${data.is_project ? 'Project' : 'Non-Project'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            SOW :
-                                        </span>
-                                        ${data.sow ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Transaction Procedure :
-                                        </span>
-                                        ${data.transaction_procedure ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            KPI :
-                                        </span>
-                                        ${data.kpi ?? '-'}
-                                    </p>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1 fw-semibold">PIC Data</p>
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Name :
-                                        </span>
-                                        ${data.pics?.name ?? '-'}
-                                    </p>
+                                    ${detailItem('PIC Name', pic.name)}
+                                    ${detailItem('PIC Position', pic.position)}
+                                    ${detailItem('PIC Email', pic.email)}
+                                    ${detailItem('PIC Phone', pic.phone)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Position :
-                                        </span>
-                                        ${data.pics?.position ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Email :
-                                        </span>
-                                        ${data.pics?.email ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Phone :
-                                        </span>
-                                        ${data.pics?.phone ?? '-'}
-                                    </p>
                                 </div>
+
                             </div>
 
+                            <hr class="my-3">
+
+                            <!-- CUSTOMER INFORMATION -->
                             <div class="row">
+
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer :
-                                        </span>
 
-                                        ${data.customer
-                                            ? data.customer.name
-                                            : '-'
-                                        }
-                                    </p>
+                                    ${detailItem('Customer', customer.name)}
+                                    ${detailItem('Customer NIB', customer.nib)}
+                                    ${detailItem('Customer NPWP', customer.npwp)}
+                                    ${detailItem('Customer Address', customer.address)}
+                                    ${detailItem('Customer Postal Code', customer.postal_code)}
+                                    ${detailItem('Customer Email', customer.email)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer NIB :
-                                        </span>
-
-                                        ${data.customer.nib ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer NPWP :
-                                        </span>
-
-                                        ${data.customer.npwp ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer Address :
-                                        </span>
-
-                                        ${data.customer?.address ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer Postal Code :
-                                        </span>
-
-                                        ${data.customer?.postal_code ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer Email :
-                                        </span>
-
-                                        ${data.customer?.email ?? '-'}
-                                    </p>
                                 </div>
+
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Name :
-                                        </span>
 
-                                        ${data.customer?.customer_pics?.[0]?.name ?? '-'}
-                                    </p>
+                                    ${detailItem('Customer PIC Name', customerPic.name)}
+                                    ${detailItem('Customer PIC Position', customerPic.position)}
+                                    ${detailItem('Customer PIC Email', customerPic.email)}
+                                    ${detailItem('Customer PIC Phone', customerPic.phone)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Position :
-                                        </span>
-
-                                        ${data.customer?.customer_pics?.[0]?.position ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Email :
-                                        </span>
-
-                                        ${data.customer?.customer_pics?.[0]?.email ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Phone :
-                                        </span>
-
-                                        ${data.customer?.customer_pics?.[0]?.phone ?? '-'}
-                                    </p>
                                 </div>
+
                             </div>
 
-                            
+                            ${([3, 6].includes(Number(stageId)) && [1, 2, 4, 5].includes(Number(selectedSubstageId ?? data.substage_id))) ? `
+                                    <hr class="my-3">
+                                    <!-- COMMITTEE INFORMATION -->
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h6 class="mb-3">Committee Information</h6>
 
-                        </div>
+                                            <style>
+                                                #request-document-detail .list-unstyled {
+                                                    padding-left: 1.25rem !important;
+                                                }
 
+                                                #request-document-detail .list-unstyled li {
+                                                    list-style-type: disc !important;
+                                                    margin-bottom: 4px;
+                                                }
+                                            </style>
+
+                                            ${committees.length > 0 ? `
+                                            <ul class="list-unstyled mb-0">
+                                                ${committees.map(committee => `
+                                                        <li>${committee.committee_name ?? '-'}</li>
+                                                    `).join('')}
+                                            </ul>
+                                        ` : `
+                                            <div class="text-muted small">
+                                                No committee information available.
+                                            </div>
+                                        `}
+                                        </div>
+                                    </div>
+                                ` : ''}
                     </div>
                 </div>
+
 
                 <div class="mt-3">
                     ${filesHtml}
@@ -1108,11 +1041,12 @@
 
                     requestDocumentData = response.data;
                     feedbacks = response.feedbacks;
+                    committees = response.committees;
 
                     renderStages(requestDocumentData.stage_id, requestDocumentData.substage_id);
                     renderFeedbacks(feedbacks);
                     renderRequestDocument(requestDocumentData, requestDocumentData.stage_id,
-                        requestDocumentData.substage_id);
+                        requestDocumentData.substage_id, committees);
 
                 },
 
@@ -1164,7 +1098,8 @@
                     renderRequestDocument(
                         requestDocumentData,
                         stageId,
-                        null
+                        null,
+                        committees
                     );
 
                 }
@@ -1217,7 +1152,8 @@
                     renderRequestDocument(
                         requestDocumentData,
                         stageId,
-                        substageId
+                        substageId,
+                        committees
                     );
 
                 }

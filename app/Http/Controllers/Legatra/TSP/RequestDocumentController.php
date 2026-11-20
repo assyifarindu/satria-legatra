@@ -1228,41 +1228,42 @@ class RequestDocumentController extends Controller
 
         /* VALIDASI PREFIX FILE */
 
+        // Draft Contract
         if ($request->hasFile('draft_contract')) {
 
-            $draftFileName = $request
-                ->file('draft_contract')
-                ->getClientOriginalName();
+            $draftFileName = $request->file('draft_contract')->getClientOriginalName();
+
+            $draftPrefix = 'draft contract';
 
             if (!str_starts_with(
-                strtolower($draftFileName),
-                'draft_contract_'
+                strtolower(trim($draftFileName)),
+                strtolower($draftPrefix)
             )) {
                 return back()
                     ->withInput()
                     ->withErrors([
                         'draft_contract' =>
-                        'Nama file Draft Contract harus diawali dengan prefix draft contract'
+                        'Nama file Draft Contract harus diawali dengan prefix Draft Contract.'
                     ]);
             }
         }
 
-
+        // Quotation
         if ($request->hasFile('quotation')) {
 
-            $quotationFileName = $request
-                ->file('quotation')
-                ->getClientOriginalName();
+            $quotationFileName = $request->file('quotation')->getClientOriginalName();
+
+            $quotationPrefix = 'quotation';
 
             if (!str_starts_with(
-                strtolower($quotationFileName),
-                'quotation_'
+                strtolower(trim($quotationFileName)),
+                strtolower($quotationPrefix)
             )) {
                 return back()
                     ->withInput()
                     ->withErrors([
                         'quotation' =>
-                        'Nama file Quotation harus diawali dengan prefix quotation'
+                        'Nama file Quotation harus diawali dengan prefix Quotation.'
                     ]);
             }
         }
@@ -1718,44 +1719,42 @@ class RequestDocumentController extends Controller
 
         /*VALIDASI PREFIX FILE*/
 
+        // Draft Contract
         if ($request->hasFile('draft_contract')) {
 
-            $fileName = strtolower(
-                $request
-                    ->file('draft_contract')
-                    ->getClientOriginalName()
-            );
+            $draftFileName = $request->file('draft_contract')->getClientOriginalName();
+
+            $draftPrefix = 'draft contract';
 
             if (!str_starts_with(
-                $fileName,
-                'draft_contract_'
+                strtolower(trim($draftFileName)),
+                strtolower($draftPrefix)
             )) {
                 return back()
                     ->withInput()
                     ->withErrors([
                         'draft_contract' =>
-                        'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        'Nama file Draft Contract harus diawali dengan prefix Draft Contract.'
                     ]);
             }
         }
 
+        // Quotation
         if ($request->hasFile('quotation')) {
 
-            $fileName = strtolower(
-                $request
-                    ->file('quotation')
-                    ->getClientOriginalName()
-            );
+            $quotationFileName = $request->file('quotation')->getClientOriginalName();
+
+            $quotationPrefix = 'quotation';
 
             if (!str_starts_with(
-                $fileName,
-                'quotation_'
+                strtolower(trim($quotationFileName)),
+                strtolower($quotationPrefix)
             )) {
                 return back()
                     ->withInput()
                     ->withErrors([
                         'quotation' =>
-                        'Nama file Quotation harus diawali dengan prefix Quotation_.'
+                        'Nama file Quotation harus diawali dengan prefix Quotation.'
                     ]);
             }
         }
@@ -2226,11 +2225,37 @@ class RequestDocumentController extends Controller
                 )
                 ->get();
 
+            $committees = TspRequestDocumentCommittees::leftJoin(
+                'satria.users as user',
+                'tsp_request_document_committees.committee_id',
+                '=',
+                'user.id'
+            )
+                ->leftJoin('satria.ms_emp_list as emp', 'user.personal_number', '=', 'emp.personal_number')
+                ->select(
+                    'tsp_request_document_committees.id',
+                    'tsp_request_document_committees.committee_id',
+                    'tsp_request_document_committees.sequence',
+                    'user.name as committee_name',
+                )
+                ->where(
+                    'tsp_request_document_committees.request_document_id',
+                    $id
+                )
+                ->whereNull(
+                    'tsp_request_document_committees.deleted_at'
+                )
+                ->orderBy(
+                    'tsp_request_document_committees.sequence'
+                )
+                ->get();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Data retrieved successfully',
                 'data' => $requestDocument,
                 'feedbacks' => $feedbacks,
+                'committees' => $committees,
             ]);
         } catch (\Throwable $e) {
 
@@ -2778,23 +2803,22 @@ class RequestDocumentController extends Controller
 
             /*VALIDASI PREFIX FILE*/
 
+            // Draft Contract
             if ($request->hasFile('draft_contract')) {
 
-                $fileName = strtolower(
-                    $request
-                        ->file('draft_contract')
-                        ->getClientOriginalName()
-                );
+                $draftFileName = $request->file('draft_contract')->getClientOriginalName();
+
+                $draftPrefix = 'draft contract';
 
                 if (!str_starts_with(
-                    $fileName,
-                    'draft_contract_'
+                    strtolower(trim($draftFileName)),
+                    strtolower($draftPrefix)
                 )) {
                     return back()
                         ->withInput()
                         ->withErrors([
                             'draft_contract' =>
-                            'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                            'Nama file Draft Contract harus diawali dengan prefix Draft Contract.'
                         ]);
                 }
             }
@@ -3118,23 +3142,22 @@ class RequestDocumentController extends Controller
 
             /*VALIDASI PREFIX FILE*/
 
+            // Draft Contract
             if ($request->hasFile('draft_contract')) {
 
-                $fileName = strtolower(
-                    $request
-                        ->file('draft_contract')
-                        ->getClientOriginalName()
-                );
+                $draftFileName = $request->file('draft_contract')->getClientOriginalName();
+
+                $draftPrefix = 'draft contract';
 
                 if (!str_starts_with(
-                    $fileName,
-                    'draft_contract_'
+                    strtolower(trim($draftFileName)),
+                    strtolower($draftPrefix)
                 )) {
                     return back()
                         ->withInput()
                         ->withErrors([
                             'draft_contract' =>
-                            'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                            'Nama file Draft Contract harus diawali dengan prefix Draft Contract.'
                         ]);
                 }
             }
@@ -3700,44 +3723,42 @@ class RequestDocumentController extends Controller
 
         /*VALIDASI PREFIX FILE*/
 
+        // Draft Contract
         if ($request->hasFile('draft_contract')) {
 
-            $fileName = strtolower(
-                $request
-                    ->file('draft_contract')
-                    ->getClientOriginalName()
-            );
+            $draftFileName = $request->file('draft_contract')->getClientOriginalName();
+
+            $draftPrefix = 'draft contract';
 
             if (!str_starts_with(
-                $fileName,
-                'draft_contract_'
+                strtolower(trim($draftFileName)),
+                strtolower($draftPrefix)
             )) {
                 return back()
                     ->withInput()
                     ->withErrors([
                         'draft_contract' =>
-                        'Nama file Draft Contract harus diawali dengan prefix Draft_Contract_.'
+                        'Nama file Draft Contract harus diawali dengan prefix Draft Contract.'
                     ]);
             }
         }
 
+        // Quotation
         if ($request->hasFile('quotation')) {
 
-            $fileName = strtolower(
-                $request
-                    ->file('quotation')
-                    ->getClientOriginalName()
-            );
+            $quotationFileName = $request->file('quotation')->getClientOriginalName();
+
+            $quotationPrefix = 'quotation';
 
             if (!str_starts_with(
-                $fileName,
-                'quotation_'
+                strtolower(trim($quotationFileName)),
+                strtolower($quotationPrefix)
             )) {
                 return back()
                     ->withInput()
                     ->withErrors([
                         'quotation' =>
-                        'Nama file Quotation harus diawali dengan prefix Quotation_.'
+                        'Nama file Quotation harus diawali dengan prefix Quotation.'
                     ]);
             }
         }

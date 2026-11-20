@@ -630,13 +630,14 @@
                                     </div>
                                 </fieldset>
 
-                                <input type="hidden" name="action_type" id="action_type">
+                                <input type="hidden" name="action_type" id="action_type" value="submit">
 
                                 <div class="d-flex gap-2 justify-content-end">
-                                    <button type="submit" name="action_type" value="draft" class="btn btn-warning">
+                                    <button type="submit" value="draft" class="btn btn-warning">
                                         Save as Draft
                                     </button>
-                                    <button type="submit" name="action_type" value="submit" class="btn btn-primary">
+
+                                    <button type="submit" value="submit" class="btn btn-primary">
                                         Submit
                                     </button>
                                 </div>
@@ -661,9 +662,9 @@
 
 
             // Set action type
+
             $("button[type='submit']").on('click', function() {
-                const actionType = $(this).val();
-                $("#action_type").val(actionType);
+                $("#action_type").val($(this).val());
             });
 
             // Disable submit button after form submission to prevent double submission
@@ -802,36 +803,36 @@
             });
 
             // Restore customer setelah validation error
-            @if (old('site'))
+            // @if (old('site'))
 
-                $.ajax({
-                    url: "{{ url('tsp/work-locations') }}/{{ old('site') }}",
-                    type: 'GET',
+            //     $.ajax({
+            //         url: "{{ url('tsp/work-locations') }}/{{ old('site') }}",
+            //         type: 'GET',
 
-                    success: function(response) {
+            //         success: function(response) {
 
-                        if (response.success) {
+            //             if (response.success) {
 
-                            const site = response.data;
+            //                 const site = response.data;
 
-                            // Tambahkan option ke Select2
-                            const option = new Option(
-                                site.name,
-                                site.name,
-                                true,
-                                true
-                            );
+            //                 // Tambahkan option ke Select2
+            //                 const option = new Option(
+            //                     site.name,
+            //                     site.name,
+            //                     true,
+            //                     true
+            //                 );
 
-                            $("select[name='site']")
-                                .append(option)
-                                .trigger('change');
+            //                 $("select[name='site']")
+            //                     .append(option)
+            //                     .trigger('change');
 
-                            // Restore site data
-                            $("#site").val(site.name ?? "");
-                        }
-                    }
-                });
-            @endif
+            //                 // Restore site data
+            //                 $("#site").val(site.name ?? "");
+            //             }
+            //         }
+            //     });
+            // @endif
 
             $("select[name='contract_type']").select2({
                 placeholder: "Select Contract Type",
@@ -892,20 +893,18 @@
                 }
             });
 
+            // ERROR HANDLING
+
             function showError(input, message) {
                 const $input = $(input);
-
                 $input.addClass('is-invalid');
 
                 let $error;
 
-                // SELECT2
                 if ($input.hasClass('select2-hidden-accessible')) {
-
                     const $select2 = $input.next('.select2-container');
 
-                    $select2.find('.select2-selection')
-                        .addClass('is-invalid');
+                    $select2.find('.select2-selection').addClass('is-invalid');
 
                     $error = $select2.next('.client-error');
 
@@ -913,11 +912,8 @@
                         $error = $('<div class="invalid-feedback d-block client-error"></div>');
                         $select2.after($error);
                     }
-
                 } else {
-
-                    // INPUT / TEXTAREA / SELECT BIASA
-                    $error = $input.siblings('.client-error');
+                    $error = $input.next('.client-error');
 
                     if (!$error.length) {
                         $error = $('<div class="invalid-feedback d-block client-error"></div>');
@@ -933,47 +929,156 @@
 
                 $input.removeClass('is-invalid');
 
-                $input.siblings('.client-error')
-                    .text('')
-                    .hide();
+                if ($input.hasClass('select2-hidden-accessible')) {
+                    const $select2 = $input.next('.select2-container');
+
+                    $select2.find('.select2-selection').removeClass('is-invalid');
+                    $select2.next('.client-error').remove();
+                } else {
+                    $input.next('.client-error').remove();
+                }
             }
 
+            // ATTACHMENT CONFIGURATION
+
+            const attachmentConfigs = [{
+                    id: '#draft_contract',
+                    label: 'Draft Contract',
+                    prefix: 'draft contract'
+                },
+                {
+                    id: '#quotation',
+                    label: 'Quotation',
+                    prefix: 'quotation'
+                }
+            ];
+
+            // ATTACHMENT VALIDATION
+
+            function validateAttachment(input, config) {
+                const file = input.files?.[0];
+
+                // 1. Required validation
+                if (!file) {
+                    showError(input, `${config.label} is required.`);
+                    return false;
+                }
+
+                const fileName = file.name.trim().toLowerCase();
+                const prefix = config.prefix.toLowerCase();
+
+                // 2. Prefix validation
+                if (!fileName.startsWith(prefix)) {
+                    showError(
+                        input,
+                        `File name ${config.label} must start with "${config.prefix}".`
+                    );
+                    return false;
+                }
+
+                // 3. PDF validation
+                if (!fileName.endsWith('.pdf')) {
+                    showError(input, `${config.label} must be a PDF file.`);
+                    return false;
+                }
+
+                // 4. Maximum file size: 10 MB
+                if (file.size > 10 * 1024 * 1024) {
+                    showError(input, `${config.label} must be at most 10 MB.`);
+                    return false;
+                }
+
+                clearError(input);
+                return true;
+            }
+
+            // VALIDATE ATTACHMENT WHEN FILE IS SELECTED
+
+            attachmentConfigs.forEach(config => {
+                $(config.id).on('change', function() {
+                    validateAttachment(this, config);
+                });
+            });
+
+            // NAVIGATE TO FIELD ERROR
+
+            function navigateToError(input) {
+                const $input = $(input);
+                const fieldset = $input.closest('fieldset');
+
+                if (fieldset.length) {
+                    $('fieldset').hide();
+
+                    fieldset.show();
+
+                    currentStep = $('fieldset').index(fieldset);
+
+                    $('.step-button')
+                        .removeClass('active btn-primary')
+                        .addClass('btn-secondary');
+
+                    $(`.step-button[data-step="${currentStep + 1}"]`)
+                        .addClass('active btn-primary')
+                        .removeClass('btn-secondary');
+                }
+
+                input.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+
+                if (!$input.hasClass('select2-hidden-accessible')) {
+                    input.focus({
+                        preventScroll: true
+                    });
+                } else {
+                    $input.select2('open');
+                }
+            }
+
+            // FORM SUBMIT VALIDATION
 
             $('#form-request-document').on('submit', function(event) {
 
                 const form = this;
                 const $form = $(this);
+
                 const submitter = event.originalEvent?.submitter;
 
+                const actionType = submitter?.value || $('#action_type').val();
 
-                // SAVE AS DRAFT
-                if (submitter?.value === 'draft') {
+                // SAVE AS DRAFT - SKIP VALIDATION
+
+                if (actionType === 'draft') {
+                    $('#action_type').val('draft');
 
                     $form.find('button[type="submit"]').prop('disabled', true);
 
-                    $(submitter).html(`
-                        <span class="spinner-border spinner-border-sm me-1"></span>
-                        Processing...
-                    `);
+                    if (submitter) {
+                        $(submitter).html(`
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                            Processing...
+                        `);
+                    }
 
                     return true;
                 }
 
+                // ONLY VALIDATE SUBMIT
 
-                // HANYA SUBMIT YANG DIVALIDASI
-                if (submitter?.value !== 'submit') {
+                if (actionType !== 'submit') {
                     return true;
                 }
 
+                $('#action_type').val('submit');
 
-                // VALIDASI FIELD WAJIB
                 let valid = true;
 
-                $form.find('[required]').each(function() {
+                // 1. REQUIRED FIELD VALIDATION
+
+                $form.find('[required]').not('[type="file"]').each(function() {
 
                     const $field = $(this);
-
-                    // Input / Select / Textarea
                     const value = $field.val();
 
                     if (!value || value.toString().trim() === '') {
@@ -991,138 +1096,49 @@
                     }
                 });
 
+                // 2. ATTACHMENT VALIDATION
 
-                // STOP JIKA ADA FIELD KOSONG
+                attachmentConfigs.forEach(config => {
+
+                    const input = $(config.id)[0];
+
+                    if (!validateAttachment(input, config)) {
+                        valid = false;
+                    }
+
+                });
+
+                // 3. STOP SUBMISSION IF INVALID
+
                 if (!valid) {
 
                     event.preventDefault();
+                    event.stopPropagation();
 
                     const firstError = $form.find('.is-invalid').first();
 
                     if (firstError.length) {
-
-                        firstError[0].scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-
-                        firstError.focus();
+                        navigateToError(firstError[0]);
                     }
 
                     return false;
                 }
 
+                // 4. ALL VALID - SUBMIT FORM
 
-                // VALIDASI ATTACHMENT
-                const files = [{
-                        id: '#draft_contract',
-                        label: 'Draft Contract',
-                        prefix: 'draft contract'
-                    },
-                    {
-                        id: '#quotation',
-                        label: 'Quotation',
-                        prefix: 'quotation'
-                    }
-                ];
-
-
-                let attachmentValid = true;
-
-
-                for (const config of files) {
-
-                    const input = $(config.id)[0];
-                    const file = input?.files?.[0];
-
-
-                    // File tidak ada
-                    if (!file) {
-
-                        showError(
-                            input,
-                            `${config.label} is required.`
-                        );
-
-                        attachmentValid = false;
-                        continue;
-                    }
-
-
-                    // Nama file
-                    // Validasi prefix (case-insensitive)
-                    const fileName = file.name.trim().toLowerCase();
-                    const prefix = config.prefix.toLowerCase();
-                    if (!fileName.startsWith(prefix)) {
-
-                        showError(
-                            input,
-                            `File name ${config.label} must start with "${config.prefix}".`
-                        );
-
-                        attachmentValid = false;
-                        continue;
-                    }
-
-
-                    // PDF
-                    if (file.type !== 'application/pdf') {
-
-                        showError(
-                            input,
-                            `${config.label} must be a PDF file.`
-                        );
-
-                        attachmentValid = false;
-                        continue;
-                    }
-
-
-                    // Max 10 MB
-                    if (file.size > 10 * 1024 * 1024) {
-
-                        showError(
-                            input,
-                            `${config.label} must be at most 10 MB.`
-                        );
-
-                        attachmentValid = false;
-                        continue;
-                    }
-
-
-                    clearError(input);
-                }
-
-
-                // STOP JIKA ATTACHMENT INVALID
-                if (!attachmentValid) {
-
-                    event.preventDefault();
-
-                    const firstError = $form.find('.is-invalid').first();
-
-                    if (firstError.length) {
-
-                        firstError[0].scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                    }
-
-                    return false;
-                }
-
-
-                // SEMUA VALID
                 $form.find('button[type="submit"]').prop('disabled', true);
 
-                $(submitter).html(`
-                    <span class="spinner-border spinner-border-sm me-1"></span>
-                    Processing...
-                `);
+                if (submitter) {
+                    $(submitter).html(`
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        Processing...
+                    `);
+                }
+
+                return true;
 
             });
+
         })
     </script>
 @endsection

@@ -517,4 +517,66 @@ class DashboardController extends Controller
             ], 500);
         }
     }
+
+
+    public function getWaitingCustomer()
+    {
+        try {
+
+            /*Total Pending Sign Customer*/
+            $total = TspRequestDocument::where('stage_id', 4)
+                ->count();
+
+
+            /*Top 5 Customer Pending Sign*/
+            $topCustomers = TspRequestDocumentCustomer::join(
+                'tsp_request_documents as documents',
+                'tsp_request_document_customers.request_document_id',
+                '=',
+                'documents.id'
+            )
+                ->where(
+                    'documents.stage_id',
+                    4
+                )
+                ->select(
+                    'tsp_request_document_customers.name as customer_name',
+                    DB::raw('COUNT(*) as waiting_customer_count'),
+                    'documents.created_at'
+                )
+                ->groupBy('tsp_request_document_customers.name')
+                ->orderBy('waiting_customer_count', 'desc')
+                ->orderBy('created_at', 'asc')
+                ->limit(5)
+                ->get();
+
+
+            $data = [
+                'total' => $total,
+
+                'top_5_customers' => $topCustomers
+                    ->map(function ($customer) {
+                        return [
+                            'customer_name' => $customer->customer_name,
+                            'waiting_customer_count' => (int) $customer->waiting_customer_count,
+                        ];
+                    })
+                    ->values(),
+            ];
+
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully retrieved waiting customer data.',
+                'data' => $data
+            ]);
+        } catch (\Throwable $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve waiting customer data.',
+                'error_message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
