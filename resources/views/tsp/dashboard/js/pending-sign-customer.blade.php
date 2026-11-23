@@ -18,11 +18,6 @@
 
             success: function(response) {
 
-                console.log(
-                    'Pending Sign Customer:',
-                    response
-                );
-
                 if (!response.success) {
                     return;
                 }
@@ -90,21 +85,34 @@
 
                 /*Donut Chart*/
 
+                const chartElement = document.querySelector('#pending-sign-customer-chart');
+
+                if (!chartElement) {
+                    console.error('#pending-sign-customer-chart tidak ditemukan');
+                    return;
+                }
+
+                if (typeof ApexCharts === 'undefined') {
+                    console.error('ApexCharts belum diload');
+                    return;
+                }
+
+                // Jika tidak ada customer, gunakan data dummy bernilai 0
+                const chartSeries = series.length > 0 ? series : [0];
+                const chartLabels = labels.length > 0 ? labels : ['No Data'];
+
                 const options = {
 
-                    series: series,
-
-                    labels: labels,
+                    series: chartSeries,
+                    labels: chartLabels,
 
                     chart: {
                         type: 'donut',
                         height: 190
                     },
 
-                    colors: colors.slice(
-                        0,
-                        customers.length
-                    ),
+                    colors: series.length > 0 ?
+                        colors.slice(0, customers.length) : ['#E9ECEF'],
 
                     stroke: {
                         width: 1,
@@ -131,6 +139,14 @@
 
                                     show: true,
 
+                                    name: {
+                                        show: true
+                                    },
+
+                                    value: {
+                                        show: true
+                                    },
+
                                     total: {
 
                                         show: true,
@@ -139,15 +155,15 @@
 
                                         label: 'Total',
 
-                                        fontSize: '11px',
+                                        fontSize: '16px',
 
-                                        fontWeight: 500,
+                                        fontWeight: 600,
 
                                         color: '#536174',
 
                                         formatter: function() {
 
-                                            return data.total;
+                                            return Number(data.total ?? 0);
 
                                         }
 
@@ -174,33 +190,6 @@
                     }
 
                 };
-
-
-                const chartElement =
-                    document.querySelector(
-                        '#pending-sign-customer-chart'
-                    );
-
-
-                if (!chartElement) {
-
-                    console.error(
-                        '#pending-sign-customer-chart tidak ditemukan'
-                    );
-
-                    return;
-                }
-
-
-                if (typeof ApexCharts === 'undefined') {
-
-                    console.error(
-                        'ApexCharts belum diload'
-                    );
-
-                    return;
-                }
-
 
                 const chart = new ApexCharts(
                     chartElement,

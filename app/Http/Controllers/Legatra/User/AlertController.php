@@ -20,7 +20,9 @@ class AlertController extends Controller
      */
     public function index()
     {
-        try{
+        try {
+
+            $user = Auth::user();
 
             $data = [
                 'alert' => EmailAlert::where('to', Auth::user()->id)->where('is_action', false)->orderBy('created_at', 'desc')->get(),
@@ -28,9 +30,13 @@ class AlertController extends Controller
 
             clickedNotification(Auth::user()->id, 0, 'Alert Due Date Document');
 
-            return view('user.alert.index')->with('data', $data); 
 
-        } catch (Exception $e) {    
+            if ($user->companyid == '16731') {
+                return view('tsp.alert.index')->with('data', $data);
+            } else {
+                return view('user.alert.index')->with('data', $data);
+            }
+        } catch (Exception $e) {
             $this->ErrorLog($e);
             $this->ErrorLogLegatra($e);
             return redirect()->back()->with('error', 'Error Request, Exception Error ');
@@ -66,7 +72,7 @@ class AlertController extends Controller
      */
     public function show($id)
     {
-        try{
+        try {
             $id = Hashids::decode($id);
             $email = EmailAlert::findOrFail($id['0']);
 
@@ -76,7 +82,6 @@ class AlertController extends Controller
                 'email' => $email
             );
             return view('user.alert.create')->with('data', $data);
-
         } catch (Exception $e) {
             $this->ErrorLog($e);
             $this->ErrorLogLegatra($e);
