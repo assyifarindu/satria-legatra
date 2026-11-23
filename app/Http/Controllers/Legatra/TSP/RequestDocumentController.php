@@ -1275,8 +1275,9 @@ class RequestDocumentController extends Controller
 
         try {
             /* Generate Ticket Number */
-            $request_count = TspRequestDocument::count();
-            $ticket_number = str_pad($request_count + 1, 5, "0", STR_PAD_LEFT);
+            $last_request = TspRequestDocument::orderByDesc("id")->first();
+            $last_ticket_number = (int) $last_request->ticket_number ?? 0;
+            $ticket_number = str_pad($last_ticket_number + 1, 5, "0", STR_PAD_LEFT);
 
             /* CREATE REQUEST DOCUMENT */
 
