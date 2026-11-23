@@ -40,7 +40,7 @@ class DashboardController extends Controller
     {
         try {
 
-            $baseQuery = TspRequestDocument::where('sign_status', 'Fully Signed');
+            $baseQuery = TspRequestDocument::where('sign_status', 'Fully Signed')->whereNull('deleted_at');
 
             $unit = (clone $baseQuery)
                 ->where('contract_type', 'Unit')
@@ -86,6 +86,7 @@ class DashboardController extends Controller
         try {
 
             $pendingLegal = TspRequestDocument::whereIn('stage_id', [2])
+                ->whereNull('deleted_at')
                 ->count();
 
             // ========================================
@@ -94,7 +95,7 @@ class DashboardController extends Controller
 
             $stage2 = TspRequestStage::find(2);
 
-            $totalDocumentsStage2 = TspRequestDocument::where('stage_id', 2)->count();
+            $totalDocumentsStage2 = TspRequestDocument::where('stage_id', 2)->whereNull('deleted_at')->count();
 
             // sla_hours
             $totalSlaStandardStage2 = ($stage2->sla_hours ?? 0) * $totalDocumentsStage2;
@@ -105,7 +106,7 @@ class DashboardController extends Controller
             // ========================================
             // 2. AMBIL DATA HISTORY
             // ========================================
-            $requestDocumentIds = TspRequestDocument::whereIn('stage_id', [2])->pluck('id')->toArray();
+            $requestDocumentIds = TspRequestDocument::whereIn('stage_id', [2])->whereNull('deleted_at')->pluck('id')->toArray();
 
             $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIds)
                 ->whereNotNull('created_at')
@@ -173,6 +174,7 @@ class DashboardController extends Controller
             $agingDueDateAggrement = TspFormLegalReview::join('tsp_request_documents as documents', 'tsp_form_legal_reviews.request_document_id', '=', 'documents.id')
                 ->where('documents.stage_id', 11)
                 ->whereNotNull('tsp_form_legal_reviews.end_date')
+                ->whereNull('documents.deleted_at')
                 ->get()
                 ->groupBy(function ($item) {
                     $dueDate = Carbon::parse($item->end_date);
@@ -222,12 +224,15 @@ class DashboardController extends Controller
         try {
 
             $userReview = TspRequestDocument::whereIn('substage_id', [1, 4])
+                ->whereNull('deleted_at')
                 ->count();
 
             $committeeReview = TspRequestDocument::whereIn('substage_id', [2, 5])
+                ->whereNull('deleted_at')
                 ->count();
 
             $bodReview = TspRequestDocument::where('stage_id', 7)
+                ->whereNull('deleted_at')
                 ->count();
 
 
@@ -237,8 +242,8 @@ class DashboardController extends Controller
             $subStage1 = TspRequestSubstage::find(1);
             $subStage4 = TspRequestSubstage::find(4);
 
-            $totalDocumentsSubStage1 = TspRequestDocument::where('substage_id', 1)->count();
-            $totalDocumentsSubStage4 = TspRequestDocument::where('substage_id', 4)->count();
+            $totalDocumentsSubStage1 = TspRequestDocument::where('substage_id', 1)->whereNull('deleted_at')->count();
+            $totalDocumentsSubStage4 = TspRequestDocument::where('substage_id', 4)->whereNull('deleted_at')->count();
 
             // sla_hours
             $totalSlaStandardSubStage1 = ($subStage1->sla_hours ?? 0) * $totalDocumentsSubStage1;
@@ -251,7 +256,7 @@ class DashboardController extends Controller
 
             // 2. AMBIL DATA HISTORY
 
-            $requestDocumentIds = TspRequestDocument::whereIn('substage_id', [1, 4])->pluck('id')->toArray();
+            $requestDocumentIds = TspRequestDocument::whereIn('substage_id', [1, 4])->whereNull('deleted_at')->pluck('id')->toArray();
 
             $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIds)
                 ->whereNotNull('created_at')
@@ -324,8 +329,8 @@ class DashboardController extends Controller
             $subStage1 = TspRequestSubstage::find(2);
             $subStage4 = TspRequestSubstage::find(5);
 
-            $totalDocumentsSubStage2 = TspRequestDocument::where('substage_id', 2)->count();
-            $totalDocumentsSubStage5 = TspRequestDocument::where('substage_id', 5)->count();
+            $totalDocumentsSubStage2 = TspRequestDocument::where('substage_id', 2)->whereNull('deleted_at')->count();
+            $totalDocumentsSubStage5 = TspRequestDocument::where('substage_id', 5)->whereNull('deleted_at')->count();
 
             // sla_hours
             $totalSlaStandardSubStage2 = ($subStage1->sla_hours ?? 0) * $totalDocumentsSubStage2;
@@ -334,7 +339,7 @@ class DashboardController extends Controller
             $totalSlaStandard = $totalSlaStandardSubStage2 + $totalSlaStandardSubStage5;
 
             // 2. AMBIL DATA HISTORY
-            $requestDocumentIdsCommittee = TspRequestDocument::whereIn('substage_id', [2, 5])->pluck('id')->toArray();
+            $requestDocumentIdsCommittee = TspRequestDocument::whereIn('substage_id', [2, 5])->whereNull('deleted_at')->pluck('id')->toArray();
             $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIdsCommittee)
                 ->whereNotNull('created_at')
                 ->orderBy('request_document_id')
@@ -432,6 +437,7 @@ class DashboardController extends Controller
 
             /*Total Pending Sign Customer*/
             $total = TspRequestDocument::where('sign_status', 'Partial Signed')
+                ->whereNull('deleted_at')
                 ->count();
 
 
@@ -446,6 +452,7 @@ class DashboardController extends Controller
                     'documents.sign_status',
                     'Partial Signed'
                 )
+                ->whereNull('documents.deleted_at')
                 ->select(
                     'tsp_request_document_customers.name as customer_name',
                     DB::raw('COUNT(*) as pending_sign_count'),
@@ -493,6 +500,7 @@ class DashboardController extends Controller
 
             $data = TspRequestDocument::select('site', DB::raw('COUNT(*) as total_contract'))
                 ->whereNotIn('status_id', [1, 3, 4])
+                ->whereNull('deleted_at')
                 ->groupBy('site')
                 ->get()
                 ->map(function ($item) {
@@ -525,6 +533,7 @@ class DashboardController extends Controller
 
             /*Total Pending Sign Customer*/
             $total = TspRequestDocument::where('stage_id', 4)
+                ->whereNull('deleted_at')
                 ->count();
 
 
@@ -539,6 +548,7 @@ class DashboardController extends Controller
                     'documents.stage_id',
                     4
                 )
+                ->whereNull('documents.deleted_at')
                 ->select(
                     'tsp_request_document_customers.name as customer_name',
                     DB::raw('COUNT(*) as waiting_customer_count'),
