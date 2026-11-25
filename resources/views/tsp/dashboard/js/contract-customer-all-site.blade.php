@@ -93,7 +93,7 @@
                             trim: false,
                             hideOverlappingLabels: false,
                             style: {
-                                fontSize: '7px'
+                                fontSize: '10px'
                             }
                         },
 
@@ -116,7 +116,7 @@
                                 return Math.round(value);
                             },
                             style: {
-                                fontSize: '9px'
+                                fontSize: '10px'
                             }
                         }
                     },

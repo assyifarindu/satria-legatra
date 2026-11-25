@@ -1,6 +1,6 @@
 <style>
     .pending-legal-card {
-        height: 270px !important;
+        height: 300px !important;
     }
 
     .pending-legal-card .card-body {

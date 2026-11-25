@@ -4,9 +4,12 @@
 
     <div class="card-body">
 
-        <h5 class="header-title mb-3">
+        <h5 class="header-title mb-1">
             Pending Legal Review
         </h5>
+        <div class="text-muted small mb-1">
+            Legal Monitoring - kondisi dokumen yang sedang menunggu proses review Legal
+        </div>
 
         <!-- Top Metrics -->
         <div class="row g-2">
@@ -68,6 +71,9 @@
         <!-- Aging -->
         <div class="aging-title">
             Aging Due Date Agreement
+        </div>
+        <div class="text-muted small mb-1">
+            Agreement Monitoring - pemantauan usia dokumen berdasarkan tanggal jatuh tempo Agreement
         </div>
 
         <div class="aging-container">

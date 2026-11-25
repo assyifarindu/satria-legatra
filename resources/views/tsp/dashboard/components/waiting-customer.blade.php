@@ -1,4 +1,4 @@
-<div class="card dashboard-card h-100">
+<div class="card contract-type-composition-card h-100">
 
     <div class="card-body">
 

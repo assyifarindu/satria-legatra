@@ -2,10 +2,12 @@
 
     <div class="card-body">
 
-        <h5 class="header-title mb-3">
+        <h5 class="header-title mb-1">
             Pending Review
         </h5>
-
+        <div class="text-muted small mb-1">
+            Operational Monitoring - kondisi saat ini
+        </div>
 
         <!-- Review Status -->
         <div class="row g-2">
@@ -81,6 +83,9 @@
         <!-- SLA -->
         <div class="sla-title">
             Achievement SLA
+        </div>
+        <div class="text-muted small mb-1">
+            Performance Monitoring - akumulasi dokumen yang telah menyelesaikan masing-masing fase
         </div>
 
         <div class="row g-2">
