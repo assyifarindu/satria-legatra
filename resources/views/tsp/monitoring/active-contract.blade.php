@@ -33,7 +33,7 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Document Number</th>
+                                        <th>Document Number Agreement</th>
                                         <th>Customer Name</th>
                                         <th>Title</th>
                                         <th>Document Date</th>
