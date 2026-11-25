@@ -35,7 +35,7 @@ class PicController extends Controller
             $user = User::where('id', Auth::user()->id)->first();
             $companyid = $user->companyid;
             $company = Company::where('company_id', $companyid)->first();
-         
+
             $data = [
                 'pic' => Pic::where('company_id', $company->id)->get(),
             ];
@@ -57,12 +57,12 @@ class PicController extends Controller
     {
         try {
             $user = User::where('id', Auth::user()->id)->first();
-            $company_name = $user->company_name;
+            $companyid = $user->companyid;
 
             $data = [
                 // 'company' => Company::all(),
-                'company' => Company::where('name', $company_name)->first(),
-                'user' => User::whereNull('role_id')->where('company_name', $company_name)->get()
+                'company' => Company::where('company_id', $companyid)->first(),
+                'user' => User::whereNull('role_id')->where('companyid', $companyid)->get()
             ];
 
             return view('master.pic.create')->with('data', $data);
