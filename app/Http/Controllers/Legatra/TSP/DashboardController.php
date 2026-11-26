@@ -223,11 +223,11 @@ class DashboardController extends Controller
     {
         try {
 
-            $userReview = TspRequestDocument::whereIn('substage_id', [1, 4])
+            $userReview = TspRequestDocument::whereIn('substage_id', [4])
                 ->whereNull('deleted_at')
                 ->count();
 
-            $committeeReview = TspRequestDocument::whereIn('substage_id', [2, 5])
+            $committeeReview = TspRequestDocument::whereIn('substage_id', [5])
                 ->whereNull('deleted_at')
                 ->count();
 
@@ -239,24 +239,23 @@ class DashboardController extends Controller
             // HITUNG SLA ACHIEVEMENT USER
             // 1. TOTAL SLA STANDARD
 
-            $subStage1 = TspRequestSubstage::find(1);
             $subStage4 = TspRequestSubstage::find(4);
 
-            $totalDocumentsSubStage1 = TspRequestDocument::where('substage_id', 1)->whereNull('deleted_at')->count();
             $totalDocumentsSubStage4 = TspRequestDocument::where('substage_id', 4)->whereNull('deleted_at')->count();
 
             // sla_hours
-            $totalSlaStandardSubStage1 = ($subStage1->sla_hours ?? 0) * $totalDocumentsSubStage1;
-
             $totalSlaStandardSubStage4 = ($subStage4->sla_hours ?? 0) * $totalDocumentsSubStage4;
-
-            $totalSlaStandard = $totalSlaStandardSubStage1 + $totalSlaStandardSubStage4;
-
 
 
             // 2. AMBIL DATA HISTORY
 
-            $requestDocumentIds = TspRequestDocument::whereIn('substage_id', [1, 4])->whereNull('deleted_at')->pluck('id')->toArray();
+            $requestDocumentIds = TspRequestDocument::where(function ($query) {
+                $query->whereIn('stage_id', [7, 8, 9, 10, 11])
+                    ->orWhereIn('substage_id', [5, 6]);
+            })
+                ->whereNull('deleted_at')->pluck('id')->toArray();
+
+            // dd($requestDocumentIds);
 
             $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIds)
                 ->whereNotNull('created_at')
@@ -266,32 +265,32 @@ class DashboardController extends Controller
                 ->groupBy('request_document_id');
 
 
-            // 3. HITUNG ACTUAL SLA PER DOKUMEN
+            // 3. KONFIGURASI STAGE DAN SUBSTAGE
+            $conditions = [
+                'stage_7' => fn($h) => (int) $h->stage_id === 7,
+                'stage_8' => fn($h) => (int) $h->stage_id === 8,
+                'stage_9' => fn($h) => (int) $h->stage_id === 9,
+                'stage_10' => fn($h) => (int) $h->stage_id === 10,
+                'stage_11' => fn($h) => (int) $h->stage_id === 11,
+                'substage_5' => fn($h) => (int) $h->substage_id === 5,
+                'substage_6' => fn($h) => (int) $h->substage_id === 6,
+            ];
 
-            $totalActualSlaSubStage1 = 0;
-            $totalActualSlaSubStage4 = 0;
+            $totalActualSlaUser = 0;
+            $slaSummary = [];
 
-            $countActualSubStage1 = 0;
-            $countActualSubStage4 = 0;
-            $today = Carbon::today();
+            $now = Carbon::now();
 
-            foreach ($histories as $documentId => $documentHistories) {
 
-                // History sudah diurutkan berdasarkan created_at ascending.
-                $documentHistories = $documentHistories->values();
+            // 4. HITUNG ACTUAL SLA
+            foreach ($histories as $documentHistories) {
 
-                // Ambil history SubStage 1 paling terakhir
-                $lastSubStage1 = $documentHistories
-                    ->filter(fn($history) => (int) $history->substage_id === 1)
-                    ->last();
-
-                // Ambil history SubStage 4 paling terakhir
-                $lastSubStage4 = $documentHistories
-                    ->filter(fn($history) => (int) $history->substage_id === 4)
-                    ->last();
-
-                // Ambil stage terakhir dari SubStage 1 atau SubStage 4 berdasarkan created_at yang paling baru.
-                $lastHistory = collect([$lastSubStage1, $lastSubStage4])
+                $lastHistory = collect($conditions)
+                    ->map(
+                        fn($condition) => $documentHistories
+                            ->filter($condition)
+                            ->last()
+                    )
                     ->filter()
                     ->sortBy('created_at')
                     ->last();
@@ -300,80 +299,68 @@ class DashboardController extends Controller
                     continue;
                 }
 
-                $startDate = Carbon::parse($lastHistory->created_at);
                 $actualSla = round(
-                    ($startDate)->diffInSeconds(Carbon::now()) / 3600,
+                    Carbon::parse($lastHistory->created_at)->diffInSeconds($now) / 3600,
                     2
                 );
 
-                if ((int) $lastHistory->substage_id === 1) {
-                    $totalActualSlaSubStage1 += $actualSla;
-                    $countActualSubStage1++;
-                } elseif ((int) $lastHistory->substage_id === 4) {
-                    $totalActualSlaSubStage4 += $actualSla;
-                    $countActualSubStage4++;
-                }
+                $totalActualSlaUser += $actualSla;
             }
 
-            // 4. TOTAL ACTUAL SLA DAN ACHIEVEMENT
-
-            $totalActualSlaUser = $totalActualSlaSubStage1 + $totalActualSlaSubStage4;
-
+            // 5. HITUNG ACHIEVEMENT
             $achSlaUser = $totalActualSlaUser > 0
-                ? round(($totalSlaStandard / $totalActualSlaUser) * 100, 2)
+                ? round(($totalSlaStandardSubStage4 / $totalActualSlaUser) * 100, 2)
                 : 0;
+
 
             // HITUNG SLA ACHIEVEMENT COMMITTEE
             // 1. TOTAL SLA STANDARD
 
-            $subStage1 = TspRequestSubstage::find(2);
             $subStage4 = TspRequestSubstage::find(5);
 
-            $totalDocumentsSubStage2 = TspRequestDocument::where('substage_id', 2)->whereNull('deleted_at')->count();
             $totalDocumentsSubStage5 = TspRequestDocument::where('substage_id', 5)->whereNull('deleted_at')->count();
 
             // sla_hours
-            $totalSlaStandardSubStage2 = ($subStage1->sla_hours ?? 0) * $totalDocumentsSubStage2;
             $totalSlaStandardSubStage5 = ($subStage4->sla_hours ?? 0) * $totalDocumentsSubStage5;
 
-            $totalSlaStandard = $totalSlaStandardSubStage2 + $totalSlaStandardSubStage5;
-
             // 2. AMBIL DATA HISTORY
-            $requestDocumentIdsCommittee = TspRequestDocument::whereIn('substage_id', [2, 5])->whereNull('deleted_at')->pluck('id')->toArray();
-            $histories = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIdsCommittee)
+            $requestDocumentIdsCommittee = TspRequestDocument::where(function ($query) {
+                $query->whereIn('stage_id', [7, 8, 9, 10, 11])
+                    ->orWhereIn('substage_id', [6]);
+            })
+                ->whereNull('deleted_at')->pluck('id')->toArray();
+            $historiesComittee = TspRequestDocumentHistory::whereIn('request_document_id', $requestDocumentIdsCommittee)
                 ->whereNotNull('created_at')
                 ->orderBy('request_document_id')
                 ->orderBy('created_at')
                 ->get()
                 ->groupBy('request_document_id');
 
-            // 3. HITUNG ACTUAL SLA PER DOKUMEN
+            // 3. KONFIGURASI STAGE DAN SUBSTAGE
+            $conditionsComittee = [
+                'stage_7' => fn($h) => (int) $h->stage_id === 7,
+                'stage_8' => fn($h) => (int) $h->stage_id === 8,
+                'stage_9' => fn($h) => (int) $h->stage_id === 9,
+                'stage_10' => fn($h) => (int) $h->stage_id === 10,
+                'stage_11' => fn($h) => (int) $h->stage_id === 11,
+                'substage_6' => fn($h) => (int) $h->substage_id === 6,
+            ];
 
-            $totalActualSlaSubStage2 = 0;
-            $totalActualSlaSubStage5 = 0;
+            $totalActualSlaCommittee = 0;
+            $slaSummary = [];
 
-            $countActualSubStage2 = 0;
-            $countActualSubStage5 = 0;
-            $today = Carbon::today();
+            $now = Carbon::now();
 
-            foreach ($histories as $documentId => $documentHistories) {
 
-                // History sudah diurutkan berdasarkan created_at ascending.
-                $documentHistories = $documentHistories->values();
+            // 4. HITUNG ACTUAL SLA
+            foreach ($historiesComittee as $documentHistories) {
 
-                // Ambil history SubStage 2 paling terakhir
-                $lastSubStage2 = $documentHistories
-                    ->filter(fn($history) => (int) $history->substage_id === 2)
-                    ->last();
-
-                // Ambil history SubStage 5 paling terakhir
-                $lastSubStage5 = $documentHistories
-                    ->filter(fn($history) => (int) $history->substage_id === 5)
-                    ->last();
-
-                // Ambil stage terakhir dari SubStage 2 atau SubStage 5
-                // berdasarkan created_at yang paling baru.
-                $lastHistory = collect([$lastSubStage2, $lastSubStage5])
+                $lastHistory = collect($conditionsComittee)
+                    ->map(
+                        fn($condition) => $documentHistories
+                            ->filter($condition)
+                            ->last()
+                    )
                     ->filter()
                     ->sortBy('created_at')
                     ->last();
@@ -382,27 +369,17 @@ class DashboardController extends Controller
                     continue;
                 }
 
-                $startDate = Carbon::parse($lastHistory->created_at);
                 $actualSla = round(
-                    ($startDate)->diffInSeconds(Carbon::now()) / 3600,
+                    Carbon::parse($lastHistory->created_at)->diffInSeconds($now) / 3600,
                     2
                 );
 
-                if ((int) $lastHistory->substage_id === 2) {
-                    $totalActualSlaSubStage2 += $actualSla;
-                    $countActualSubStage2++;
-                } elseif ((int) $lastHistory->substage_id === 5) {
-                    $totalActualSlaSubStage5 += $actualSla;
-                    $countActualSubStage5++;
-                }
+                $totalActualSlaCommittee += $actualSla;
             }
 
-            // 4. TOTAL ACTUAL SLA DAN ACHIEVEMENT
-
-            $totalActualSlaCommittee = $totalActualSlaSubStage2 + $totalActualSlaSubStage5;
-
+            // 5. HITUNG ACHIEVEMENT
             $achSlaCommittee = $totalActualSlaCommittee > 0
-                ? round(($totalSlaStandard / $totalActualSlaCommittee) * 100, 2)
+                ? round(($totalSlaStandardSubStage5 / $totalActualSlaCommittee) * 100, 2)
                 : 0;
 
             return response()->json([

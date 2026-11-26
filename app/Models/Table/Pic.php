@@ -11,7 +11,11 @@ class Pic extends Model
     protected $connection = 'legatra';
 
     protected $fillable = [
-        'company_id', 'email', 'name', 'user_id', 'is_email_notification'
+        'company_id',
+        'email',
+        'name',
+        'user_id',
+        'is_email_notification'
     ];
 
     public function Company()
@@ -24,8 +28,8 @@ class Pic extends Model
         return $this->hasMany(RequestDocument::class);
     }
 
-    public function RequestExisting()
-    {
-        return $this->hasMany(RequestExisting::class);
-    }
+    // public function RequestExisting()
+    // {
+    //     return $this->hasMany(RequestExisting::class);
+    // }
 }

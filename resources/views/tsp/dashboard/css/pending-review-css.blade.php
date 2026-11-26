@@ -1,6 +1,6 @@
 <style>
     .dashboard-card {
-        height: 270px !important;
+        height: 300px !important;
     }
 
     .dashboard-card .card-body {
