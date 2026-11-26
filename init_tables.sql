@@ -5,6 +5,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- =========================================
 -- DROP TABLES
 -- =========================================
+DROP TABLE IF EXISTS tsp_document_request_documents;
 
 DROP TABLE IF EXISTS tsp_request_document_feedback_file_downloads;
 DROP TABLE IF EXISTS tsp_request_document_feedback_files;
@@ -21,6 +22,15 @@ DROP TABLE IF EXISTS tsp_request_documents;
 DROP TABLE IF EXISTS tsp_request_substages;
 DROP TABLE IF EXISTS tsp_request_stages;
 DROP TABLE IF EXISTS tsp_request_status;
+
+DROP TABLE IF EXISTS tsp_document_file_downloads;
+DROP TABLE IF EXISTS tsp_document_files;
+DROP TABLE IF EXISTS tsp_document_customer_pics;
+DROP TABLE IF EXISTS tsp_document_customers;
+DROP TABLE IF EXISTS tsp_document_pics;
+DROP TABLE IF EXISTS tsp_document_committees;
+DROP TABLE IF EXISTS tsp_documents;
+
 DROP TABLE IF EXISTS tsp_audit_trails;
 
 
@@ -286,6 +296,8 @@ CREATE TABLE tsp_request_document_files (
 
     document_type ENUM(
         'Draft Contract',
+        'Draft Contract User',
+        'Draft Contract Legal',
         'Quotation',
         'Other',
         'Final Contract',
@@ -554,6 +566,255 @@ CREATE TABLE tsp_form_legal_reviews (
         ON DELETE CASCADE
 );
 
+-- =========================================
+-- DOCUMENTS
+-- =========================================
+
+CREATE TABLE tsp_documents (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_number VARCHAR(100) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    contract_type ENUM('Part', 'Service', 'Reman', 'Unit') NOT NULL,
+    requester_id BIGINT NOT NULL,
+    potential_amount DECIMAL(20,2) NOT NULL,
+    sign_status ENUM(
+        'Not Signed',
+        'Partial Signed',
+        'Fully Signed'
+    ) NOT NULL,
+    is_project BOOLEAN NOT NULL,
+    sow TEXT NOT NULL,
+    transaction_procedure TEXT NOT NULL,
+    kpi TEXT NOT NULL,
+    site VARCHAR(255) NOT NULL,
+
+    date DATE NOT NULL,
+    department_id BIGINT NOT NULL,
+    document_objective VARCHAR(255) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    incoterm VARCHAR(255) NOT NULL,
+    work_location VARCHAR(255) NOT NULL,
+    delivery_location VARCHAR(255) NOT NULL,
+    term_of_payment VARCHAR(255) NOT NULL,
+    resume TEXT NOT NULL,
+    legal_note TEXT NOT NULL,
+    validation_required_by VARCHAR(255) NULL,
+    investment TEXT NULL,
+    manpower_provision TEXT NULL,
+    sanction TEXT NULL,
+    penalty TEXT NULL,
+    insurance TEXT NULL,
+    sla TEXT NULL,
+    version TEXT NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
+);
+
+-- =========================================
+-- DOCUMENT REQUEST DOCUMENTS
+-- =========================================
+
+CREATE TABLE tsp_document_request_documents (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_id BIGINT NOT NULL,
+    request_document_id BIGINT NOT NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_request_documents_document
+        FOREIGN KEY (document_id)
+        REFERENCES tsp_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_document_request_documents_request_document
+        FOREIGN KEY (request_document_id)
+        REFERENCES tsp_request_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- DOCUMENT PICS
+-- =========================================
+
+CREATE TABLE tsp_document_pics (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_id BIGINT NOT NULL,
+    name VARCHAR(100) NULL,
+    position VARCHAR(100) NULL,
+    email VARCHAR(50) NULL,
+    phone VARCHAR(20) NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_pics_document
+        FOREIGN KEY (document_id)
+        REFERENCES tsp_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- DOCUMENT CUSTOMERS
+-- =========================================
+
+CREATE TABLE tsp_document_customers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    nib VARCHAR(100) NULL,
+    npwp VARCHAR(100) NULL,
+    address VARCHAR(255) NULL,
+    postal_code VARCHAR(10) NULL,
+    customer_group VARCHAR(100) NULL,
+    email VARCHAR(50) NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_customers_document
+        FOREIGN KEY (document_id)
+        REFERENCES tsp_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- DOCUMENT CUSTOMER PICS
+-- =========================================
+
+CREATE TABLE tsp_document_customer_pics (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_customer_id BIGINT NOT NULL,
+
+    name VARCHAR(100) NULL,
+    position VARCHAR(100) NULL,
+    email VARCHAR(50) NULL,
+    phone VARCHAR(20) NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_customer_pics_customer
+        FOREIGN KEY (document_customer_id)
+        REFERENCES tsp_document_customers(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- DOCUMENT FILES
+-- =========================================
+
+CREATE TABLE tsp_document_files (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_id BIGINT NOT NULL,
+
+    name VARCHAR(255) NOT NULL,
+
+    document_type ENUM(
+        'Draft Contract',
+        'Draft Contract User',
+        'Draft Contract Legal',
+        'Quotation',
+        'Other',
+        'Final Contract',
+        'Signed BOD',
+        'Signed Customer',
+        'Contract Clauses'
+    ) NOT NULL,
+
+    file_path TEXT NOT NULL,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_files_document
+        FOREIGN KEY (document_id)
+        REFERENCES tsp_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- DOCUMENT FILE DOWNLOADS
+-- =========================================
+
+CREATE TABLE tsp_document_file_downloads (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_file_id BIGINT NOT NULL,
+    download_by BIGINT NOT NULL,
+    download_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_file_downloads_file
+        FOREIGN KEY (document_file_id)
+        REFERENCES tsp_document_files(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- DOCUMENT COMMITTEES
+-- =========================================
+
+CREATE TABLE tsp_document_committees (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    document_id BIGINT NOT NULL,
+    sequence INT NOT NULL,
+    committee_id BIGINT NOT NULL,
+
+    verification_ld_status BOOLEAN NOT NULL DEFAULT FALSE,
+    verification_flr_status BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+
+    CONSTRAINT fk_document_committees_document
+        FOREIGN KEY (document_id)
+        REFERENCES tsp_documents(id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
 
 -- =========================================
 -- AUDIT TRAILS

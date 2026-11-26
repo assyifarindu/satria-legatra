@@ -12,6 +12,13 @@ use App\Models\Table\TspRequestDocumentCustomerPic;
 use App\Models\Table\TspRequestDocumentFeedback;
 use App\Models\Table\TspRequestDocumentHistory;
 use App\Models\Table\TspRequestDocumentFeedbackFile;
+use App\Models\Table\TspDocument;
+use App\Models\Table\TspDocumentCommittee;
+use App\Models\Table\TspDocumentCustomer;
+use App\Models\Table\TspDocumentCustomerPic;
+use App\Models\Table\TspDocumentFile;
+use App\Models\Table\TspDocumentPic;
+use App\Models\Table\TspDocumentRequestDocument;
 use App\Models\User;
 use App\Models\Department;
 use App\Models\Division;
@@ -1277,7 +1284,7 @@ class RequestDocumentController extends Controller
             /* Generate Ticket Number */
             $year = date('Y');
             $last_request = TspRequestDocument::whereYear('created_at', $year)->orderByDesc("id")->first();
-            $last_ticket_number = (int) $last_request->ticket_number ?? 0;
+            $last_ticket_number =  $last_request ? (int) $last_request->ticket_number : 0;
             $ticket_number = $year . "-" . str_pad($last_ticket_number + 1, 5, "0", STR_PAD_LEFT);
 
             /* CREATE REQUEST DOCUMENT */
@@ -5871,6 +5878,125 @@ class RequestDocumentController extends Controller
                     'created_by' => Auth::id(),
                 ]);
             }
+
+            // Document
+            $flr = TspFormLegalReview::where('request_document_id', $requestDocument->id)->first();
+            $document = TspDocument::create([
+                'document_number' => $requestDocument->document_number,
+                'title' => $requestDocument->title,
+                'contract_type' => $requestDocument->contract_type,
+                'requester_id' => $requestDocument->requester_id,
+                'potential_amount' => $requestDocument->potential_amount,
+                'sign_status' => $requestDocument->sign_status,
+                'is_project' => $requestDocument->is_project,
+                'sow' => $requestDocument->sow,
+                'transaction_procedure' => $requestDocument->transaction_procedure,
+                'kpi' => $requestDocument->kpi,
+                'site' => $requestDocument->site,
+
+                'date' => $flr->date,
+                'department_id' => $flr->department_id,
+                'document_objective' => $flr->document_objective,
+                'start_date' => $flr->start_date,
+                'end_date' => $flr->end_date,
+                'incoterm' => $flr->incoterm,
+                'work_location' => $flr->work_location,
+                'delivery_location' => $flr->delivery_location,
+                'term_of_payment' => $flr->term_of_payment,
+                'resume' => $flr->resume,
+                'legal_note' => $flr->legal_note,
+                'validation_required_by' => $flr->validation_required_by,
+                'investment' => $flr->investment,
+                'manpower_provision' => $flr->manpower_provision,
+                'sanction' => $flr->sanction,
+                'penalty' => $flr->penalty,
+                'insurance' => $flr->insurance,
+                'sla' => $flr->sla,
+                'version' => $flr->version,
+                'created_at' => now(),
+                'created_by' => Auth::id(),
+            ]);
+            TspDocumentRequestDocument::create([
+                'document_id' => $document->id,
+                'request_document_id' => $requestDocument->id,
+                'created_at' => now(),
+                'created_by' => Auth::id(),
+            ]);
+
+            // Document PIC
+            $requestDocumentPics = TspRequestDocumentPic::where('request_document_id', $requestDocument->id)->get();
+            $pics = array_map(function ($pic) use ($document) {
+                return [
+                    'document_id' => $document->id,
+                    'name' => $pic->name,
+                    'position' => $pic->position,
+                    'email' => $pic->email,
+                    'phone' => $pic->phone,
+                    'created_at' => now(),
+                    'created_by' => Auth::id(),
+                ];
+            }, $requestDocumentPics->all());
+            TspDocumentPic::insert($pics);
+
+            // Document Customer and Customer PIC
+            $requestDocumentCustomers = TspRequestDocumentCustomer::where('request_document_id', $requestDocument->id)->get();
+            foreach ($requestDocumentCustomers as $requestDocumentCustomer) {
+                $documentCustomer = TspDocumentCustomer::create([
+                    'document_id' => $document->id,
+                    'name' => $requestDocumentCustomer->name,
+                    'nib' => $requestDocumentCustomer->nib,
+                    'npwp' => $requestDocumentCustomer->npwp,
+                    'address' => $requestDocumentCustomer->address,
+                    'postal_code' => $requestDocumentCustomer->postal_code,
+                    'customer_group' => $requestDocumentCustomer->customer_group,
+                    'email' => $requestDocumentCustomer->email,
+                    'created_at' => now(),
+                    'created_by' => Auth::id(),
+                ]);
+                $customerPic = $requestDocumentCustomer->customerPics->toArray();
+                foreach ($customerPic as $pic) {
+                    TspDocumentCustomerPic::create([
+                        'document_customer_id' => $documentCustomer->id,
+                        'name' => $pic['name'],
+                        'position' => $pic['position'],
+                        'email' => $pic['email'],
+                        'phone' => $pic['phone'],
+                        'created_at' => now(),
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
+
+            // Document File
+            $requestDocumentFiles = TspRequestDocumentFile::where('request_document_id', $requestDocument->id)->get();
+            $files = [];
+            foreach ($requestDocumentFiles as $requestDocumentFile) {
+                $files[] = [
+                    'document_id' => $document->id,
+                    'name' => $requestDocumentFile->name,
+                    'document_type' => $requestDocumentFile->document_type,
+                    'file_path' => $requestDocumentFile->file_path,
+                    'created_at' => now(),
+                    'created_by' => Auth::id(),
+                ];
+            }
+            TspDocumentFile::insert($files);
+            
+            // Document Committee
+            $requestDocumentCommittees = TspRequestDocumentCommittees::where('request_document_id', $requestDocument->id)->get();
+            $committees = [];
+            foreach ($requestDocumentCommittees as $requestDocumentCommittee) {
+                $committees[] = [
+                    'document_id' => $document->id,
+                    'sequence' => $requestDocumentCommittee->sequence,
+                    'committee_id' => $requestDocumentCommittee->committee_id,
+                    'verification_ld_status' => $requestDocumentCommittee->verification_ld_status,
+                    'verification_flr_status' => $requestDocumentCommittee->verification_flr_status,
+                    'created_at' => now(),
+                    'created_by' => Auth::id(),
+                ];
+            }
+            TspDocumentCommittee::insert($committees);
 
             $db->commit();
             return response()->json([

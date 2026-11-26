@@ -64,15 +64,15 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-lg-2">
+                                {{-- <div class="col-lg-2">
                                     <div class="nav nav-pills flex-column navtab-bg nav-pills-tab text-center"
                                         id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                         <div class="text-center p-3">
                                             Loading...
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-lg-10">
+                                </div> --}}
+                                <div class="col-lg-12">
                                     <div class="tab-content p-3">
                                         <div class="tab-pane fade active show" id="request-document" role="tabpanel"
                                             aria-labelledby="custom-v-pills-billing-tab">
@@ -200,139 +200,139 @@
                 }
             ];
 
-            function renderStages(currentStage, currentSubstage = null) {
+            // function renderStages(currentStage, currentSubstage = null) {
 
-                let html = '';
+            //     let html = '';
 
-                currentStage = Number(currentStage);
-                currentSubstage = currentSubstage ?
-                    Number(currentSubstage) :
-                    null;
+            //     currentStage = Number(currentStage);
+            //     currentSubstage = currentSubstage ?
+            //         Number(currentSubstage) :
+            //         null;
 
-                stages.forEach(function(stage, index) {
+            //     stages.forEach(function(stage, index) {
 
-                    const isCurrentStage =
-                        currentStage === stage.id;
+            //         const isCurrentStage =
+            //             currentStage === stage.id;
 
-                    const isDisabled =
-                        currentStage < stage.id;
+            //         const isDisabled =
+            //             currentStage < stage.id;
 
-                    html += `
-                        <a
-                            href="javascript:void(0)"
-                            class="nav-link mt-2 py-2 stage-navigation
-                                ${isCurrentStage ? 'active show' : ''}
-                                ${isDisabled ? 'disabled' : ''}
-                            "
-                            id="${stage.target}-tab"
-                            data-stage-id="${stage.id}"
-                            data-stage-name="${stage.name}"
-                            role="tab"
-                            aria-selected="${isCurrentStage ? 'true' : 'false'}"
-                        >
-                            ${stage.name}
-                        </a>
-                    `;
-
-
-                    /* RENDER SUBSTAGE */
-
-                    if (stage.substages) {
-
-                        html += `
-                            <div 
-                                class="substage-container d-flex flex-column align-items-center"
-                                style="
-                                    padding: 6px 0;
-                                    margin: 0;
-                                    gap: 5px;
-                                "
-                            >
-                        `;
-
-                        stage.substages.forEach(function(substage) {
-
-                            const isCompletedSubstage =
-                                currentStage > stage.id ||
-                                (
-                                    currentStage === stage.id &&
-                                    currentSubstage > substage.id
-                                );
-
-                            const isActiveSubstage =
-                                currentStage === stage.id &&
-                                currentSubstage === substage.id;
-
-                            const isDisabledSubstage =
-                                currentStage < stage.id ||
-                                (
-                                    currentStage === stage.id &&
-                                    currentSubstage < substage.id
-                                );
-
-                            html += `
-                                <a
-                                    href="javascript:void(0)"
-                                    class="nav-link substage-navigation
-                                        ${isActiveSubstage ? 'active show' : ''}
-                                        ${isDisabledSubstage ? 'disabled' : ''}
-                                        ${isCompletedSubstage ? 'text-success' : ''}
-                                    "
-                                    id="${stage.target}-substage-${substage.id}-tab"
-
-                                    data-stage-id="${stage.id}"
-                                    data-stage-name="${stage.name}"
-                                    data-substage-id="${substage.id}"
-                                    data-substage-name="${substage.name}"
-
-                                    role="tab"
-
-                                    style="
-                                        width: 95%;
-                                        margin: 0;
-                                        padding: 8px 10px;
-                                    "
-                                >
-                                    ${substage.sequence}. ${substage.name}
-                                </a>
-                            `;
-                        });
-
-                        html += `
-                            </div>
-                        `;
-                    }
+            //         html += `
+            //             <a
+            //                 href="javascript:void(0)"
+            //                 class="nav-link mt-2 py-2 stage-navigation
+            //                     ${isCurrentStage ? 'active show' : ''}
+            //                     ${isDisabled ? 'disabled' : ''}
+            //                 "
+            //                 id="${stage.target}-tab"
+            //                 data-stage-id="${stage.id}"
+            //                 data-stage-name="${stage.name}"
+            //                 role="tab"
+            //                 aria-selected="${isCurrentStage ? 'true' : 'false'}"
+            //             >
+            //                 ${stage.name}
+            //             </a>
+            //         `;
 
 
-                    /*ARROW ANTAR STAGE*/
-                    if (index < stages.length - 1) {
+            //         /* RENDER SUBSTAGE */
 
-                        const isCompleted =
-                            currentStage > stage.id;
+            //         if (stage.substages) {
 
-                        html += `
-                            <div
-                                class="d-flex justify-content-center align-items-center"
-                                style="
-                                    height: 28px;
-                                    margin: 0;
-                                    padding: 0;
-                                "
-                            >
-                                <i
-                                    class="fas fa-arrow-circle-down
-                                    ${isCompleted ? 'text-primary' : ''}"
-                                ></i>
-                            </div>
-                        `;
-                    }
+            //             html += `
+            //                 <div 
+            //                     class="substage-container d-flex flex-column align-items-center"
+            //                     style="
+            //                         padding: 6px 0;
+            //                         margin: 0;
+            //                         gap: 5px;
+            //                     "
+            //                 >
+            //             `;
 
-                });
+            //             stage.substages.forEach(function(substage) {
 
-                $('#v-pills-tab').html(html);
-            }
+            //                 const isCompletedSubstage =
+            //                     currentStage > stage.id ||
+            //                     (
+            //                         currentStage === stage.id &&
+            //                         currentSubstage > substage.id
+            //                     );
 
-            function renderRequestDocument(data, selectedStageId = null, selectedSubstageId = null) {
+            //                 const isActiveSubstage =
+            //                     currentStage === stage.id &&
+            //                     currentSubstage === substage.id;
+
+            //                 const isDisabledSubstage =
+            //                     currentStage < stage.id ||
+            //                     (
+            //                         currentStage === stage.id &&
+            //                         currentSubstage < substage.id
+            //                     );
+
+            //                 html += `
+            //                     <a
+            //                         href="javascript:void(0)"
+            //                         class="nav-link substage-navigation
+            //                             ${isActiveSubstage ? 'active show' : ''}
+            //                             ${isDisabledSubstage ? 'disabled' : ''}
+            //                             ${isCompletedSubstage ? 'text-success' : ''}
+            //                         "
+            //                         id="${stage.target}-substage-${substage.id}-tab"
+
+            //                         data-stage-id="${stage.id}"
+            //                         data-stage-name="${stage.name}"
+            //                         data-substage-id="${substage.id}"
+            //                         data-substage-name="${substage.name}"
+
+            //                         role="tab"
+
+            //                         style="
+            //                             width: 95%;
+            //                             margin: 0;
+            //                             padding: 8px 10px;
+            //                         "
+            //                     >
+            //                         ${substage.sequence}. ${substage.name}
+            //                     </a>
+            //                 `;
+            //             });
+
+            //             html += `
+            //                 </div>
+            //             `;
+            //         }
+
+
+            //         /*ARROW ANTAR STAGE*/
+            //         if (index < stages.length - 1) {
+
+            //             const isCompleted =
+            //                 currentStage > stage.id;
+
+            //             html += `
+            //                 <div
+            //                     class="d-flex justify-content-center align-items-center"
+            //                     style="
+            //                         height: 28px;
+            //                         margin: 0;
+            //                         padding: 0;
+            //                     "
+            //                 >
+            //                     <i
+            //                         class="fas fa-arrow-circle-down
+            //                         ${isCompleted ? 'text-primary' : ''}"
+            //                     ></i>
+            //                 </div>
+            //             `;
+            //         }
+
+            //     });
+
+            //     $('#v-pills-tab').html(html);
+            // }
+
+            function renderDocument(data) {
 
                 let filesHtml = '';
                 const stageInformation = {
@@ -392,16 +392,15 @@
                     }
                 };
 
-                const stageId = Number(
-                    selectedStageId ?? data.stage_id
-                );
+                // const stageId = Number(
+                //     selectedStageId ?? data.stage_id
+                // );
 
 
-                const stageInfo =
-                    stageInformation[stageId] ?? {
-                        title: 'Request Document',
-                        description: 'Berikut adalah informasi dan proses Request Document.'
-                    };
+                const stageInfo = {
+                    title: 'Document Details',
+                    description: 'Berikut adalah informasi dokumen kontrak yang telah aktif.'
+                }
 
                 let title = stageInfo.title;
 
@@ -409,25 +408,25 @@
                 JIKA ADA SUBSTAGE YANG DIPILIH
                 */
 
-                if (selectedSubstageId) {
+                // if (selectedSubstageId) {
 
-                    const selectedStage = stages.find(
-                        stage => Number(stage.id) === Number(stageId)
-                    );
+                //     const selectedStage = stages.find(
+                //         stage => Number(stage.id) === Number(stageId)
+                //     );
 
-                    const selectedSubstage = selectedStage
-                        ?.substages
-                        ?.find(
-                            substage =>
-                            Number(substage.id) === Number(selectedSubstageId)
-                        );
+                //     const selectedSubstage = selectedStage
+                //         ?.substages
+                //         ?.find(
+                //             substage =>
+                //             Number(substage.id) === Number(selectedSubstageId)
+                //         );
 
-                    if (selectedSubstage) {
+                //     if (selectedSubstage) {
 
-                        title += ` - ${selectedSubstage.name}`;
+                //         title += ` - ${selectedSubstage.name}`;
 
-                    }
-                }
+                //     }
+                // }
 
 
                 $('#request-document-title').text(title);
@@ -446,7 +445,7 @@
                             <div class="border p-3 mb-3 rounded">
 
                                 <div class="float-end">
-                                    <a href="{{ url('/tsp/download-request-document-file') }}/${file.id}"
+                                    <a href="{{ url('/tsp/download-document-file') }}/${file.id}"
                                         target="_blank">
 
                                         <i class="mdi mdi-file-download-outline text-muted font-20"
@@ -460,7 +459,7 @@
 
                                     <label class="form-check-label font-16 fw-bold">
 
-                                        <a href="{{ url('/tsp/download-request-document-file') }}/${file.id}"
+                                        <a href="{{ url('/tsp/download-document-file') }}/${file.id}"
                                             target="_blank">
 
                                             <i class="mdi mdi-file-document"></i>
@@ -492,206 +491,98 @@
 
                 // RENDER DETAIL REQUEST DOCUMENT
 
-                let html = `
+                const detailItem = (label, value) => `
+                    <div class="row mb-2 align-items-start">
+                        <div class="col-5 pe-0">
+                            <span class="fw-semibold">${label}</span>
+                        </div>
+                        <div class="col-auto px-1">:</div>
+                        <div class="col ps-1">
+                            <span>${value ?? '-'}</span>
+                        </div>
+                    </div>
+                `;
+
+                const formatCurrency = (amount) => {
+                    return amount ?
+                        new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            maximumFractionDigits: 0
+                        }).format(amount) :
+                        '-';
+                };
+
+                const customer = data.customer ?? {};
+                const pic = data.pics ?? {};
+                const customerPic = customer.customer_pics?.[0] ?? {};
+
+                const html = `
                 <div class="row">
                     <div class="col-md-12">
-
                         <div class="border p-3 rounded mb-3">
 
-                            <h5 class="mt-3 ps-3 pt-1">
+                            <h5 class="mt-2 mb-4">
                                 ${data.document_number ? data.document_number + ' - ' : ''}${data.title ?? '-'}
                             </h5>
 
+                            <!-- INFORMATION & PIC -->
                             <div class="row">
+
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Contract Type :
-                                        </span>
-                                        ${data.contract_type ?? '-'}
-                                    </p>
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Potential Amount :
-                                        </span>
-                                        ${data.potential_amount ? `${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(data.potential_amount)}` : '-'}
-                                    </p>
+                                    ${detailItem('Contract Type', data.contract_type)}
+                                    ${detailItem('Potential Amount', formatCurrency(data.potential_amount))}
+                                    ${detailItem('Requester', data.requester)}
+                                    ${detailItem('Sign Status', data.sign_status)}
+                                    ${detailItem('Project Category', data.is_project ? 'Project' : 'Non-Project')}
+                                    ${detailItem('SOW', data.sow)}
+                                    ${detailItem('Transaction Procedure', data.transaction_procedure)}
+                                    ${detailItem('KPI', data.kpi)}
+                                    ${detailItem('Site', data.site)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Requester :
-                                        </span>
-                                        ${data.requester ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Sign Status :
-                                        </span>
-                                        ${data.sign_status ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Project Category :
-                                        </span>
-                                        ${data.is_project ? 'Project' : 'Non-Project'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            SOW :
-                                        </span>
-                                        ${data.sow ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Transaction Procedure :
-                                        </span>
-                                        ${data.transaction_procedure ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            KPI :
-                                        </span>
-                                        ${data.kpi ?? '-'}
-                                    </p>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1 fw-semibold">PIC Data</p>
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Name :
-                                        </span>
-                                        ${data.pics?.name ?? '-'}
-                                    </p>
+                                    ${detailItem('PIC Name', pic.name)}
+                                    ${detailItem('PIC Position', pic.position)}
+                                    ${detailItem('PIC Email', pic.email)}
+                                    ${detailItem('PIC Phone', pic.phone)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Position :
-                                        </span>
-                                        ${data.pics?.position ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Email :
-                                        </span>
-                                        ${data.pics?.email ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            PIC Phone :
-                                        </span>
-                                        ${data.pics?.phone ?? '-'}
-                                    </p>
                                 </div>
+
                             </div>
 
+                            <hr class="my-3">
+
+                            <!-- CUSTOMER INFORMATION -->
                             <div class="row">
+
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer :
-                                        </span>
 
-                                        ${data.customer
-                                            ? data.customer.name
-                                            : '-'
-                                        }
-                                    </p>
+                                    ${detailItem('Customer', customer.name)}
+                                    ${detailItem('Customer NIB', customer.nib)}
+                                    ${detailItem('Customer NPWP', customer.npwp)}
+                                    ${detailItem('Customer Address', customer.address)}
+                                    ${detailItem('Customer Postal Code', customer.postal_code)}
+                                    ${detailItem('Customer Email', customer.email)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer NIB :
-                                        </span>
-
-                                        ${data.customer
-                                            ? data.customer.nib
-                                            : '-'
-                                        }
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer NPWP :
-                                        </span>
-
-                                        ${data.customer
-                                            ? data.customer.npwp
-                                            : '-'
-                                        }
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer Address :
-                                        </span>
-
-                                        ${data.customer?.address ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer Postal Code :
-                                        </span>
-
-                                        ${data.customer?.postal_code ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer Email :
-                                        </span>
-
-                                        ${data.customer?.email ?? '-'}
-                                    </p>
                                 </div>
+
                                 <div class="col-md-6">
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Name :
-                                        </span>
 
-                                        ${data.customer?.customer_pics?.[0]?.name ?? '-'}
-                                    </p>
+                                    ${detailItem('Customer PIC Name', customerPic.name)}
+                                    ${detailItem('Customer PIC Position', customerPic.position)}
+                                    ${detailItem('Customer PIC Email', customerPic.email)}
+                                    ${detailItem('Customer PIC Phone', customerPic.phone)}
 
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Position :
-                                        </span>
-
-                                        ${data.customer?.customer_pics?.[0]?.position ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Email :
-                                        </span>
-
-                                        ${data.customer?.customer_pics?.[0]?.email ?? '-'}
-                                    </p>
-
-                                    <p class="mb-2 ps-3 pt-1">
-                                        <span class="fw-semibold me-2">
-                                            Customer PIC Phone :
-                                        </span>
-
-                                        ${data.customer?.customer_pics?.[0]?.phone ?? '-'}
-                                    </p>
                                 </div>
+
                             </div>
-
-                            
-
                         </div>
 
+                           
                     </div>
                 </div>
 
@@ -705,7 +596,7 @@
 
             const requestDocumentId = "{{ $document->id }}";
 
-            let url = "{{ url('tsp/request-document/data') }}/" + requestDocumentId;
+            let url = "{{ url('tsp/monitoring/active-contracts/data') }}/" + requestDocumentId;
 
             url = url.replace(':id', requestDocumentId);
 
@@ -720,9 +611,8 @@
 
                     requestDocumentData = response.data;
 
-                    renderStages(requestDocumentData.stage_id, requestDocumentData.substage_id);
-                    renderRequestDocument(requestDocumentData, requestDocumentData.stage_id,
-                        requestDocumentData.substage_id);
+                    // renderStages(requestDocumentData.stage_id, requestDocumentData.substage_id);
+                    renderDocument(requestDocumentData);
 
                 },
 
@@ -738,91 +628,87 @@
                 }
             });
 
-            //DELAGATED EVENT LISTENER UNTUK STAGE NAVIGATION
-            $(document).on(
-                'click',
-                '.stage-navigation',
-                function() {
+            // //DELAGATED EVENT LISTENER UNTUK STAGE NAVIGATION
+            // $(document).on(
+            //     'click',
+            //     '.stage-navigation',
+            //     function() {
 
-                    const stageId = $(this).data('stage-id');
-
-
-                    /*JANGAN BISA KLIK STAGE YANG BELUM TERSEDIA*/
-
-                    if ($(this).hasClass('disabled')) {
-                        return;
-                    }
+            //         const stageId = $(this).data('stage-id');
 
 
-                    /*UPDATE ACTIVE MENU*/
+            //         /*JANGAN BISA KLIK STAGE YANG BELUM TERSEDIA*/
 
-                    $('.stage-navigation').removeClass(
-                        'active show'
-                    );
-
-                    $('.substage-navigation').removeClass(
-                        'active show'
-                    );
-
-                    $(this).addClass(
-                        'active show'
-                    );
+            //         if ($(this).hasClass('disabled')) {
+            //             return;
+            //         }
 
 
-                    /*RENDER HEADER DAN CONTENT*/
+            //         /*UPDATE ACTIVE MENU*/
 
-                    renderRequestDocument(
-                        requestDocumentData,
-                        stageId,
-                        null
-                    );
+            //         $('.stage-navigation').removeClass(
+            //             'active show'
+            //         );
 
-                }
-            );
+            //         $('.substage-navigation').removeClass(
+            //             'active show'
+            //         );
 
-            //DELAGATED EVENT LISTENER UNTUK SUBSTAGE NAVIGATION
-            $(document).on(
-                'click',
-                '.substage-navigation',
-                function() {
-
-                    const stageId =
-                        $(this).data('stage-id');
-
-                    const substageId =
-                        $(this).data('substage-id');
+            //         $(this).addClass(
+            //             'active show'
+            //         );
 
 
-                    if ($(this).hasClass('disabled')) {
-                        return;
-                    }
+            //         /*RENDER HEADER DAN CONTENT*/
+
+            //         renderDocument(requestDocumentData);
+
+            //     }
+            // );
+
+            // //DELAGATED EVENT LISTENER UNTUK SUBSTAGE NAVIGATION
+            // $(document).on(
+            //     'click',
+            //     '.substage-navigation',
+            //     function() {
+
+            //         const stageId =
+            //             $(this).data('stage-id');
+
+            //         const substageId =
+            //             $(this).data('substage-id');
 
 
-                    /*UPDATE ACTIVE*/
-
-                    $('.stage-navigation').removeClass(
-                        'active show'
-                    );
-
-                    $('.substage-navigation').removeClass(
-                        'active show'
-                    );
-
-                    $(this).addClass(
-                        'active show'
-                    );
+            //         if ($(this).hasClass('disabled')) {
+            //             return;
+            //         }
 
 
-                    /*RENDER DATA*/
+            //         /*UPDATE ACTIVE*/
 
-                    renderRequestDocument(
-                        requestDocumentData,
-                        stageId,
-                        substageId
-                    );
+            //         $('.stage-navigation').removeClass(
+            //             'active show'
+            //         );
 
-                }
-            );
+            //         $('.substage-navigation').removeClass(
+            //             'active show'
+            //         );
+
+            //         $(this).addClass(
+            //             'active show'
+            //         );
+
+
+            //         /*RENDER DATA*/
+
+            //         renderDocument(
+            //             requestDocumentData,
+            //             stageId,
+            //             substageId
+            //         );
+
+            //     }
+            // );
         });
     </script>
 @endsection
