@@ -15,4 +15,9 @@ class TspDocumentCustomerPic extends Model
     protected $table = 'tsp_document_customer_pics';
 
     protected $guarded = ['id'];
+
+    public function documentCustomer()
+    {
+        return $this->belongsTo(TspDocumentCustomer::class, 'document_customer_id');
+    }
 }

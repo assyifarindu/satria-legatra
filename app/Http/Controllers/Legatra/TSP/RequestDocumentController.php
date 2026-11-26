@@ -17,7 +17,6 @@ use App\Models\Table\TspDocumentCommittee;
 use App\Models\Table\TspDocumentCustomer;
 use App\Models\Table\TspDocumentCustomerPic;
 use App\Models\Table\TspDocumentFile;
-use App\Models\Table\TspDocumentFileDownload;
 use App\Models\Table\TspDocumentPic;
 use App\Models\Table\TspDocumentRequestDocument;
 use App\Models\User;
@@ -1284,7 +1283,7 @@ class RequestDocumentController extends Controller
         try {
             /* Generate Ticket Number */
             $last_request = TspRequestDocument::orderByDesc("id")->first();
-            $last_ticket_number = (int) $last_request->ticket_number ?? 0;
+            $last_ticket_number =  $last_request ? (int) $last_request->ticket_number : 0;
             $ticket_number = str_pad($last_ticket_number + 1, 5, "0", STR_PAD_LEFT);
 
             /* CREATE REQUEST DOCUMENT */
@@ -5974,6 +5973,8 @@ class RequestDocumentController extends Controller
                 $files[] = [
                     'document_id' => $document->id,
                     'name' => $requestDocumentFile->name,
+                    'document_type' => $requestDocumentFile->document_type,
+                    'file_path' => $requestDocumentFile->file_path,
                     'created_at' => now(),
                     'created_by' => Auth::id(),
                 ];

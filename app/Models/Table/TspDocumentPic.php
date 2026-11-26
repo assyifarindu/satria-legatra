@@ -15,4 +15,9 @@ class TspDocumentPic extends Model
     protected $table = 'tsp_document_pics';
 
     protected $guarded = ['id'];
+
+    public function document()
+    {
+        return $this->belongsTo(TspDocument::class, 'document_id');
+    }
 }

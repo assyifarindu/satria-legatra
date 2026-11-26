@@ -296,6 +296,8 @@ CREATE TABLE tsp_request_document_files (
 
     document_type ENUM(
         'Draft Contract',
+        'Draft Contract User',
+        'Draft Contract Legal',
         'Quotation',
         'Other',
         'Final Contract',
@@ -738,6 +740,8 @@ CREATE TABLE tsp_document_files (
 
     document_type ENUM(
         'Draft Contract',
+        'Draft Contract User',
+        'Draft Contract Legal',
         'Quotation',
         'Other',
         'Final Contract',

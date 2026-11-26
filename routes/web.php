@@ -364,6 +364,7 @@ Route::middleware('auth')->group(function () {
   Route::get('/tsp/dashboard/waiting-customer/data', [App\Http\Controllers\Legatra\TSP\DashboardController::class, 'getWaitingCustomer'])->name('tsp.dashboard.waiting-customer');
   Route::get('/tsp/monitoring/active-contracts', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'showActiveContracts'])->name('tsp.monitoring.active-contract');
   Route::get('/tsp/monitoring/active-contracts/data', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'getActiveContracts'])->name('tsp.monitoring.active-contract.data');
-
   Route::get('/tsp/monitoring/active-contracts/{id}', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'showActiveContractsDetail'])->name('tsp.monitoring.active-contract.showDetail');
+  Route::get('/tsp/monitoring/active-contracts/data/{id}', [App\Http\Controllers\Legatra\TSP\MonitoringController::class, 'getActiveContractsDetail'])->name('tsp.monitoring.active-contract.data-detail');
+  Route::get('/tsp/download-document-file/{fileId}', [App\Http\Controllers\Legatra\TSP\DownloadFileController::class, 'downloadDocumentFile'])->name('tsp.download-document-file');
 });

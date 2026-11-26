@@ -15,4 +15,9 @@ class TspDocumentCommittee extends Model
     protected $table = 'tsp_document_committees';
 
     protected $guarded = ['id'];
+
+    public function document()
+    {
+        return $this->belongsTo(TspDocument::class, 'document_id');
+    }
 }

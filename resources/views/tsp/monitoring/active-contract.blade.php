@@ -107,19 +107,29 @@
                         render: function(data, type, row) {
                             let viewUrl = "{{ url('tsp/monitoring/active-contracts') }}/" + row.id;
 
+                            if (row.request_document_id) {
+                                return `
+                                    <a href="${viewUrl}" target="_blank"
+                                        class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                        title="View Detail" tabindex="0" data-plugin="tippy"
+                                        data-tippy-placement="top"><i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="#"
+                                        class="btn btn-light btn-xs d-inline waves-effect waves-light history_process"
+                                        title="History Process" tabindex="0" data-plugin="tippy"
+                                        data-tippy-placement="top" data-id="${row.request_document_id}"><i
+                                        class="mdi mdi-book-clock-outline"></i>
+                                    </a>
+                                  `;
+                            }
+
                             return `
-                                <a href="${viewUrl}" target="_blank"
-                                    class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
-                                    title="View Detail" tabindex="0" data-plugin="tippy"
-                                    data-tippy-placement="top"><i class="fas fa-eye"></i>
-                                </a>
-                                <a href="#"
-                                    class="btn btn-light btn-xs d-inline waves-effect waves-light history_process"
-                                    title="History Process" tabindex="0" data-plugin="tippy"
-                                    data-tippy-placement="top" data-id="${row.id}"><i
-                                    class="mdi mdi-book-clock-outline"></i>
-                                </a>
-                              `;
+                                    <a href="${viewUrl}" target="_blank"
+                                        class="btn btn-light btn-xs d-inline waves-effect waves-light btn_view"
+                                        title="View Detail" tabindex="0" data-plugin="tippy"
+                                        data-tippy-placement="top"><i class="fas fa-eye"></i>
+                                    </a>
+                                  `;
                         }
                     },
                 ]
