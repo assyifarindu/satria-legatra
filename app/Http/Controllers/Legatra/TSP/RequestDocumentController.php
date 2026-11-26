@@ -1284,7 +1284,8 @@ class RequestDocumentController extends Controller
             /* Generate Ticket Number */
             $year = date('Y');
             $last_request = TspRequestDocument::whereYear('created_at', $year)->orderByDesc("id")->first();
-            $last_ticket_number =  $last_request ? (int) $last_request->ticket_number : 0;
+            $last_ticket_number =  $last_request ? substr($last_request->ticket_number, -5) : 0;
+            $last_ticket_number = (int) $last_ticket_number;
             $ticket_number = $year . "-" . str_pad($last_ticket_number + 1, 5, "0", STR_PAD_LEFT);
 
             /* CREATE REQUEST DOCUMENT */
